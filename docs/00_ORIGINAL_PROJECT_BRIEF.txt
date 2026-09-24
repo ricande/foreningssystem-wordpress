@@ -1,0 +1,574 @@
+Du är min produkt- och utvecklingspartner för ett nytt open source WordPress-plugin för föreningar.
+
+PROJEKTIDÉ
+
+Vi ska bygga ett modernt, självhostat föreningssystem för WordPress riktat främst till små och medelstora ideella föreningar.
+
+Projektet började som ett medlemsregister, men målet är större:
+
+Pluginet ska bli föreningens administrativa ryggrad och samtidigt kunna förse föreningens publika WordPress-webbplats med aktuell information.
+
+Det ska INTE vara ett komplett affärssystem, bokföringsprogram eller ett specialsystem för en viss sport.
+
+Grundidén är:
+
+    Föreningens data finns på ett ställe.
+    WordPress visar rätt information automatiskt där den behövs.
+
+Exempel:
+
+Om kassören byts ut i adminpanelen ska Gutenberg-blocket "Aktuell styrelse" automatiskt visa den nya kassören på webbplatsen.
+
+Om ett styrelsemöte publiceras ska "Senaste styrelsemöte" kunna uppdateras automatiskt.
+
+Om medlemsantalet förändras ska dashboarden visa rätt antal direkt.
+
+MÅLGRUPP
+
+Primärt:
+
+- mindre ideella föreningar
+- hembygdsföreningar
+- idrottsföreningar
+- båtklubbar
+- jaktlag
+- MC-klubbar
+- samfälligheter
+- kulturföreningar
+- teaterföreningar
+- hobbyföreningar
+- lokala intresseföreningar
+
+Systemet ska vara begripligt även för en styrelse där ingen är tekniker.
+
+VIKTIGA PRINCIPER
+
+1. Självhostat
+
+Föreningens data ska ligga i den egna WordPress-installationen.
+
+Ingen obligatorisk SaaS-tjänst.
+Ingen obligatorisk extern server.
+Ingen prenumeration krävs för grundfunktionerna.
+
+2. WordPress ska fortfarande vara WordPress
+
+Vi bygger INTE ett eget tema.
+
+Pluginet ska fungera tillsammans med vanliga WordPress-teman och Gutenberg.
+
+WordPress ansvarar fortfarande för:
+
+- sidor
+- inlägg
+- media
+- menyer
+- design
+- teman
+- SEO
+
+Pluginet ansvarar för föreningens strukturerade data och föreningslogik.
+
+3. Medlem är INTE samma sak som wp_user
+
+En person i medlemsregistret behöver inte ha ett WordPress-konto.
+
+Detta är viktigt.
+
+En förening kan exempelvis ha 700 registrerade medlemmar men bara 12 personer som behöver logga in på webbplatsen.
+
+En medlem ska senare kunna länkas till ett WordPress-konto om funktioner kräver det.
+
+4. Enkelhet före feature creep
+
+Vi ska inte försöka bygga:
+
+- bokföringssystem
+- lönesystem
+- komplett CRM
+- avancerad tävlingsadministration
+- fullständigt bokningssystem
+- ERP
+
+Integrera hellre med andra system när det är lämpligt.
+
+5. Privacy och GDPR ska finnas med från arkitekturen
+
+Medlemsregistret innehåller personuppgifter.
+
+Vi ska därför tänka på:
+
+- dataminimering
+- export
+- radering/anonymisering
+- behörigheter
+- audit-logg där det behövs
+- backup
+- lagring
+- retention
+- säker hantering av personuppgifter
+
+Personnummer ska INTE vara ett grundkrav.
+
+PLUGINETS HUVUDOMRÅDEN
+
+Adminmenyn skulle preliminärt kunna vara:
+
+Förening
+├── Översikt
+├── Medlemmar
+├── Styrelse
+├── Möten
+├── Beslut
+├── Dokument
+├── Aktiviteter
+├── Medlemsavgifter
+├── Utskick
+└── Inställningar
+
+
+1. ÖVERSIKT / DASHBOARD
+
+Dashboarden ska ge styrelsen en omedelbar bild av föreningen.
+
+Exempel:
+
+342 medlemmar
+311 har betalat årsavgiften
+31 obetalda
+
+Nästa aktivitet:
+Höststädning – 3 oktober
+
+Senaste styrelsemöte:
+12 september
+7 beslut
+Protokoll publicerat
+
+Styrelsen:
+6 personer
+
+Kommande händelser:
+- styrelsemöte
+- medlemsmöte
+- årsmöte
+
+Dashboarden ska visa relevant information, inte teknisk WordPress-information.
+
+
+2. MEDLEMSREGISTER
+
+En medlem kan exempelvis ha:
+
+- internt ID
+- medlemsnummer
+- förnamn
+- efternamn
+- adress
+- postnummer
+- ort
+- land
+- e-post
+- telefon
+- födelsedatum
+- inträdesdatum
+- utträdesdatum
+- medlemsstatus
+- medlemstyp
+- grupper/taggar
+- familjekoppling
+- anteckningar
+- kontaktpreferenser
+- eventuell koppling till wp_user
+
+Status skulle exempelvis kunna vara:
+
+- aktiv
+- vilande
+- avslutad
+- avliden
+- väntande
+
+Vi ska tänka på medlemsHISTORIK från början.
+
+Att någon lämnar föreningen betyder inte automatiskt att all historik ska raderas.
+
+
+3. STYRELSE
+
+Systemet ska hålla reda på aktuell och tidigare styrelse.
+
+Exempel på roller:
+
+- ordförande
+- vice ordförande
+- kassör
+- sekreterare
+- ledamot
+- suppleant
+- revisor
+- valberedning
+
+En person kan ha:
+
+- roll
+- startdatum
+- slutdatum
+- mandatperiod
+- kontaktuppgifter för rollen
+- eventuell offentlig presentation
+
+Historik är viktig.
+
+Vi ska kunna svara på:
+
+"Vem var kassör 2023?"
+
+utan att behöva läsa gamla protokoll.
+
+
+4. MÖTEN
+
+Primärt styrelsemöten, men arkitekturen bör kunna stödja fler mötestyper:
+
+- styrelsemöte
+- årsmöte
+- extra årsmöte
+- medlemsmöte
+- arbetsmöte
+
+Ett möte kan innehålla:
+
+- datum
+- tid
+- plats
+- deltagare
+- frånvarande
+- adjungerade
+- dagordning
+- mötesanteckningar
+- protokoll
+- bilagor
+- status
+- publiceringsnivå
+
+Mötesstatus kan exempelvis vara:
+
+- planerat
+- genomfört
+- protokoll pågår
+- justerat
+- publicerat
+
+
+5. BESLUT
+
+Beslut bör helst vara strukturerad data och inte bara text inne i protokoll.
+
+Ett beslut kan kopplas till:
+
+- möte
+- beslutsnummer
+- rubrik
+- beslutstext
+- ansvarig
+- deadline
+- status
+
+Exempel:
+
+Beslut 2026-014
+"Föreningen köper ny gräsklippare."
+
+Ansvarig: Kassör
+Deadline: 30 oktober
+Status: Pågående
+
+Detta kan senare ge en vy:
+
+"Öppna beslut från styrelsen"
+
+
+6. DOKUMENT
+
+Dokumentarkiv för exempelvis:
+
+- stadgar
+- protokoll
+- verksamhetsberättelser
+- årsredovisningar
+- revisionsberättelser
+- policydokument
+- instruktioner
+- avtal
+
+Dokument ska kunna ha metadata:
+
+- kategori
+- datum
+- version
+- giltig från
+- giltig till
+- publiceringsnivå
+
+Synlighet exempelvis:
+
+- publik
+- medlem
+- styrelse
+- administratör
+
+Vi ska i största möjliga mån använda WordPress Media Library där det är lämpligt istället för att uppfinna egen fillagring.
+
+
+7. AKTIVITETER / KALENDER
+
+Exempel:
+
+- årsmöte
+- städdag
+- tävling
+- klubbkväll
+- medlemsmöte
+- utbildning
+- resa
+- styrelsemöte
+
+Aktiviteter ska kunna visas via Gutenberg-block och eventuellt exporteras via ICS.
+
+
+8. MEDLEMSAVGIFTER
+
+Första versionen behöver INTE vara ett komplett betalningssystem.
+
+Grundnivån ska kunna svara på:
+
+- vilken avgift gäller?
+- vem ska betala?
+- vem har betalat?
+- för vilket medlemsår?
+- när betalades den?
+- hur mycket?
+
+Exempel:
+
+Medlemsår: 2026
+Ordinarie medlem: 300 kr
+Familj: 500 kr
+Ungdom: 150 kr
+
+Senare möjliga integrationer:
+
+- Swish
+- bankgiro
+- OCR
+- betalningsfil
+- WooCommerce
+
+Men börja enkelt.
+
+
+9. UTSKICK
+
+Systemet bör kunna välja mottagare från medlemsregistret.
+
+Exempel:
+
+Skicka till:
+
+- alla aktiva medlemmar
+- styrelsen
+- en medlemsgrupp
+- alla som inte betalat
+- medlemmar i viss ort
+- deltagare i aktivitet
+
+Vi ska tänka noggrant innan vi bygger själva mailmotorn.
+
+Det kan vara bättre att senare integrera med exempelvis Brevo, Mailchimp eller WordPress SMTP-lösningar.
+
+Mottagarurvalet är dock föreningssystemets ansvar.
+
+
+10. BEHÖRIGHETER
+
+WordPress roller räcker sannolikt inte ensamma.
+
+Vi bör använda capabilities.
+
+Exempel:
+
+- manage_association
+- view_members
+- edit_members
+- manage_board
+- manage_meetings
+- manage_documents
+- manage_fees
+- send_member_mail
+
+En kassör ska exempelvis kunna administrera medlemsavgifter utan att automatiskt få rätt att:
+
+- installera plugins
+- ändra teman
+- redigera hela webbplatsen
+
+
+PUBLIK WEBBPLATS
+
+Pluginet ska tillhandahålla Gutenberg-block.
+
+Exempel:
+
+- Aktuell styrelse
+- Styrelseperson
+- Senaste styrelsemöte
+- Senaste protokoll
+- Dokumentarkiv
+- Kommande aktiviteter
+- Föreningskalender
+- Bli medlem
+- Föreningsinformation
+- Medlemsantal
+- Kontaktperson
+- Medlemsinloggning
+
+Dessa ska läsa samma data som används i adminpanelen.
+
+Vi vill undvika:
+
+- manuellt kopierad information
+- duplicerade uppgifter
+- gamla styrelser som ligger kvar på webbsidor
+- protokoll som måste länkas på tre olika ställen
+
+
+DATAMODELL
+
+Vi ska INTE automatiskt anta att allt ska vara Custom Post Types.
+
+För varje datatyp ska vi diskutera om den bäst passar som:
+
+- egen databastabell
+- Custom Post Type
+- taxonomy
+- WordPress user
+- WordPress media
+- options/settings
+
+Medlemsregistret kommer sannolikt passa bättre i egna tabeller än som wp_users eller posts.
+
+Möten, dokument och aktiviteter kan eventuellt ha andra lösningar.
+
+Vi ska välja arkitektur baserat på datans egenskaper, inte på vad som är enklast att snabbt koda.
+
+
+TEKNISKA KRAV
+
+Pluginet ska följa moderna WordPress-standarder.
+
+Vi ska eftersträva:
+
+- modern PHP
+- tydlig namespace-struktur
+- separerad domänlogik
+- dependency injection där det faktiskt hjälper
+- WordPress coding standards
+- prepared SQL
+- capability-kontroller
+- nonce-kontroller
+- output escaping
+- input validation
+- sanitization
+- CSRF-skydd
+- skydd mot privilege escalation
+- säkra REST-endpoints
+- inga direkta filanrop
+- inga hemliga externa callbacks
+- inga trackers
+- inga annonser
+
+Alla kritiska operationer ska kunna testas.
+
+
+OPEN SOURCE
+
+Målet är ett riktigt open source-plugin som kan publiceras på WordPress.org och GitHub.
+
+Grundprodukten ska vara genuint användbar gratis.
+
+Undvik modellen:
+
+"Gratis plugin som egentligen bara är reklam för Pro."
+
+Vi kan diskutera finansiering senare, men projektets arkitektur ska inte förstöras för att pressa fram upsells.
+
+
+SPRÅK
+
+Pluginet ska vara internationaliserbart från början.
+
+Första språk:
+
+- svenska
+- engelska
+
+Alla UI-strängar ska använda WordPress i18n-funktioner.
+
+
+ARBETSSÄTT
+
+Vi ska utveckla projektet metodiskt.
+
+Börja INTE med att skriva tusentals rader kod.
+
+Först ska vi definiera:
+
+1. Produktvision
+2. Scope
+3. Terminologi
+4. Domänmodell
+5. Datamodell
+6. Behörighetsmodell
+7. Privacy/GDPR-modell
+8. Arkitektur
+9. MVP
+10. Teststrategi
+11. Migrering/versionering av databasen
+12. Pluginstruktur
+13. Gutenberg-strategi
+14. Admin-UX
+15. Releaseplan
+
+När viktiga produktbeslut tas ska de dokumenteras så att vi inte senare råkar ändra grundprinciperna.
+
+Fråga eller resonera med mig när flera vettiga produktvägar finns.
+
+Var kritisk.
+
+Om jag föreslår något som gör systemet onödigt komplicerat, säg det.
+
+Om en funktion bör lämnas till ett annat WordPress-plugin, säg det.
+
+Om något riskerar att skapa säkerhets-, GDPR- eller underhållsproblem, lyft det direkt.
+
+
+FÖRSTA UPPGIFT
+
+Börja projektet från noll.
+
+Gör INTE någon implementation ännu.
+
+Ta fram ett första projektunderlag med:
+
+- tydlig produktvision
+- målgrupp
+- problem vi löser
+- produktprinciper
+- föreslaget MVP-scope
+- vad som uttryckligen INTE ingår i MVP
+- huvudsakliga domänobjekt
+- de viktigaste öppna produktfrågorna
+- en rekommenderad ordning för det fortsatta designarbetet
+
+Projektets arbetsnamn är ännu inte bestämt.

@@ -1,0 +1,4 @@
+.env
+snapshots/
+.DS_Store
+foreningsplugin-cursor-handoff.zip

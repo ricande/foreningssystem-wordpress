@@ -1,0 +1,25 @@
+---
+description: Core product, architecture, safety and workflow rules for the association plugin
+alwaysApply: true
+---
+
+# Association plugin project rule
+
+Read `AGENTS.md`, `DECISIONS.md`, and the relevant files under `docs/` before making architectural changes.
+
+Hard rules:
+
+- Do not equate members with `wp_users`.
+- Do not build a mandatory external service.
+- Do not add telemetry, ads, hidden callbacks or trackers.
+- Do not make product architecture depend on a paid upsell.
+- Preserve history rather than overwriting it.
+- Treat finalized/adjusted minutes as immutable historical revisions.
+- Use capabilities and least privilege.
+- Treat member data as personal data.
+- Do not implement bookkeeping, payroll, ERP, advanced booking or sports-specific competition management as part of the core MVP.
+- Do not use Custom Post Types by default without evaluating the data's properties.
+- Do not introduce a new dependency without documenting why it is needed, how it is maintained and what happens if it disappears.
+- Prefer WordPress APIs where they fit, but do not force unsuitable domain data into WordPress posts/users merely to avoid custom tables.
+
+Before coding a major subsystem, ensure its product/domain model is documented and the relevant open questions have been resolved.
