@@ -40,6 +40,11 @@ final class Plugin
         add_action('admin_post_assoc_schedule_meeting', [MeetingsPage::class, 'schedule']);
         add_action('admin_post_assoc_start_meeting', [MeetingsPage::class, 'start']);
         add_action('admin_post_assoc_mark_meeting_held', [MeetingsPage::class, 'markHeld']);
+        add_action('admin_post_assoc_add_participant', [MeetingDetailPage::class, 'addParticipant']);
+        add_action('admin_post_assoc_remove_participant', [MeetingDetailPage::class, 'removeParticipant']);
+        add_action('admin_post_assoc_add_agenda_item', [MeetingDetailPage::class, 'addAgendaItem']);
+        add_action('admin_post_assoc_move_agenda_item', [MeetingDetailPage::class, 'moveAgendaItem']);
+        add_action('admin_post_assoc_remove_agenda_item', [MeetingDetailPage::class, 'removeAgendaItem']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();

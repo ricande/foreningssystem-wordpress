@@ -59,6 +59,14 @@ final class MeetingsPage
             wp_die(esc_html__('Du har inte behörighet att se möten.', 'foreningsplugin'));
         }
 
+        $meetingId = isset($_GET['meeting']) ? absint($_GET['meeting']) : 0;
+
+        if ($meetingId > 0) {
+            MeetingDetailPage::render($meetingId);
+
+            return;
+        }
+
         $service = WordpressMeetings::service();
         $canManage = current_user_can(Capabilities::MANAGE_MEETINGS);
         $canRecord = $canManage || current_user_can(Capabilities::RECORD_MEETING);
@@ -72,7 +80,7 @@ final class MeetingsPage
 
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Möten', 'foreningsplugin') . '</h1>';
-        echo '<p>' . esc_html__('Ett hållet möte är inte ett protokoll. Dagordning och protokoll kommer senare.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('Ett hållet möte är inte ett protokoll. Anteckningar och protokoll kommer senare.', 'foreningsplugin') . '</p>';
         self::notice();
 
         if ($canManage) {
@@ -117,7 +125,11 @@ final class MeetingsPage
         foreach ($meetings as $meeting) {
             $type = $types[$meeting->typeId()] ?? null;
             echo '<tr>';
-            echo '<td>' . esc_html($meeting->title()) . '</td>';
+            $meetingUrl = add_query_arg([
+                'page' => 'foreningsplugin-meetings',
+                'meeting' => (int) $meeting->id(),
+            ], admin_url('admin.php'));
+            echo '<td><a href="' . esc_url($meetingUrl) . '">' . esc_html($meeting->title()) . '</a></td>';
             echo '<td>' . esc_html($type instanceof MeetingType ? self::typeLabel($type) : '') . '</td>';
             echo '<td>' . esc_html($meeting->startsAt()->date() . ' ' . $meeting->startsAt()->time()) . '</td>';
             echo '<td>' . esc_html($meeting->place()) . '</td>';
