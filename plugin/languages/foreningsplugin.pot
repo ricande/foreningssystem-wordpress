@@ -1,0 +1,1633 @@
+# Copyright (C) 2026 Föreningsplugin
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Föreningsplugin 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foreningsplugin\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-09-24T05:21:59+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: foreningsplugin\n"
+
+#. Plugin Name of the plugin
+#. Author of the plugin
+#: foreningsplugin.php
+#: src/Infrastructure/WordPress/Plugin.php:219
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:34
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:48
+msgid "Föreningsplugin"
+msgstr ""
+
+#. Description of the plugin
+#: foreningsplugin.php
+msgid "Grund för föreningsplugin till WordPress."
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:23
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:97
+msgid "Du har inte behörighet att ändra föreningsprofilen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:32
+msgid "Du har inte behörighet att se föreningsprofilen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:47
+#: src/Infrastructure/WordPress/Plugin.php:173
+#: src/Infrastructure/WordPress/Plugin.php:174
+msgid "Profil"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:48
+msgid "Föreningens namn, kontaktuppgifter och när verksamhetsåret börjar. Logotypen är en bild i mediabiblioteket. Ett verksamhetsår kan börja en annan dag än den 1 januari. Inställningen ändrar inte medlemsperioder som redan finns."
+msgstr ""
+
+#. translators: 1: start date, 2: end date
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:52
+#, php-format
+msgid "Pågående verksamhetsår: %1$s–%2$s"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:60
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:527
+#: src/Infrastructure/WordPress/MeetingsPage.php:246
+#: src/Infrastructure/WordPress/MembersPage.php:176
+msgid "Namn"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:61
+msgid "Organisationsnummer"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:62
+msgid "Adress"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:64
+#: src/Infrastructure/WordPress/MembersPage.php:149
+#: src/Infrastructure/WordPress/MembersPage.php:176
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:159
+msgid "E-post"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:65
+msgid "Telefon"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:66
+msgid "Språk"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:67
+msgid "Svenska"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:68
+msgid "Engelska"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:73
+msgid "Spara profil"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:117
+msgid "Föreningsprofilen är sparad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:123
+msgid "Profilen kunde inte sparas. Kontrollera e-post, telefon, språk, logotyp och startdag."
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:137
+msgid "Logotyp"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:144
+msgid "Välj bild"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:145
+msgid "Ta bort bild"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:151
+msgid "Verksamhetsåret börjar"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:152
+msgid "Månad"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:159
+msgid "Dag"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:169
+msgid "januari"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:170
+msgid "februari"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:171
+msgid "mars"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:172
+msgid "april"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:173
+msgid "maj"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:174
+msgid "juni"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:175
+msgid "juli"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:176
+msgid "augusti"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:177
+msgid "september"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:178
+msgid "oktober"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:179
+msgid "november"
+msgstr ""
+
+#: src/Infrastructure/WordPress/AssociationProfilePage.php:180
+msgid "december"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:56
+msgid "Du har inte behörighet att se styrelsen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:65
+#: src/Infrastructure/WordPress/Plugin.php:146
+#: src/Infrastructure/WordPress/Plugin.php:147
+msgid "Styrelse"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:66
+msgid "Ett uppdrag kräver ett medlemskap som täcker hela perioden. Revisor och valberedning följer samma regel. En avslutad rad tas inte bort."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:70
+msgid "Nytt uppdrag"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:71
+msgid "Om rollen bara kan ha en innehavare avslutas det öppna uppdraget dagen före det nya startdatumet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:75
+#: src/Infrastructure/WordPress/BoardPage.php:112
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:491
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:156
+msgid "Person"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:76
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:492
+msgid "Välj person"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:89
+#: src/Infrastructure/WordPress/BoardPage.php:112
+msgid "Roll"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:90
+msgid "Välj roll"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:101
+#: src/Infrastructure/WordPress/MembersPage.php:152
+msgid "Startdatum"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:102
+msgid "Slutdatum"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:103
+#: src/Infrastructure/WordPress/BoardPage.php:112
+msgid "Publik kontakt"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:104
+msgid "Mandatperiod"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:105
+msgid "Spara uppdrag"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:109
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:180
+msgid "Uppdrag"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:112
+#: src/Infrastructure/WordPress/MembersPage.php:176
+msgid "Period"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:112
+msgid "Idag"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:117
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:531
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:583
+#: src/Infrastructure/WordPress/MeetingsPage.php:185
+#: src/Infrastructure/WordPress/MembersPage.php:180
+msgid "Åtgärd"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:123
+msgid "Inga uppdrag ännu."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:139
+msgid "Ja"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:139
+msgid "Nej"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:150
+msgid "Avsluta uppdrag"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:166
+msgid "Du har inte behörighet att ändra styrelsen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:197
+msgid "Uppdraget är sparat."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:198
+msgid "Uppdraget är sparat. Den tidigare innehavaren avslutades dagen före, och den raden finns kvar."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:199
+msgid "Uppdraget är avslutat. Raden finns kvar."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:200
+msgid "Medlemskapet täcker inte hela uppdraget."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:201
+msgid "Rollen har redan en innehavare under de datumen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:202
+msgid "Uppdraget är redan avslutat."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:203
+msgid "Uppdraget kan inte avslutas före startdatumet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:204
+msgid "En avliden person kan inte ha ett öppet uppdrag."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:205
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:951
+#: src/Infrastructure/WordPress/MeetingsPage.php:337
+#: src/Infrastructure/WordPress/MembersPage.php:263
+msgid "Kontrollera uppgifterna och försök igen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:219
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:977
+#: src/Infrastructure/WordPress/MinutesLockPage.php:99
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:99
+#: src/Infrastructure/WordPress/WordpressAccess.php:47
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:338
+msgid "Ordförande"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:220
+#: src/Infrastructure/WordPress/MinutesLockPage.php:100
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:100
+#: src/Infrastructure/WordPress/WordpressAccess.php:48
+msgid "Kassör"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:221
+#: src/Infrastructure/WordPress/MinutesLockPage.php:98
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:98
+#: src/Infrastructure/WordPress/WordpressAccess.php:46
+msgid "Sekreterare"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:222
+msgid "Suppleant"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:223
+msgid "Revisor"
+msgstr ""
+
+#: src/Infrastructure/WordPress/BoardPage.php:224
+msgid "Valberedning"
+msgstr ""
+
+#: src/Infrastructure/WordPress/CurrentBoardBlock.php:15
+msgid "Aktuell styrelse"
+msgstr ""
+
+#: src/Infrastructure/WordPress/CurrentBoardBlock.php:16
+msgid "Visar namn, uppdrag och offentlig kontakt för den aktuella styrelsen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/CurrentBoardBlock.php:36
+msgid "Ingen aktuell styrelse."
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentDownload.php:29
+msgid "Du har inte behörighet att hämta dokumentet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentDownload.php:31
+msgid "Dokumentet kunde inte hämtas."
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:21
+msgid "Du har inte behörighet att lägga till dokument."
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:35
+msgid "Du har inte behörighet att ändra dokumentet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:44
+msgid "Du har inte behörighet att se dokumenten."
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:49
+#: src/Infrastructure/WordPress/Plugin.php:155
+#: src/Infrastructure/WordPress/Plugin.php:156
+msgid "Dokument"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:50
+msgid "Offentliga dokument visas på webbplatsen. Medlemsdokument visas för en inloggad person med aktivt medlemskap. Interna dokument syns för styrelsen. Administratörsdokument syns bara för den som får hantera dokument. Hämtningen går via en kontroll, inte via filens adress."
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:54
+msgid "Nytt dokument"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:58
+#: src/Infrastructure/WordPress/DocumentsPage.php:72
+#: src/Infrastructure/WordPress/MeetingsPage.php:168
+msgid "Titel"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:59
+#: src/Infrastructure/WordPress/DocumentsPage.php:73
+msgid "Synlighet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:60
+#: src/Infrastructure/WordPress/DocumentsPage.php:120
+msgid "Intern"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:61
+#: src/Infrastructure/WordPress/DocumentsPage.php:118
+msgid "Medlem"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:62
+#: src/Infrastructure/WordPress/DocumentsPage.php:119
+msgid "Administratör"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:63
+#: src/Infrastructure/WordPress/DocumentsPage.php:117
+msgid "Offentlig"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:65
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:786
+msgid "PDF, JPEG eller PNG"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:66
+msgid "Spara dokument"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:70
+msgid "Sparade dokument"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:74
+#: src/Infrastructure/WordPress/DocumentsPage.php:81
+msgid "Hämta"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:95
+msgid "Spara synlighet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:108
+msgid "Du har inte behörighet att ändra dokumenten."
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:178
+msgid "Dokumentet är sparat."
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:179
+msgid "Synligheten är ändrad. Filen är densamma."
+msgstr ""
+
+#: src/Infrastructure/WordPress/DocumentsPage.php:180
+msgid "Kontrollera titel, synlighet och att filen är en PDF, JPEG eller PNG."
+msgstr ""
+
+#: src/Infrastructure/WordPress/LatestBoardMeetingBlock.php:15
+msgid "Senaste styrelsemötet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/LatestBoardMeetingBlock.php:16
+msgid "Visar rubrik, datum och plats för det senaste styrelsemötet med ett publicerat protokoll."
+msgstr ""
+
+#: src/Infrastructure/WordPress/LatestBoardMeetingBlock.php:36
+msgid "Inget publicerat styrelsemöte."
+msgstr ""
+
+#: src/Infrastructure/WordPress/LatestMinutesBlock.php:15
+msgid "Senaste protokollet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/LatestMinutesBlock.php:16
+msgid "Visar den senast publicerade låsta revisionen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/LatestMinutesBlock.php:36
+msgid "Inget publicerat protokoll."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:371
+msgid "Du har inte behörighet att hämta protokollet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:373
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:395
+msgid "Protokollet kunde inte hämtas."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:393
+msgid "Du har inte behörighet att skriva ut protokollet."
+msgstr ""
+
+#. translators: %d: revision number
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:402
+#, php-format
+msgid "Protokoll, revision %d"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:423
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:876
+msgid "Du har inte behörighet att ladda upp den signerade kopian."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:441
+msgid "Du har inte behörighet att hämta den signerade kopian."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:443
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:447
+msgid "Den signerade kopian kunde inte hämtas."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:465
+#: src/Infrastructure/WordPress/MeetingsPage.php:180
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:194
+msgid "Möte"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:466
+msgid "Alla möten"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:470
+msgid "Mötet finns inte."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:483
+msgid "En adjungerad person behöver inte vara medlem. Listan visar namn, inte privat e-post."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:486
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:521
+msgid "Lägg till deltagare"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:504
+msgid "avliden"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:511
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:527
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:193
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:196
+msgid "Närvaro"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:516
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:527
+msgid "Funktion"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:525
+msgid "Deltagare"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:537
+msgid "Inga deltagare ännu."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:551
+msgid "Ta bort deltagare"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:560
+msgid "Anteckningar om mötet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:561
+msgid "Anteckningar är arbetsmaterial, inte protokollet. Markera det som ska tas med senare."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:562
+msgid "En uppgift är något som ska göras, inte ett beslut. Att markera den som klar ändrar inte texten."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:566
+msgid "Ny punkt"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:571
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:579
+msgid "Punkt"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:572
+msgid "Nummer"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:573
+msgid "Lägg till punkt"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:577
+msgid "Dagordning"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:579
+msgid "Nr"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:589
+msgid "Ingen dagordning ännu."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:602
+msgid "Upp"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:606
+msgid "Ner"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:609
+msgid "Ta bort punkt"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:626
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:202
+msgid "Protokoll"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:627
+msgid "Utkastet är en kopia av mötet, närvaron, dagordningen, markerade anteckningar, beslut och uppgifter. Senare ändringar i de raderna skriver inte om kopian."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:630
+msgid "Utkastet skapas när mötet är hållet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:640
+msgid "Inget utkast ännu."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:649
+msgid "Skapa protokollutkast"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:660
+msgid "Det här är en rättelse av en låst revision."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:664
+msgid "Revisionen är låst. Texten ändras inte om mötesraderna ändras."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:669
+msgid "Mötesuppgifterna har ändrats efter utkastet. Skapa om utkastet om den nya texten ska med."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:673
+msgid "Texten är ändrad för hand. Källkopian finns kvar tills utkastet skapas om."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:684
+msgid "Text"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:685
+msgid "Spara utkastets text"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:695
+msgid "Ersätt den ändrade texten"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:698
+msgid "Skapa om från mötesuppgifterna"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:705
+msgid "Skicka till justering"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:711
+msgid "Skicka tillbaka"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:717
+msgid "Lås revisionen"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:721
+msgid "Skapa rättelse"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:738
+msgid "Publicering"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:740
+msgid "Revisionen visas på webbplatsen. Texten är oförändrad, och den signerade skanningen stannar internt."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:741
+msgid "Revisionen är inte publicerad. Publicering visar den låsta texten och lämnar den signerade skanningen intern."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:752
+msgid "Avpublicera"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:752
+msgid "Publicera"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:762
+msgid "Signerad skanning"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:763
+msgid "Den signerade skanningen är originalet. Protokolltexten ändras inte när skanningen laddas upp."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:772
+msgid "Hämta signerad kopia"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:774
+msgid "Ingen signerad kopia ännu."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:787
+msgid "Ladda upp signerad kopia"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:803
+msgid "Ladda ner PDF"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:804
+msgid "Utskriftsvy"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:805
+msgid "PDF-filen hämtas efter behörighetskontroll och visas inte som en offentlig länk."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:811
+msgid "Utkast"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:812
+msgid "Under justering"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:813
+msgid "Låst"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:849
+msgid "Du har inte behörighet att ändra mötet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:858
+msgid "Du har inte behörighet att publicera protokollet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:867
+msgid "Du har inte behörighet att låsa protokollet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:919
+msgid "Deltagaren är tillagd."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:920
+msgid "Deltagaren är borttagen från mötet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:921
+msgid "Personen finns redan på mötet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:922
+msgid "Punkten är tillagd."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:923
+msgid "Dagordningen är omordnad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:924
+msgid "Punkten är borttagen och numren är räknade om."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:925
+msgid "Punkten kan inte flyttas åt det hållet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:926
+msgid "Anteckningen är sparad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:927
+msgid "Anteckningen är borttagen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:928
+msgid "Beslutet är sparat."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:929
+msgid "Uppföljningen är ändrad. Beslutets lydelse är densamma."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:930
+msgid "Beslutet är borttaget."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:931
+msgid "Uppgiften är sparad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:932
+msgid "Uppgiftens status är ändrad. Texten är densamma."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:933
+msgid "Uppgiften är borttagen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:934
+msgid "Protokollutkastet är skapat från mötesuppgifterna."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:935
+msgid "Utkastets text är sparad. Källuppgifterna är oförändrade."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:936
+msgid "Utkastet är skapat om från mötesuppgifterna."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:937
+msgid "Utkastet skapas när mötet är hållet, och bara en gång."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:938
+msgid "Bekräfta om den ändrade texten ska ersättas."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:939
+msgid "Utkastet är skickat till justering."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:940
+msgid "Revisionen är tillbaka som utkast."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:941
+msgid "Revisionen är låst. Texten ändras inte längre."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:942
+msgid "Rättelsen är ett nytt utkast med den låsta texten."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:943
+msgid "Revisionen visas på webbplatsen. Texten är oförändrad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:944
+msgid "Revisionen är avpublicerad. Texten är oförändrad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:945
+msgid "Den här ändringen passar inte revisionens läge."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:946
+msgid "Den signerade kopian är sparad. Protokolltexten är oförändrad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:947
+msgid "Den signerade kopian är ersatt. Protokolltexten är oförändrad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:948
+msgid "En signerad kopia kan bara knytas till en låst revision."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:949
+msgid "Den signerade kopian ska vara en PDF, JPEG eller PNG."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:950
+msgid "Punkten hör inte till det här mötet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:967
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:331
+msgid "Närvarande"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:968
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:329
+msgid "Frånvarande"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:969
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:330
+msgid "Adjungerad"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:976
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1157
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1181
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:340
+msgid "Ingen"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:978
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:339
+msgid "Justerare"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1032
+msgid "Du har inte behörighet att föra anteckningar, beslut eller uppgifter."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1050
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1145
+msgid "Anteckning"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1051
+msgid "Tas med i protokollet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1051
+msgid "Arbetsanteckning"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1057
+msgid "Ta bort anteckning"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1069
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1106
+msgid "Klar"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1070
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1107
+msgid "Öppen"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1080
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1155
+msgid "Beslut"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1086
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1123
+msgid "Markera som klar"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1087
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1124
+msgid "Återöppna"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1094
+msgid "Ta bort beslut"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1117
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1179
+msgid "Uppgift"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1131
+msgid "Ta bort uppgift"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1146
+msgid "Ta med i protokollet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1147
+msgid "Spara anteckning"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1156
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1180
+msgid "Ansvarig"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1170
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1194
+msgid "Deadline"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1171
+msgid "Spara beslut"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingDetailPage.php:1195
+msgid "Spara uppgift"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:42
+#: src/Infrastructure/WordPress/MeetingsPage.php:56
+#: src/Infrastructure/WordPress/MeetingsPage.php:70
+#: src/Infrastructure/WordPress/MeetingsPage.php:84
+#: src/Infrastructure/WordPress/MeetingsPage.php:293
+msgid "Du har inte behörighet att planera möten."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:117
+msgid "Du har inte behörighet att se möten."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:140
+#: src/Infrastructure/WordPress/Plugin.php:164
+#: src/Infrastructure/WordPress/Plugin.php:165
+msgid "Möten"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:141
+msgid "Ett hållet möte är inte ett protokoll. Anteckningar är arbetsmaterial tills ett protokoll skapas."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:145
+msgid "Nytt möte"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:149
+#: src/Infrastructure/WordPress/MeetingsPage.php:180
+#: src/Infrastructure/WordPress/MeetingsPage.php:238
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:166
+msgid "Typ"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:150
+#: src/Infrastructure/WordPress/MeetingsPage.php:239
+msgid "Välj typ"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:158
+msgid "Mall"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:159
+msgid "Ingen mall"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:169
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:195
+msgid "Datum"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:170
+#: src/Infrastructure/WordPress/MeetingsPage.php:180
+msgid "Tid"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:171
+#: src/Infrastructure/WordPress/MeetingsPage.php:180
+msgid "Plats"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:172
+msgid "Spara möte"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:177
+msgid "Planerade och hållna möten"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:180
+msgid "Läge"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:192
+msgid "Inga möten ännu."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:212
+msgid "Starta mötet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:216
+msgid "Markera som hållet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:233
+msgid "Mallar"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:234
+msgid "En mall är en lista med rubriker. Den kopieras in när mötet skapas. En senare ändring av mallen ändrar inte mötet, och mallen innehåller ingen färdig årsmötesdagordning."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:247
+msgid "Spara mall"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:268
+msgid "Rubrik"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:269
+msgid "Lägg till rubrik"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:275
+msgid "Ta bort mall"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:302
+msgid "Du har inte behörighet att föra mötet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:330
+msgid "Mötet är sparat som planerat."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:331
+msgid "Mallen är sparad. Möten som redan skapats ändras inte."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:332
+msgid "Mallen är borttagen. Möten som redan skapats behåller sin dagordning."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:333
+msgid "Mötet pågår."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:334
+msgid "Mötet är markerat som hållet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:335
+msgid "Bara ett planerat möte kan startas."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:336
+msgid "Mötet är redan hållet."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:351
+msgid "Styrelsemöte"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:352
+msgid "Årsmöte"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:353
+msgid "Extra årsmöte"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:354
+msgid "Medlemsmöte"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:355
+msgid "Arbetsmöte"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:363
+msgid "Planerat"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:364
+msgid "Pågår"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MeetingsPage.php:365
+msgid "Hållet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MemberCountBlock.php:13
+msgid "Medlemsantal"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MemberCountBlock.php:14
+msgid "Visar hur många aktiva medlemmar föreningen har, utan namn."
+msgstr ""
+
+#. translators: %d: number of active members
+#: src/Infrastructure/WordPress/MemberCountBlock.php:35
+#: src/Infrastructure/WordPress/Plugin.php:228
+#, php-format
+msgid "Aktiva medlemmar: %d"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MemberDocumentsBlock.php:13
+msgid "Medlemsdokument"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MemberDocumentsBlock.php:14
+msgid "Visar dokument för en inloggad person med aktivt medlemskap. Hämtningen går via en kontroll."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MemberDocumentsBlock.php:34
+msgid "Logga in med ett aktivt medlemskap för att se medlemsdokument."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MemberDocumentsBlock.php:38
+msgid "Inga medlemsdokument."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:60
+msgid "Du har inte behörighet att exportera medlemmar."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:100
+msgid "Du har inte behörighet att importera medlemmar."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:132
+msgid "Du har inte behörighet att se medlemmar."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:139
+#: src/Infrastructure/WordPress/Plugin.php:137
+#: src/Infrastructure/WordPress/Plugin.php:138
+msgid "Medlemmar"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:143
+msgid "Ny person"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:147
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:157
+msgid "Förnamn"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:148
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:158
+msgid "Efternamn"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:150
+#: src/Infrastructure/WordPress/MembersPage.php:176
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:165
+msgid "Medlemsnummer"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:151
+msgid "Medlemstyp"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:153
+msgid "Spara person"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:155
+msgid "Importera"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:156
+msgid "Filen är UTF-8 och semikolonseparerad, med en rad per medlemsperiod. Ett medlemsnummer som redan finns lämnas orört. Importen kopplar inget WordPress-konto och byter inte namn på en person som redan finns."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:161
+msgid "Importera medlemmar"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:166
+msgid "Exportera"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:170
+msgid "Exportera medlemmar"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:174
+msgid "Personer"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:176
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:160
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:167
+msgid "Status"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:185
+msgid "Inga personer ännu."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:211
+msgid "Avsluta medlemskap"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:220
+msgid "Markera som avliden"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:234
+msgid "Du har inte behörighet att ändra medlemmar."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:256
+msgid "Personen är sparad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:257
+msgid "Medlemskapet är avslutat. Personen finns kvar."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:258
+msgid "Personen är markerad som avliden och öppna medlemskap är avslutade."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:259
+msgid "Medlemsnumret används redan."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:260
+msgid "Medlemsperioderna överlappar."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:261
+msgid "Medlemskapet är redan avslutat."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:262
+msgid "Ett öppet styrelseuppdrag passar inte datumet, så inget ändrades."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:264
+msgid "Filen måste vara UTF-8 med de förväntade kolumnerna, separerade med semikolon."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:265
+msgid "Filen är större än 2 MB."
+msgstr ""
+
+#. translators: 1: created memberships, 2: skipped memberships
+#: src/Infrastructure/WordPress/MembersPage.php:273
+#, php-format
+msgid "Importen skapade %1$d medlemsperioder och lämnade %2$d orörda."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:323
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:311
+msgid "Avliden"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:327
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:322
+msgid "Aktiv"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:328
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:319
+msgid "Väntande"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:329
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:320
+msgid "Vilande"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:330
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:321
+msgid "Avslutad"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php:331
+msgid "Utan medlemskap"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesLockPage.php:29
+#: src/Infrastructure/WordPress/MinutesLockPage.php:62
+msgid "Du har inte behörighet att ändra vem som får låsa protokoll."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesLockPage.php:38
+msgid "Du har inte behörighet att se vem som får låsa protokoll."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesLockPage.php:43
+#: src/Infrastructure/WordPress/Plugin.php:191
+#: src/Infrastructure/WordPress/Plugin.php:192
+msgid "Låsa protokoll"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesLockPage.php:44
+msgid "Ordföranden får låsa protokoll från början. Föreningen kan ge samma behörighet till en annan roll. Den som för protokoll kan fortfarande skriva utkast. Webbplatsens administratör behåller behörigheten och kan ändra tillbaka."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesLockPage.php:55
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:55
+msgid "Spara behörighet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesLockPage.php:82
+msgid "Behörigheten att låsa protokoll är sparad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesLockPage.php:88
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:88
+msgid "Rollen kunde inte sparas."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesLockPage.php:101
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:101
+#: src/Infrastructure/WordPress/WordpressAccess.php:49
+msgid "Styrelseledamot"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:29
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:62
+msgid "Du har inte behörighet att ändra vem som får publicera protokoll."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:38
+msgid "Du har inte behörighet att se vem som får publicera protokoll."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:43
+#: src/Infrastructure/WordPress/Plugin.php:200
+#: src/Infrastructure/WordPress/Plugin.php:201
+msgid "Publicera protokoll"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:44
+msgid "Ordföranden får publicera ett låst protokoll från början. Föreningen kan ge samma behörighet till en annan roll. Publicering visar texten på webbplatsen och lämnar protokollet oförändrat. Webbplatsens administratör behåller behörigheten och kan ändra tillbaka."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MinutesPublishPage.php:82
+msgid "Behörigheten att publicera protokoll är sparad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:126
+#: src/Infrastructure/WordPress/Plugin.php:127
+msgid "Förening"
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:182
+#: src/Infrastructure/WordPress/Plugin.php:183
+#: src/Infrastructure/WordPress/RetentionPage.php:54
+msgid "Kvarhållning"
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:225
+msgid "Pluginet är aktivt."
+msgstr ""
+
+#. translators: %d: number of current board assignments
+#: src/Infrastructure/WordPress/Plugin.php:233
+#, php-format
+msgid "Styrelseuppdrag idag: %d"
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:245
+msgid "Nästa möte"
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:246
+msgid "Inget kommande möte."
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:247
+msgid "Senaste hållet möte"
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:248
+msgid "Inget hållet möte."
+msgstr ""
+
+#. translators: %d: number of planned meetings
+#: src/Infrastructure/WordPress/Plugin.php:251
+#, php-format
+msgid "Planerade möten: %d"
+msgstr ""
+
+#. translators: %d: number of open decisions
+#: src/Infrastructure/WordPress/Plugin.php:256
+#, php-format
+msgid "Öppna beslut: %d"
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:259
+msgid "Försenade uppgifter"
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:263
+msgid "Inga försenade uppgifter."
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:279
+msgid "Senaste dokument"
+msgstr ""
+
+#: src/Infrastructure/WordPress/Plugin.php:282
+msgid "Inga dokument att visa."
+msgstr ""
+
+#: src/Infrastructure/WordPress/PublicDocumentsBlock.php:16
+msgid "Dokumentarkiv"
+msgstr ""
+
+#: src/Infrastructure/WordPress/PublicDocumentsBlock.php:17
+msgid "Visar offentliga dokument. Hämtningen går via en kontroll."
+msgstr ""
+
+#: src/Infrastructure/WordPress/PublicDocumentsBlock.php:37
+msgid "Inga offentliga dokument."
+msgstr ""
+
+#: src/Infrastructure/WordPress/RetentionPage.php:24
+#: src/Infrastructure/WordPress/RetentionPage.php:74
+msgid "Du har inte behörighet att ändra kvarhållningen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/RetentionPage.php:42
+msgid "Du har inte behörighet att tillämpa kvarhållningen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/RetentionPage.php:49
+msgid "Du har inte behörighet att se kvarhållningen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/RetentionPage.php:55
+msgid "Kontaktuppgifter avidentifieras det här antalet år efter att medlemskapet har avslutats. Granskningshändelser tas bort efter samma tid. Låsta protokoll och signerade skanningar behålls."
+msgstr ""
+
+#: src/Infrastructure/WordPress/RetentionPage.php:60
+msgid "År"
+msgstr ""
+
+#: src/Infrastructure/WordPress/RetentionPage.php:61
+msgid "Spara kvarhållning"
+msgstr ""
+
+#: src/Infrastructure/WordPress/RetentionPage.php:66
+msgid "Tillämpa nu"
+msgstr ""
+
+#: src/Infrastructure/WordPress/RetentionPage.php:96
+msgid "Kvarhållningen är sparad."
+msgstr ""
+
+#: src/Infrastructure/WordPress/RetentionPage.php:102
+msgid "Ange ett antal år mellan 1 och 100."
+msgstr ""
+
+#. translators: 1: number of people anonymized, 2: number of audit events removed
+#: src/Infrastructure/WordPress/RetentionPage.php:115
+#, php-format
+msgid "Kvarhållningen är tillämpad. %1$d personer avidentifierades. %2$d granskningshändelser togs bort."
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:71
+msgid "Du har inte behörighet att avidentifiera personen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:168
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:181
+msgid "Start"
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:172
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:186
+msgid "Slut"
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:175
+msgid "Medlemskap"
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:182
+msgid "Offentlig kontakt"
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:189
+msgid "Styrelseuppdrag"
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:197
+msgid "Uppgift på mötet"
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:201
+msgid "Behållna handlingar"
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:202
+msgid "Protokoll kan innehålla ditt namn och behålls. Protokolltexten ingår inte i exporten."
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:267
+msgid "Kontaktuppgifterna är avidentifierade och kontolänken är borttagen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:271
+msgid "Den offentliga kontaktuppgiften på uppdraget är borttagen."
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:275
+msgid "Medlemsperioderna behålls."
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:279
+msgid "Uppdragsdatum och roller behålls."
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:283
+msgid "Namnet i ett låst protokoll behålls."
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:287
+msgid "Den signerade skanningen behålls."
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php:312
+msgid "Känd"
+msgstr ""
