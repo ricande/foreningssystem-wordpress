@@ -450,16 +450,20 @@ final class BoardServiceTest extends TestCase
         self::assertSame('2026-12-31', $this->assignmentFor($assignments, $anna, $roleId)->endedOn()?->iso());
         $karinAssignment = $this->assignmentFor($assignments, $karin, $roleId);
 
-        try {
-            $service->place($lisa, $roleId, AssociationDate::fromIso('2026-11-01'), null, '', '', $today);
-            self::fail('A second scheduled successor should be rejected.');
-        } catch (BoardRuleException $error) {
-            self::assertSame('This role already has a scheduled assignment.', $error->getMessage());
-        }
+        foreach (['2026-11-01', '2027-01-01', '2027-02-01'] as $start) {
+            try {
+                $service->place($lisa, $roleId, AssociationDate::fromIso($start), null, '', '', $today);
+                self::fail('A second scheduled successor should be rejected.');
+            } catch (BoardRuleException $error) {
+                self::assertSame('This role already has a scheduled assignment.', $error->getMessage());
+            }
 
-        self::assertSame('2026-12-31', $this->assignmentFor($assignments, $anna, $roleId)->endedOn()?->iso());
-        self::assertNull($this->assignmentFor($assignments, $karin, $roleId)->endedOn());
-        self::assertCount(2, $assignments->all());
+            $karinRow = $this->assignmentFor($assignments, $karin, $roleId);
+            self::assertSame('2027-01-01', $karinRow->startedOn()->iso());
+            self::assertNull($karinRow->endedOn());
+            self::assertSame('2026-12-31', $this->assignmentFor($assignments, $anna, $roleId)->endedOn()?->iso());
+            self::assertCount(2, $assignments->all());
+        }
 
         $cancelled = $service->cancelScheduled((int) $karinAssignment->id(), $today);
         self::assertSame('2026-12-31', $cancelled->currentEnd());
@@ -483,6 +487,12 @@ final class BoardServiceTest extends TestCase
         }
 
         self::assertNotNull($assignments->find((int) $this->assignmentFor($assignments, $anna, $roleId)->id()));
+
+        self::assertSame('saved', $service->place($lisa, $roleId, AssociationDate::fromIso('2027-02-01'), null, '', '', $today));
+        $lisaAssignment = $this->assignmentFor($assignments, $lisa, $roleId);
+        self::assertSame('2027-02-01', $lisaAssignment->startedOn()->iso());
+        self::assertNull($lisaAssignment->endedOn());
+        self::assertSame('2026-12-31', $this->assignmentFor($assignments, $anna, $roleId)->endedOn()?->iso());
     }
 
     public function test_cancellation_rejects_history_today_and_a_failed_delete(): void

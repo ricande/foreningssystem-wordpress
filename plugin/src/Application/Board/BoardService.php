@@ -70,6 +70,14 @@ final class BoardService
             $replacements = [];
             $openSuccessor = ! $endedOn instanceof AssociationDate && ! $role->allowsMultiple();
 
+            if ($openSuccessor) {
+                foreach ($this->forRole($roleId) as $existing) {
+                    if ($existing->startedOn()->isAfter($asOf)) {
+                        throw new BoardRuleException('This role already has a scheduled assignment.');
+                    }
+                }
+            }
+
             foreach ($this->forRole($roleId) as $existing) {
                 if (! $openSuccessor || ! $this->canShorten($existing, $candidate, $asOf)) {
                     $checked[] = $existing;

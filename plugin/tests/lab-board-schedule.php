@@ -179,22 +179,33 @@ if (
     $fail('The treasurer role did not show the scheduled successor instead of another replacement.');
 }
 
-$second = $redirectTo('assoc_place_assignment', [
-    'person_id' => (string) $lisa,
-    'role_id' => (string) $treasurerId,
-    'started_on' => '2026-11-01',
-    'public_contact' => '',
-    'term_label' => '',
-]);
-$karinStill = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$assignments} WHERE id = %d", $karinId));
-$annaEnd = $wpdb->get_var($wpdb->prepare(
-    "SELECT ended_on FROM {$assignments} WHERE person_id = %d AND role_id = %d",
-    $anna,
-    $treasurerId
-));
+$karinOpen = static function () use ($wpdb, $assignments, $karinId): ?string {
+    return $wpdb->get_var($wpdb->prepare("SELECT ended_on FROM {$assignments} WHERE id = %d", $karinId));
+};
 
-if (! str_contains($second, 'assoc_notice=scheduled') || $karinStill === null || (string) $annaEnd !== '2026-12-31') {
-    $fail('A second successor was accepted while Karin was already scheduled.');
+foreach (['2026-11-01', '2027-02-01'] as $start) {
+    $blocked = $redirectTo('assoc_place_assignment', [
+        'person_id' => (string) $lisa,
+        'role_id' => (string) $treasurerId,
+        'started_on' => $start,
+        'public_contact' => '',
+        'term_label' => '',
+    ]);
+    $lisaRow = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM {$assignments} WHERE person_id = %d AND role_id = %d",
+        $lisa,
+        $treasurerId
+    ));
+    $karinStill = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$assignments} WHERE id = %d", $karinId));
+    $annaEnd = $wpdb->get_var($wpdb->prepare(
+        "SELECT ended_on FROM {$assignments} WHERE person_id = %d AND role_id = %d",
+        $anna,
+        $treasurerId
+    ));
+
+    if (! str_contains($blocked, 'assoc_notice=scheduled') || $karinStill === null || $karinOpen() !== null || $lisaRow !== null || (string) $annaEnd !== '2026-12-31') {
+        $fail('A second successor starting ' . $start . ' was accepted while Karin was already scheduled.');
+    }
 }
 
 $cancelled = $redirectTo('assoc_cancel_assignment', [
@@ -229,6 +240,27 @@ $roleBox = $section($after, 'assoc-role-' . $treasurerId);
 
 if (! str_contains($roleBox, 'assoc-replace-form') || ! str_contains($section($after, 'assoc-board-current'), 'Anna Schedule')) {
     $fail('Anna was no longer replaceable after the scheduled successor was cancelled.');
+}
+
+$scheduledLisa = $board->place($lisa, $treasurerId, AssociationDate::fromIso('2027-02-01'), null, '', '', $today);
+$lisaStart = $wpdb->get_var($wpdb->prepare(
+    "SELECT started_on FROM {$assignments} WHERE person_id = %d AND role_id = %d",
+    $lisa,
+    $treasurerId
+));
+$lisaEnd = $wpdb->get_var($wpdb->prepare(
+    "SELECT ended_on FROM {$assignments} WHERE person_id = %d AND role_id = %d",
+    $lisa,
+    $treasurerId
+));
+$annaEnd = $wpdb->get_var($wpdb->prepare(
+    "SELECT ended_on FROM {$assignments} WHERE person_id = %d AND role_id = %d",
+    $anna,
+    $treasurerId
+));
+
+if ($scheduledLisa !== 'saved' || (string) $lisaStart !== '2027-02-01' || $lisaEnd !== null || (string) $annaEnd !== '2026-12-31') {
+    $fail('Lisa could not be scheduled after Karin was cancelled.');
 }
 
 $publicToday = [];
