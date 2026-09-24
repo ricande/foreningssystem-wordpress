@@ -36,5 +36,8 @@ wp:
 	docker compose run --rm wpcli $(WP_ARGS)
 
 test:
-	docker run --rm --user "$(shell id -u):$(shell id -g)" -e COMPOSER_HOME=/tmp/composer -v "$(CURDIR)":/app -w /app composer:2 composer install --no-interaction
+	@if [ ! -x vendor/bin/phpunit ]; then \
+		docker run --rm --user "$(shell id -u):$(shell id -g)" -e COMPOSER_HOME=/tmp/composer -v "$(CURDIR)":/app -w /app composer:2 composer install --no-interaction; \
+	fi
 	docker run --rm --user "$(shell id -u):$(shell id -g)" -v "$(CURDIR)":/app -w /app php:8.3-cli vendor/bin/phpunit
+	bash scripts/test-lab.sh
