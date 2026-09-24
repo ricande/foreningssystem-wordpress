@@ -6,6 +6,7 @@ namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Infrastructure\Persistence\BaselineMigration;
 use Foreningssystem\Infrastructure\Persistence\BoardSchemaMigration;
+use Foreningssystem\Infrastructure\Persistence\MeetingRecordSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MeetingRosterSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MeetingSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MembershipSchemaMigration;
@@ -26,6 +27,7 @@ final class WordpressMigrations
                 new BoardSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
                 new MeetingSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
                 new MeetingRosterSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
+                new MeetingRecordSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
             ]
         );
     }

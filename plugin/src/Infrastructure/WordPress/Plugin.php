@@ -45,6 +45,11 @@ final class Plugin
         add_action('admin_post_assoc_add_agenda_item', [MeetingDetailPage::class, 'addAgendaItem']);
         add_action('admin_post_assoc_move_agenda_item', [MeetingDetailPage::class, 'moveAgendaItem']);
         add_action('admin_post_assoc_remove_agenda_item', [MeetingDetailPage::class, 'removeAgendaItem']);
+        add_action('admin_post_assoc_add_note', [MeetingDetailPage::class, 'addNote']);
+        add_action('admin_post_assoc_remove_note', [MeetingDetailPage::class, 'removeNote']);
+        add_action('admin_post_assoc_add_decision', [MeetingDetailPage::class, 'addDecision']);
+        add_action('admin_post_assoc_set_decision_follow_up', [MeetingDetailPage::class, 'setDecisionFollowUp']);
+        add_action('admin_post_assoc_remove_decision', [MeetingDetailPage::class, 'removeDecision']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();
@@ -144,6 +149,11 @@ final class Plugin
                 /* translators: %d: number of planned meetings */
                 __('Planerade möten: %d', 'foreningsplugin'),
                 WordpressMeetings::service()->countWithStatus(MeetingStatus::Planned)
+            )) . '</p>';
+            echo '<p>' . esc_html(sprintf(
+                /* translators: %d: number of open decisions */
+                __('Öppna beslut: %d', 'foreningsplugin'),
+                WordpressMeetings::record()->openCount()
             )) . '</p>';
         }
         echo '<p>' . esc_html(sprintf(

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Meeting\MeetingRecord;
 use Foreningssystem\Application\Meeting\MeetingService;
 use Foreningssystem\Application\Meeting\MeetingWorkspace;
 use Foreningssystem\Application\People\Authorizer;
@@ -57,6 +58,42 @@ final class WordpressMeetings
             new WpdbAgendaRepository(),
             new MeetingRoster(),
             new AgendaOrder(),
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return current_user_can($capability);
+                }
+            },
+            new class implements Transaction {
+                public function run(callable $callback): mixed
+                {
+                    global $wpdb;
+
+                    $wpdb->query('START TRANSACTION');
+
+                    try {
+                        $result = $callback();
+                        $wpdb->query('COMMIT');
+
+                        return $result;
+                    } catch (\Throwable $error) {
+                        $wpdb->query('ROLLBACK');
+
+                        throw $error;
+                    }
+                }
+            }
+        );
+    }
+
+    public static function record(): MeetingRecord
+    {
+        return new MeetingRecord(
+            new WpdbMeetingRepository(),
+            new WpdbAgendaRepository(),
+            new WpdbPersonRepository(),
+            new WpdbMeetingNoteRepository(),
+            new WpdbDecisionRepository(),
             new class implements Authorizer {
                 public function allows(string $capability): bool
                 {

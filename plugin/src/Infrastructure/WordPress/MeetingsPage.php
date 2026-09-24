@@ -80,7 +80,7 @@ final class MeetingsPage
 
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Möten', 'foreningsplugin') . '</h1>';
-        echo '<p>' . esc_html__('Ett hållet möte är inte ett protokoll. Anteckningar och protokoll kommer senare.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('Ett hållet möte är inte ett protokoll. Anteckningar är arbetsmaterial tills ett protokoll skapas.', 'foreningsplugin') . '</p>';
         self::notice();
 
         if ($canManage) {
