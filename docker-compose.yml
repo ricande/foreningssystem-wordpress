@@ -29,14 +29,19 @@ services:
       WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
       WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
       WORDPRESS_DEBUG: "1"
+      MAILPIT_SMTP_HOST: mailpit
+      MAILPIT_SMTP_PORT: 1025
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', '${WP_URL}');
         define('WP_SITEURL', '${WP_URL}');
     volumes:
       - wp_data:/var/www/html
       - ./plugin:/var/www/html/wp-content/plugins/foreningsplugin
+      - ./mu-plugins/local-mailpit.php:/var/www/html/wp-content/mu-plugins/local-mailpit.php:ro
     depends_on:
       db:
+        condition: service_healthy
+      mailpit:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/80'"]
@@ -56,16 +61,37 @@ services:
       WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
       WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
       HOME: /tmp
+      MAILPIT_SMTP_HOST: mailpit
+      MAILPIT_SMTP_PORT: 1025
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', '${WP_URL}');
         define('WP_SITEURL', '${WP_URL}');
     volumes:
       - wp_data:/var/www/html
       - ./plugin:/var/www/html/wp-content/plugins/foreningsplugin
+      - ./mu-plugins/local-mailpit.php:/var/www/html/wp-content/mu-plugins/local-mailpit.php:ro
     depends_on:
       db:
         condition: service_healthy
 
+  mailpit:
+    image: axllent/mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - mailpit_data:/data
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
 volumes:
   db_data:
   wp_data:
+  mailpit_data:

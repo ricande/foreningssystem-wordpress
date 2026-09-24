@@ -27,6 +27,11 @@ Status terminology:
 | WordPress Media Library should be used for files where appropriate | LOCKED |
 | Capabilities, not only broad WordPress roles, control association actions | LOCKED |
 | Swedish and English internationalization from the beginning | LOCKED |
+| License is GPL-2.0-or-later | LOCKED |
+| A board assignment requires an active membership that covers the assignment dates | LOCKED |
+| When a signed hard copy and the finalized minutes differ, the signed copy is the archival original | LOCKED |
+| Which roles may finalize minutes is an association setting, not a fixed rule | LOCKED |
+| Retention of personal data and audit events is an association setting. Default is 5 years | LOCKED |
 
 ## Explicit non-goals for MVP
 

@@ -42,7 +42,7 @@ Propose option B where the host allows a directory outside the public web root. 
 
 Recommended signed-copy types: PDF, JPEG, PNG.
 
-The signed scan is evidence linked to one finalized revision. The revision remains the structured record. If an officer flags them as inconsistent, the product keeps both and does not pick a winner.
+The signed scan is linked to one finalized revision. The owner locked on 2026-09-24 that the signed copy is the archival original when it differs from the finalized text. The revision remains immutable and is still kept. It does not outrank the signed copy.
 
 ## Consequences
 

@@ -16,7 +16,7 @@ Inspected 2026-09-24. This is the development lab on the project owner's Mac. It
 | Language and timezone | `sv_SE`, `Europe/Stockholm` |
 | Debug | `WP_DEBUG` enabled |
 | Plugin mount | `./plugin` → `wp-content/plugins/foreningsplugin` |
-| Mail capture | Not installed. Do not send real mail from this lab |
+| Mail capture | Mailpit. Web UI `http://localhost:8025`, SMTP `mailpit:1025` inside the Docker network. `mu-plugins/local-mailpit.php` points WordPress `wp_mail()` there. Nothing is delivered to the public internet |
 | Node on the host | Available. Not required for the current placeholder plugin |
 | Composer in the containers | Not installed |
 | Snapshots | `make snap name=...` and `make restore name=...` dump the database and `uploads`. `ren-install` is the clean baseline |

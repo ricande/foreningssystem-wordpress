@@ -1,6 +1,6 @@
 # ADR-0001: Person and membership are separate
 
-**Status:** Proposed  
+**Status:** Accepted  
 **Date:** 2026-09-24
 
 ## Context
@@ -32,7 +32,11 @@ Cons:
 
 ## Decision
 
-Propose option B. Allow a board assignment without an active membership. Add an association setting later if an association wants to require membership for ordinary board roles. Do not require it in the schema.
+Accept option B. A person and a membership period stay separate.
+
+The owner locked a further rule on 2026-09-24: a board assignment requires an active membership that covers the assignment dates. That includes auditor and election-committee roles, because they are board roles in this model. There is no setting to waive it.
+
+Ending a membership ends any open assignment on the same date.
 
 ## Consequences
 
@@ -45,4 +49,4 @@ Negative/tradeoffs:
 
 ## Revisit triggers
 
-The owner decides every officer must be an active member, with no exceptions for auditors or guests. Or a real association import cannot be represented without overlapping periods.
+The owner decides that overlapping membership periods must be representable. Or an import contains officers who were never members, which the locked rule cannot store without an explicit exception.

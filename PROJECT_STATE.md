@@ -40,4 +40,6 @@ Do not start broad feature implementation until that baseline has been reviewed/
 
 A local Docker lab exists and is inventoried in `docs/16_LAB_INVENTORY.md`. `plugin/foreningsplugin.php` is only a lab placeholder.
 
-A proposed design baseline now exists under `docs/` and `adr/`. Those recommendations are not locked product decisions. Implementation still waits for owner approval.
+A proposed design baseline now exists under `docs/` and `adr/`. On 2026-09-24 the owner locked five points: board assignments require membership, the signed copy is the archival original, finalizing minutes is a setting, retention defaults to 5 years, and the license is GPL-2.0-or-later.
+
+The rest of the baseline stands as the accepted working design. Feature implementation has not started.

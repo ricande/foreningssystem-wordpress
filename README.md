@@ -82,6 +82,8 @@ Projektet ska följa aktuella WordPress-standarder och officiell dokumentation:
 Cursor-regler:
 - https://cursor.com/docs/rules
 
+Licens: GPL-2.0-or-later. Se `LICENSE`.
+
 ## Lokal labbmiljö
 
 Labbet är Docker på utvecklingsdatorn, inte en separat virtuell maskin. Inventering finns i `docs/16_LAB_INVENTORY.md`.
@@ -94,4 +96,4 @@ make restore name=ren-install
 make wp plugin list
 ```
 
-Webbplatsen körs på `http://localhost:8088` när containrarna är igång. Lokala lösenord ligger i `.env`, som inte ska committas.
+Webbplatsen körs på `http://localhost:8088` när containrarna är igång. Mailpit tar emot all utgående post på `http://localhost:8025`. Lokala lösenord ligger i `.env`, som inte ska committas.

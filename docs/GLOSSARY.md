@@ -98,7 +98,7 @@ A rendered file, normally a PDF, produced from one specific minutes revision.
 
 ## Signed document
 
-An uploaded scan of a manually signed paper copy, linked to one specific finalized revision. It is evidence of the paper act. It does not replace the revision.
+An uploaded scan of a manually signed paper copy, linked to one specific finalized revision. Once it exists, it is the archival original. The finalized revision is the text that was printed and remains immutable, but it does not outrank the signed copy when the two differ.
 
 ## Document
 

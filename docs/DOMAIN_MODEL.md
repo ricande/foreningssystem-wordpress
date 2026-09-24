@@ -34,7 +34,7 @@ Association
 |---|---|---|
 | Is the core model Person → Membership? | Yes | A person can be known before they join, after they leave, or without ever joining |
 | Multiple membership periods? | Yes | Re-entry and history need separate periods |
-| Can a board member, auditor, or election-committee member exist without a current membership? | Allowed by the model. An association setting may require an active membership for ordinary board roles | Auditors and election committees are often not board members. Some associations still require membership for officers |
+| Can a board member, auditor, or election-committee member exist without a current membership? | No. Locked by the owner on 2026-09-24 | Every board role in this model, including auditor and election committee, requires an active membership that covers the assignment dates |
 | Where do contact details live? | Private details on Person. Optional public role contact on Board assignment | Public blocks must not default to a private email or phone |
 | How is a deceased former member represented? | Person status `deceased`. End the membership. Keep history. Omit the person from current public board output | Deleting the row destroys institutional memory |
 | What does "delete member" mean? | The product does not offer one delete action | End membership, anonymize, and erase personal data are different operations |
@@ -44,6 +44,7 @@ Association
 - A Person may have zero or more Membership periods. Periods for the same person must not overlap.
 - Ending a membership sets an end date and a terminal status. It does not delete the Person or past assignments.
 - A Board assignment has a start date and either an open end or an end date. "Who held this role on date D?" is answered from those dates, not from protocol text.
+- The membership period must cover the whole assignment. An assignment cannot be created outside an active membership. Ending a membership ends any open assignment on the same date.
 - A term label, membership year, or source meeting may be stored on an assignment. The dates remain the query source.
 - An annual meeting may propose board changes. Applying them creates and ends assignments only after an explicit confirmation.
 - A finalized minutes revision is a snapshot. Later edits to people, board, notes, decisions, or action status do not change it.

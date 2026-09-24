@@ -26,7 +26,7 @@ Status: **proposed**. Names match the candidates in `docs/08_CAPABILITIES.md` an
 
 ## Suggested bundles
 
-These are starting roles the plugin can add. An administrator can change them.
+These bundles are the initial contents of an association setting. They are not a locked rule about who may finalize minutes. The association can grant or remove `finalize_minutes` per role.
 
 | Association role | Capabilities |
 |---|---|
@@ -36,7 +36,7 @@ These are starting roles the plugin can add. An administrator can change them.
 | Board member | `view_internal_meetings`, `view_board_documents`, `view_members` |
 | Member with a linked account | No association capability by default. Member-visible content is checked through an active Membership, not through a capability |
 
-Finalizing minutes is not on the secretary bundle. Recording a draft is. The owner may want the secretary to finalize too. That is a settings change, not a code change.
+The chair bundle includes `finalize_minutes` only as the starting suggestion. A secretary, or any other role, can receive it in settings. The capability check stays the same either way.
 
 ## Operation matrix
 
@@ -49,7 +49,7 @@ Visibility values: public, member, board, administrator. "State" is the meeting 
 | End a membership | `edit_members` | Period is not already ended | Admin only |
 | Anonymize a person | `erase_member_data` | Explicit confirmation | Admin only |
 | Export members | `export_members` | — | Admin only |
-| Replace a board role holder | `manage_board` | New assignment has a start date. Previous open assignment for that role is ended, not deleted | Admin only |
+| Replace a board role holder | `manage_board` | The person has an active membership covering the new dates. The previous open assignment for that role is ended, not deleted | Admin only |
 | View current board block | none for public fields | Assignment covers today | Public block shows name, role, and public role contact only |
 | Create a meeting | `manage_meetings` | Starts in `planned` | Admin only |
 | Edit agenda | `manage_meetings` or `record_meeting` | `planned`, `in_progress`, or `held` | Admin only |

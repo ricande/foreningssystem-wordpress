@@ -2,6 +2,14 @@
 
 These must be answered deliberately. Do not silently turn assumptions into implementation.
 
+## Resolved by the owner on 2026-09-24
+
+- A board assignment cannot exist without an active membership. See `DECISIONS.md`.
+- The signed hard copy is the archival original when it differs from the finalized minutes.
+- Who may finalize minutes is an association setting.
+- Personal data and audit events use a retention setting. The default is 5 years.
+- The license is GPL-2.0-or-later.
+
 ## Identity and membership
 
 1. Is the core model `Person -> Membership`?

@@ -7,7 +7,8 @@ help:
 		'make install' \
 		'make snap name=ren-install' \
 		'make restore name=ren-install' \
-		'make wp plugin list'
+		'make wp plugin list' \
+		'Mailpit: http://localhost:8025'
 
 up:
 	docker compose up -d --wait

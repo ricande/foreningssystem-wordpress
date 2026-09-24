@@ -89,6 +89,6 @@ It does not mean the plugin has certified compliance with a particular country's
 
 ## Signed copy and publication
 
-A signed file can be attached only to a finalized revision. Replacing the current signed file is an audited action. The product keeps both the revision and the scan. It does not decide which one wins if a human marks them as inconsistent.
+A signed file can be attached only to a finalized revision. Replacing the current signed file is an audited action. The product keeps both the revision and the scan. The signed copy is the archival original. The finalized revision stays unchanged as the printed text, and it does not replace the signed copy when they differ.
 
 `publish_minutes` may expose a finalized revision through the public blocks. Publishing does not modify the body. Unpublishing hides it. The default publication target is the latest finalized revision that is not superseded.
