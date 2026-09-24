@@ -277,4 +277,33 @@ final class MemoryAuditLog implements AuditLog
 
         return $rows;
     }
+
+    public function recordAt(string $objectType, int $objectId, string $action, int $actorUserId, string $createdAt): void
+    {
+        $this->events[] = new AuditEvent(count($this->events) + 1, $objectType, $objectId, $action, $actorUserId, $createdAt);
+    }
+
+    public function forgetOnOrBefore(string $day): int
+    {
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $day) !== 1) {
+            throw new \InvalidArgumentException('Retention day must use YYYY-MM-DD.');
+        }
+
+        $kept = [];
+        $removed = 0;
+
+        foreach ($this->events as $event) {
+            if (substr($event->createdAt(), 0, 10) <= $day) {
+                $removed++;
+
+                continue;
+            }
+
+            $kept[] = $event;
+        }
+
+        $this->events = $kept;
+
+        return $removed;
+    }
 }

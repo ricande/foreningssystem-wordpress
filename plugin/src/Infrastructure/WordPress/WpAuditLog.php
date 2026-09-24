@@ -52,6 +52,26 @@ final class WpAuditLog implements AuditLog
         }, $rows);
     }
 
+    public function forgetOnOrBefore(string $day): int
+    {
+        global $wpdb;
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $day) !== 1) {
+            throw new \InvalidArgumentException('Retention day must use YYYY-MM-DD.');
+        }
+
+        $deleted = $wpdb->query($wpdb->prepare(
+            'DELETE FROM ' . $this->table() . ' WHERE created_at IS NOT NULL AND DATE(created_at) <= %s',
+            $day
+        ));
+
+        if ($deleted === false) {
+            throw new \RuntimeException('Old audit events could not be removed.');
+        }
+
+        return (int) $deleted;
+    }
+
     private function table(): string
     {
         global $wpdb;

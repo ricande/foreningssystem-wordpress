@@ -12,4 +12,6 @@ interface AuditLog
      * @return list<AuditEvent>
      */
     public function forObject(string $objectType, int $objectId): array;
+
+    public function forgetOnOrBefore(string $day): int;
 }

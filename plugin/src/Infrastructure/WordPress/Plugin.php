@@ -36,6 +36,7 @@ final class Plugin
         add_action('init', [PublicDocumentsBlock::class, 'register']);
         add_action('init', [MemberCountBlock::class, 'register']);
         WordpressPrivacy::register();
+        WordpressRetention::register();
         add_action('template_redirect', [DocumentDownload::class, 'maybeSend']);
         add_action('admin_init', [self::class, 'migrateInAdmin']);
         add_action('admin_menu', [self::class, 'registerAdminMenu']);
@@ -75,6 +76,8 @@ final class Plugin
         add_action('admin_post_assoc_unpublish_minutes', [MeetingDetailPage::class, 'unpublishMinutes']);
         add_action('admin_post_assoc_add_document', [DocumentsPage::class, 'add']);
         add_action('admin_post_assoc_set_document_visibility', [DocumentsPage::class, 'setVisibility']);
+        add_action('admin_post_assoc_save_retention', [RetentionPage::class, 'save']);
+        add_action('admin_post_assoc_apply_retention_now', [RetentionPage::class, 'apply']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();
@@ -152,6 +155,15 @@ final class Plugin
             Capabilities::VIEW_INTERNAL_MEETINGS,
             'foreningsplugin-meetings',
             [MeetingsPage::class, 'render']
+        );
+
+        add_submenu_page(
+            'foreningsplugin',
+            __('Kvarhållning', 'foreningsplugin'),
+            __('Kvarhållning', 'foreningsplugin'),
+            Capabilities::MANAGE_ASSOCIATION,
+            'foreningsplugin-retention',
+            [RetentionPage::class, 'render']
         );
     }
 
