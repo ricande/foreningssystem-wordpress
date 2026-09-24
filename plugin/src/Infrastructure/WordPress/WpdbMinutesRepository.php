@@ -221,6 +221,27 @@ final class WpdbMinutesRepository implements MinutesRepository
         return $revisions;
     }
 
+    public function allRevisions(): array
+    {
+        global $wpdb;
+
+        $rows = $wpdb->get_results('SELECT * FROM ' . $this->revisions() . ' ORDER BY meeting_id, revision_number, id', ARRAY_A);
+
+        if (! is_array($rows)) {
+            return [];
+        }
+
+        $revisions = [];
+
+        foreach ($rows as $row) {
+            if (is_array($row)) {
+                $revisions[] = $this->map($row);
+            }
+        }
+
+        return $revisions;
+    }
+
     /**
      * @param array<string, mixed> $row
      */

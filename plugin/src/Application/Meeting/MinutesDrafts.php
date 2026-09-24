@@ -121,6 +121,16 @@ final class MinutesDrafts
         return $this->minutes->forMeeting($meetingId);
     }
 
+    /**
+     * @return list<MinutesRevision>
+     */
+    public function revisions(): array
+    {
+        $this->require(Capabilities::VIEW_INTERNAL_MEETINGS);
+
+        return $this->minutes->allRevisions();
+    }
+
     public function replaceBody(int $revisionId, string $body, ?int $meetingId = null): void
     {
         $this->requireRecord();

@@ -495,4 +495,9 @@ final class MemoryMinutesRepository implements MinutesRepository
 
         return $rows;
     }
+
+    public function allRevisions(): array
+    {
+        return array_values($this->revisions);
+    }
 }

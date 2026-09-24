@@ -181,6 +181,27 @@ final class MeetingRecord
         return $count;
     }
 
+    /**
+     * @return list<DecisionRow>
+     */
+    public function openDecisions(): array
+    {
+        $this->require(Capabilities::VIEW_INTERNAL_MEETINGS);
+        $names = $this->personNames();
+        $rows = [];
+
+        foreach ($this->decisions->all() as $decision) {
+            if ($decision->followUp() !== DecisionFollowUp::Open) {
+                continue;
+            }
+
+            $personId = $decision->responsiblePersonId();
+            $rows[] = new DecisionRow($decision, $personId !== null ? ($names[$personId] ?? null) : null);
+        }
+
+        return $rows;
+    }
+
     public function addActionItem(
         int $meetingId,
         ?int $agendaItemId,
@@ -276,6 +297,43 @@ final class MeetingRecord
         }
 
         return $count;
+    }
+
+    /**
+     * @return list<ActionItemRow>
+     */
+    public function openActions(): array
+    {
+        $this->require(Capabilities::VIEW_INTERNAL_MEETINGS);
+        $names = $this->personNames();
+        $rows = [];
+
+        foreach ($this->actionItems->all() as $item) {
+            if ($item->status() !== ActionStatus::Open) {
+                continue;
+            }
+
+            $personId = $item->assigneePersonId();
+            $rows[] = new ActionItemRow($item, $personId !== null ? ($names[$personId] ?? null) : null);
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function personNames(): array
+    {
+        $names = [];
+
+        foreach ($this->people->all() as $person) {
+            if ($person->id() !== null) {
+                $names[$person->id()] = $person->firstName() . ' ' . $person->lastName();
+            }
+        }
+
+        return $names;
     }
 
     private function requireRecord(): void

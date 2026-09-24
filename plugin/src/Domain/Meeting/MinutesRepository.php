@@ -31,4 +31,9 @@ interface MinutesRepository
      * @return list<MinutesRevision>
      */
     public function publicRevisions(): array;
+
+    /**
+     * @return list<MinutesRevision>
+     */
+    public function allRevisions(): array;
 }

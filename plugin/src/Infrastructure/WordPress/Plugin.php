@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
-use Foreningssystem\Application\Association\WorkOverview;
 use Foreningssystem\Domain\Access\Capabilities;
-use Foreningssystem\Domain\Meeting\MeetingMoment;
-use Foreningssystem\Domain\Meeting\MeetingStatus;
-use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Infrastructure\Persistence\MigrationException;
 
 final class Plugin
@@ -139,6 +135,8 @@ final class Plugin
 
     public static function registerAdminMenu(): void
     {
+        // Every officer bundle already includes view_members. The page then hides
+        // meeting and document sections the current user cannot open.
         add_menu_page(
             __('Association', 'foreningsplugin'),
             __('Association', 'foreningsplugin'),
@@ -224,96 +222,6 @@ final class Plugin
 
     public static function renderAdminPage(): void
     {
-        if (! current_user_can(Capabilities::VIEW_MEMBERS)) {
-            return;
-        }
-
-        $profile = WordpressAssociationProfile::load();
-        $activeMembers = WordpressPeople::service()->activeMemberCount(AssociationDate::fromIso(wp_date('Y-m-d')));
-        $activeMemberships = WordpressPeople::service()->activeMembershipCount(AssociationDate::fromIso(wp_date('Y-m-d')));
-        $currentBoard = WordpressBoard::service()->currentCount(AssociationDate::fromIso(wp_date('Y-m-d')));
-
-        echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('Association plugin', 'foreningsplugin') . '</h1>';
-
-        if ($profile->name() !== '') {
-            echo '<p>' . esc_html($profile->name()) . '</p>';
-        }
-
-        echo '<p>' . esc_html__('The plugin is active.', 'foreningsplugin') . '</p>';
-        echo '<p>' . esc_html(sprintf(
-            /* translators: %d: number of people who are members */
-            __('Active individual members: %d', 'foreningsplugin'),
-            $activeMembers
-        )) . '</p>';
-        echo '<p>' . esc_html(sprintf(
-            /* translators: %d: number of memberships with an active period */
-            __('Active memberships: %d', 'foreningsplugin'),
-            $activeMemberships
-        )) . '</p>';
-        echo '<p>' . esc_html(sprintf(
-            /* translators: %d: number of current board assignments */
-            __('Board assignments today: %d', 'foreningsplugin'),
-            $currentBoard
-        )) . '</p>';
-
-        if (current_user_can(Capabilities::VIEW_INTERNAL_MEETINGS)) {
-            $meetings = WordpressMeetings::service();
-            $overview = new WorkOverview();
-            $now = MeetingMoment::fromLocal(wp_date('Y-m-d H:i:s'));
-            $today = AssociationDate::fromIso(wp_date('Y-m-d'));
-            $allMeetings = $meetings->listMeetings();
-            $next = $overview->nextPlanned($allMeetings, $now);
-            $last = $overview->lastHeld($allMeetings);
-            echo '<h2>' . esc_html__('Next meeting', 'foreningsplugin') . '</h2>';
-            echo '<p>' . esc_html($next === null ? __('No upcoming meeting.', 'foreningsplugin') : $next->title() . ' ' . $next->startsAt()->date()) . '</p>';
-            echo '<h2>' . esc_html__('Latest held meeting', 'foreningsplugin') . '</h2>';
-            echo '<p>' . esc_html($last === null ? __('No held meeting.', 'foreningsplugin') : $last->title() . ' ' . $last->startsAt()->date()) . '</p>';
-            echo '<p>' . esc_html(sprintf(
-                /* translators: %d: number of planned meetings */
-                __('Planned meetings: %d', 'foreningsplugin'),
-                $meetings->countWithStatus(MeetingStatus::Planned)
-            )) . '</p>';
-            echo '<p>' . esc_html(sprintf(
-                /* translators: %d: number of open decisions */
-                __('Open decisions: %d', 'foreningsplugin'),
-                WordpressMeetings::record()->openCount()
-            )) . '</p>';
-            echo '<h2>' . esc_html__('Overdue tasks', 'foreningsplugin') . '</h2>';
-            $overdue = array_slice($overview->overdue(WordpressMeetings::record()->actions(), $today), 0, 8);
-
-            if ($overdue === []) {
-                echo '<p>' . esc_html__('No overdue tasks.', 'foreningsplugin') . '</p>';
-            } else {
-                echo '<ul>';
-
-                foreach ($overdue as $item) {
-                    $due = $item->dueOn();
-                    echo '<li>' . esc_html($item->task() . ($due === null ? '' : ' (' . $due->iso() . ')')) . '</li>';
-                }
-
-                echo '</ul>';
-            }
-        }
-
-        if (current_user_can(Capabilities::VIEW_BOARD_DOCUMENTS) || current_user_can(Capabilities::MANAGE_DOCUMENTS)) {
-            $documents = WordpressDocuments::archive()->officerList();
-            usort($documents, static fn ($left, $right): int => $right->id() <=> $left->id());
-            echo '<h2>' . esc_html__('Latest documents', 'foreningsplugin') . '</h2>';
-
-            if ($documents === []) {
-                echo '<p>' . esc_html__('No documents to show.', 'foreningsplugin') . '</p>';
-            } else {
-                echo '<ul>';
-
-                foreach (array_slice($documents, 0, 5) as $document) {
-                    echo '<li>' . esc_html($document->title()) . '</li>';
-                }
-
-                echo '</ul>';
-            }
-        }
-
-        echo '</div>';
+        AssociationOverviewPage::render();
     }
 }

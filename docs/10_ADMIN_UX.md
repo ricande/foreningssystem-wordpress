@@ -24,16 +24,13 @@ Future:
 
 ## Overview
 
-Show association work, not WordPress technical status.
+The Association screen is the officer's working overview. It shows what needs attention, then counts, meetings, the current board, open decisions and tasks, and recent documents. It does not describe whether the plugin is active.
 
-Examples:
-- active members
-- current board
-- next meeting
-- last finalized meeting
-- open decisions
-- overdue action items
-- latest documents
+Needs attention comes before the counts: a meeting in progress, overdue tasks, held meetings whose current minutes are missing, still a draft, or under adjustment, an upcoming board change, and the next planned meeting. A meeting stays in progress from its status, including when the scheduled start is already past. A held meeting is not treated as finalized minutes. Finalized minutes are the latest current finalized revision. Publication is separate.
+
+Each section uses the same capability as its own screen. Member counts and the current board require `view_members`. Meetings, decisions, tasks, and minutes require `view_internal_meetings`. Documents require `view_board_documents` or `manage_documents`. The cards link to Members, Board, Meetings, a specific meeting, or Documents. The overview does not change those records itself.
+
+An association with no members, board, meetings, or documents shows setup links for the steps the current user may perform. Active individual members and active memberships stay separate counts. Current board assignments are today only; a future assignment is an upcoming change. Documents have no created timestamp, so the recent list is the five highest ids. Overdue means an open task with a due date before today.
 
 ## Member flow
 

@@ -1890,3 +1890,110 @@ msgstr "Bekräfta innan revisionen låses."
 
 msgid "Finalized"
 msgstr "Låst"
+
+msgid "Add the association name and details."
+msgstr "Lägg till föreningens namn och uppgifter."
+
+msgid "Open profile"
+msgstr "Öppna profilen"
+
+msgid "Set up your association"
+msgstr "Kom igång med föreningen"
+
+msgid "Add members"
+msgstr "Lägg till medlemmar"
+
+msgid "Record the board"
+msgstr "Registrera styrelsen"
+
+msgid "Plan the first meeting"
+msgstr "Planera det första mötet"
+
+msgid "Add important documents"
+msgstr "Lägg till viktiga dokument"
+
+msgid "The association has no records yet."
+msgstr "Föreningen har inga poster ännu."
+
+msgid "Needs attention"
+msgstr "Behöver uppmärksamhet"
+
+msgid "Nothing needs attention right now."
+msgstr "Inget behöver uppmärksamhet just nu."
+
+msgid "Meeting in progress"
+msgstr "Möte pågår"
+
+msgid "%d overdue task"
+msgid_plural "%d overdue tasks"
+msgstr[0] "%d försenad uppgift"
+msgstr[1] "%d försenade uppgifter"
+
+msgid "View meeting work"
+msgstr "Visa mötesarbetet"
+
+msgid "Review minutes"
+msgstr "Granska protokollet"
+
+msgid "Continue"
+msgstr "Fortsätt"
+
+msgid "%1$s changes to %2$s on %3$s."
+msgstr "%1$s byts till %2$s den %3$s."
+
+msgid "View board"
+msgstr "Visa styrelsen"
+
+msgid "At a glance"
+msgstr "I korthet"
+
+msgid "Open tasks: %d"
+msgstr "Öppna uppgifter: %d"
+
+msgid "Scheduled: %1$s %2$s"
+msgstr "Planerat: %1$s %2$s"
+
+msgid "No meeting is in progress."
+msgstr "Inget möte pågår."
+
+msgid "Plan a meeting"
+msgstr "Planera ett möte"
+
+msgid "Held %s"
+msgstr "Hållet %s"
+
+msgid "Latest finalized minutes"
+msgstr "Senast låsta protokollet"
+
+msgid "Revision %d finalized"
+msgstr "Revision %d är låst"
+
+msgid "Open minutes"
+msgstr "Öppna protokollet"
+
+msgid "No finalized minutes."
+msgstr "Inget låst protokoll."
+
+msgid "No current board assignments."
+msgstr "Inga aktuella styrelseuppdrag."
+
+msgid "Upcoming board changes"
+msgstr "Kommande styrelseändringar"
+
+msgid "Decisions and tasks"
+msgstr "Beslut och uppgifter"
+
+msgid "Unassigned"
+msgstr "Ingen ansvarig"
+
+msgid "View documents"
+msgstr "Visa dokument"
+
+msgid "Minutes draft"
+msgstr "Protokollutkast"
+
+msgid "Minutes finalized"
+msgstr "Protokollet är låst"
+
+msgid "Minutes: awaiting draft"
+msgstr "Protokoll: utkast saknas"
