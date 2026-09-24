@@ -60,6 +60,8 @@ final class Plugin
         add_action('admin_post_assoc_send_minutes_back', [MeetingDetailPage::class, 'sendMinutesBack']);
         add_action('admin_post_assoc_finalize_minutes', [MeetingDetailPage::class, 'finalizeMinutes']);
         add_action('admin_post_assoc_open_minutes_correction', [MeetingDetailPage::class, 'openMinutesCorrection']);
+        add_action('admin_post_assoc_download_minutes_pdf', [MeetingDetailPage::class, 'downloadMinutesPdf']);
+        add_action('admin_post_assoc_print_minutes', [MeetingDetailPage::class, 'printMinutes']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();

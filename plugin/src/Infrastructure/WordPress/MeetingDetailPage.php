@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Meeting\ActionStatus;
 use Foreningssystem\Domain\Meeting\DecisionFollowUp;
@@ -327,6 +328,55 @@ final class MeetingDetailPage
         }
     }
 
+    public static function downloadMinutesPdf(): void
+    {
+        $revisionId = self::queryInteger('revision_id');
+        check_admin_referer('assoc_download_minutes_pdf');
+
+        try {
+            $pdf = WordpressMeetings::pdf();
+            $revision = $pdf->readable($revisionId);
+            $bytes = $pdf->bytes($revisionId);
+        } catch (NotAllowed) {
+            wp_die(esc_html__('Du har inte behörighet att hämta protokollet.', 'foreningsplugin'), '', ['response' => 403]);
+        } catch (\RuntimeException) {
+            wp_die(esc_html__('Protokollet kunde inte hämtas.', 'foreningsplugin'), '', ['response' => 404]);
+        }
+
+        nocache_headers();
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="protokoll-revision-' . $revision->number() . '.pdf"');
+        header('Content-Length: ' . strlen($bytes));
+        header('X-Content-Type-Options: nosniff');
+        echo $bytes;
+        exit;
+    }
+
+    public static function printMinutes(): void
+    {
+        $revisionId = self::queryInteger('revision_id');
+        check_admin_referer('assoc_print_minutes');
+
+        try {
+            $revision = WordpressMeetings::pdf()->readable($revisionId);
+        } catch (NotAllowed) {
+            wp_die(esc_html__('Du har inte behörighet att skriva ut protokollet.', 'foreningsplugin'), '', ['response' => 403]);
+        } catch (\RuntimeException) {
+            wp_die(esc_html__('Protokollet kunde inte hämtas.', 'foreningsplugin'), '', ['response' => 404]);
+        }
+
+        nocache_headers();
+        header('Content-Type: text/html; charset=UTF-8');
+        echo '<!DOCTYPE html><html lang="sv"><head><meta charset="utf-8"><title>' . esc_html(sprintf(
+            /* translators: %d: revision number */
+            __('Protokoll, revision %d', 'foreningsplugin'),
+            $revision->number()
+        )) . '</title>';
+        echo '<style>@page{size:A4;margin:18mm}body{font-family:Georgia,serif;font-size:12pt;line-height:1.4;white-space:pre-wrap;margin:0}</style>';
+        echo '</head><body>' . esc_html($revision->body()) . '</body></html>';
+        exit;
+    }
+
     public static function render(int $meetingId): void
     {
         $meeting = self::meeting($meetingId);
@@ -589,6 +639,27 @@ final class MeetingDetailPage
         if ($draft->state() === \Foreningssystem\Domain\Meeting\RevisionState::Finalized && $canFinalize) {
             self::postForm('assoc_open_minutes_correction', $meetingId, [], __('Skapa rättelse', 'foreningsplugin'));
         }
+
+        if ($draft->state() === \Foreningssystem\Domain\Meeting\RevisionState::Finalized || $canRecord) {
+            self::minutesFileLinks($meetingId, (int) $draft->id());
+        }
+    }
+
+    private static function minutesFileLinks(int $meetingId, int $revisionId): void
+    {
+        $download = wp_nonce_url(add_query_arg([
+            'action' => 'assoc_download_minutes_pdf',
+            'meeting_id' => (string) $meetingId,
+            'revision_id' => (string) $revisionId,
+        ], admin_url('admin-post.php')), 'assoc_download_minutes_pdf');
+        $print = wp_nonce_url(add_query_arg([
+            'action' => 'assoc_print_minutes',
+            'meeting_id' => (string) $meetingId,
+            'revision_id' => (string) $revisionId,
+        ], admin_url('admin-post.php')), 'assoc_print_minutes');
+        echo '<p><a class="button" href="' . esc_url($download) . '">' . esc_html__('Ladda ner PDF', 'foreningsplugin') . '</a> ';
+        echo '<a class="button" href="' . esc_url($print) . '" target="_blank" rel="noopener">' . esc_html__('Utskriftsvy', 'foreningsplugin') . '</a></p>';
+        echo '<p>' . esc_html__('PDF-filen hämtas efter behörighetskontroll och visas inte som en offentlig länk.', 'foreningsplugin') . '</p>';
     }
 
     private static function revisionLabel(\Foreningssystem\Domain\Meeting\RevisionState $state): string
@@ -728,6 +799,13 @@ final class MeetingDetailPage
     private static function integer(string $key): int
     {
         $value = $_POST[$key] ?? 0;
+
+        return is_numeric($value) ? (int) $value : 0;
+    }
+
+    private static function queryInteger(string $key): int
+    {
+        $value = $_GET[$key] ?? 0;
 
         return is_numeric($value) ? (int) $value : 0;
     }

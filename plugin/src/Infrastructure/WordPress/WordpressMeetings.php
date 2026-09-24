@@ -7,6 +7,8 @@ namespace Foreningssystem\Infrastructure\WordPress;
 use Foreningssystem\Application\Meeting\MeetingRecord;
 use Foreningssystem\Application\Meeting\MinutesComposer;
 use Foreningssystem\Application\Meeting\MinutesDrafts;
+use Foreningssystem\Application\Meeting\MinutesPdf;
+use Foreningssystem\Application\Meeting\MinutesPdfDocument;
 use Foreningssystem\Domain\Meeting\MinutesLifecycle;
 use Foreningssystem\Application\Meeting\MeetingService;
 use Foreningssystem\Application\Meeting\MeetingWorkspace;
@@ -163,6 +165,21 @@ final class WordpressMeetings
 
                         throw $error;
                     }
+                }
+            }
+        );
+    }
+
+    public static function pdf(): MinutesPdf
+    {
+        return new MinutesPdf(
+            new WpdbMinutesRepository(),
+            new WpMinutesPdfStore(),
+            new MinutesPdfDocument(),
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return current_user_can($capability);
                 }
             }
         );
