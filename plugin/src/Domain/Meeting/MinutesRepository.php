@@ -18,5 +18,7 @@ interface MinutesRepository
 
     public function findRevision(int $id): ?MinutesRevision;
 
-    public function draftForMeeting(int $meetingId): ?MinutesRevision;
+    public function openForMeeting(int $meetingId): ?MinutesRevision;
+
+    public function latestForMeeting(int $meetingId): ?MinutesRevision;
 }

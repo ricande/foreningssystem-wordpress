@@ -62,19 +62,23 @@ final class WpdbMinutesRepository implements MinutesRepository
     {
         global $wpdb;
 
-        $inserted = $wpdb->insert(
-            $this->revisions(),
-            [
-                'minutes_id' => $revision->minutesId(),
-                'meeting_id' => $revision->meetingId(),
-                'revision_number' => $revision->number(),
-                'state' => $revision->state()->value,
-                'body' => $revision->body(),
-                'payload' => $revision->payload(),
-                'hand_edited' => $revision->handEdited() ? 1 : 0,
-            ],
-            ['%d', '%d', '%d', '%s', '%s', '%s', '%d']
-        );
+        $data = [
+            'minutes_id' => $revision->minutesId(),
+            'meeting_id' => $revision->meetingId(),
+            'revision_number' => $revision->number(),
+            'state' => $revision->state()->value,
+            'body' => $revision->body(),
+            'payload' => $revision->payload(),
+            'hand_edited' => $revision->handEdited() ? 1 : 0,
+        ];
+        $format = ['%d', '%d', '%d', '%s', '%s', '%s', '%d'];
+
+        if ($revision->correctsRevisionId() !== null) {
+            $data['corrects_revision_id'] = $revision->correctsRevisionId();
+            $format[] = '%d';
+        }
+
+        $inserted = $wpdb->insert($this->revisions(), $data, $format);
 
         if ($inserted === false) {
             throw new \RuntimeException('The minutes draft could not be saved.');
@@ -93,18 +97,26 @@ final class WpdbMinutesRepository implements MinutesRepository
             throw new \RuntimeException('Minutes draft was not saved.');
         }
 
-        $updated = $wpdb->update(
-            $this->revisions(),
-            [
-                'body' => $revision->body(),
-                'payload' => $revision->payload(),
-                'hand_edited' => $revision->handEdited() ? 1 : 0,
-                'state' => $revision->state()->value,
-            ],
-            ['id' => $id],
-            ['%s', '%s', '%d', '%s'],
-            ['%d']
-        );
+        $table = $this->revisions();
+        $corrects = $revision->correctsRevisionId();
+        $superseded = $revision->supersededBy();
+        $sql = "UPDATE {$table} SET body = %s, payload = %s, hand_edited = %d, state = %s, corrects_revision_id = "
+            . ($corrects === null ? 'NULL' : '%d')
+            . ', superseded_by = '
+            . ($superseded === null ? 'NULL' : '%d')
+            . ' WHERE id = %d';
+        $args = [$revision->body(), $revision->payload(), $revision->handEdited() ? 1 : 0, $revision->state()->value];
+
+        if ($corrects !== null) {
+            $args[] = $corrects;
+        }
+
+        if ($superseded !== null) {
+            $args[] = $superseded;
+        }
+
+        $args[] = $id;
+        $updated = $wpdb->query($wpdb->prepare($sql, ...$args));
 
         if ($updated === false) {
             throw new \RuntimeException('The minutes draft could not be saved.');
@@ -120,14 +132,27 @@ final class WpdbMinutesRepository implements MinutesRepository
         return is_array($row) ? $this->map($row) : null;
     }
 
-    public function draftForMeeting(int $meetingId): ?MinutesRevision
+    public function openForMeeting(int $meetingId): ?MinutesRevision
     {
         global $wpdb;
 
         $row = $wpdb->get_row($wpdb->prepare(
-            'SELECT * FROM ' . $this->revisions() . ' WHERE meeting_id = %d AND state = %s ORDER BY revision_number DESC LIMIT 1',
+            'SELECT * FROM ' . $this->revisions() . ' WHERE meeting_id = %d AND state IN (%s, %s) ORDER BY revision_number DESC LIMIT 1',
             $meetingId,
-            RevisionState::Draft->value
+            RevisionState::Draft->value,
+            RevisionState::UnderAdjustment->value
+        ), ARRAY_A);
+
+        return is_array($row) ? $this->map($row) : null;
+    }
+
+    public function latestForMeeting(int $meetingId): ?MinutesRevision
+    {
+        global $wpdb;
+
+        $row = $wpdb->get_row($wpdb->prepare(
+            'SELECT * FROM ' . $this->revisions() . ' WHERE meeting_id = %d ORDER BY revision_number DESC LIMIT 1',
+            $meetingId
         ), ARRAY_A);
 
         return is_array($row) ? $this->map($row) : null;
@@ -146,7 +171,9 @@ final class WpdbMinutesRepository implements MinutesRepository
             RevisionState::from((string) $row['state']),
             (string) $row['body'],
             (string) $row['payload'],
-            (int) $row['hand_edited'] === 1
+            (int) $row['hand_edited'] === 1,
+            is_numeric($row['corrects_revision_id']) && (int) $row['corrects_revision_id'] > 0 ? (int) $row['corrects_revision_id'] : null,
+            is_numeric($row['superseded_by']) && (int) $row['superseded_by'] > 0 ? (int) $row['superseded_by'] : null
         );
     }
 }

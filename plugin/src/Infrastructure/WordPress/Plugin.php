@@ -56,6 +56,10 @@ final class Plugin
         add_action('admin_post_assoc_create_minutes_draft', [MeetingDetailPage::class, 'createMinutesDraft']);
         add_action('admin_post_assoc_replace_minutes_body', [MeetingDetailPage::class, 'replaceMinutesBody']);
         add_action('admin_post_assoc_regenerate_minutes_draft', [MeetingDetailPage::class, 'regenerateMinutesDraft']);
+        add_action('admin_post_assoc_submit_minutes', [MeetingDetailPage::class, 'submitMinutes']);
+        add_action('admin_post_assoc_send_minutes_back', [MeetingDetailPage::class, 'sendMinutesBack']);
+        add_action('admin_post_assoc_finalize_minutes', [MeetingDetailPage::class, 'finalizeMinutes']);
+        add_action('admin_post_assoc_open_minutes_correction', [MeetingDetailPage::class, 'openMinutesCorrection']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();

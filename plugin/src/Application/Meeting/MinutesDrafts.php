@@ -17,6 +17,7 @@ use Foreningssystem\Domain\Meeting\MeetingNoteRepository;
 use Foreningssystem\Domain\Meeting\MeetingRepository;
 use Foreningssystem\Domain\Meeting\MeetingRuleException;
 use Foreningssystem\Domain\Meeting\MeetingStatus;
+use Foreningssystem\Domain\Meeting\MinutesLifecycle;
 use Foreningssystem\Domain\Meeting\MinutesRepository;
 use Foreningssystem\Domain\Meeting\MinutesRevision;
 use Foreningssystem\Domain\Meeting\ParticipantRepository;
@@ -36,6 +37,7 @@ final class MinutesDrafts
         private readonly ActionItemRepository $actionItems,
         private readonly MinutesRepository $minutes,
         private readonly MinutesComposer $composer,
+        private readonly MinutesLifecycle $lifecycle,
         private readonly AgendaOrder $order,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
@@ -79,14 +81,26 @@ final class MinutesDrafts
         $this->require(Capabilities::VIEW_INTERNAL_MEETINGS);
         $this->requireMeeting($meetingId);
 
-        return $this->minutes->draftForMeeting($meetingId);
+        return $this->minutes->latestForMeeting($meetingId);
+    }
+
+    public function revision(int $revisionId): MinutesRevision
+    {
+        $this->require(Capabilities::VIEW_INTERNAL_MEETINGS);
+        $revision = $this->minutes->findRevision($revisionId);
+
+        if (! $revision instanceof MinutesRevision) {
+            throw new \RuntimeException('Minutes revision was not found.');
+        }
+
+        return $revision;
     }
 
     public function isStale(int $meetingId): bool
     {
         $draft = $this->current($meetingId);
 
-        if (! $draft instanceof MinutesRevision) {
+        if (! $draft instanceof MinutesRevision || $draft->state() === RevisionState::Finalized) {
             return false;
         }
 
@@ -96,7 +110,7 @@ final class MinutesDrafts
     public function replaceBody(int $revisionId, string $body): void
     {
         $this->requireRecord();
-        $draft = $this->requireDraft($revisionId);
+        $draft = $this->requireEditable($revisionId);
 
         $this->transaction->run(function () use ($draft, $body): void {
             $this->minutes->saveRevision($draft->withBody($body));
@@ -106,7 +120,7 @@ final class MinutesDrafts
     public function regenerate(int $revisionId, bool $confirmed): void
     {
         $this->requireRecord();
-        $draft = $this->requireDraft($revisionId);
+        $draft = $this->requireEditable($revisionId);
 
         if ($draft->handEdited() && ! $confirmed) {
             throw new MeetingRuleException('Confirm before replacing a hand-edited draft.');
@@ -117,6 +131,77 @@ final class MinutesDrafts
         $this->transaction->run(function () use ($draft, $composition): void {
             $this->minutes->saveRevision($draft->regenerated($composition->body(), $composition->payload()));
         });
+    }
+
+    public function submit(int $revisionId): void
+    {
+        $this->requireRecord();
+        $draft = $this->requireEditable($revisionId);
+
+        $this->transaction->run(function () use ($draft): void {
+            $this->minutes->saveRevision($this->lifecycle->submit($draft));
+        });
+    }
+
+    public function sendBack(int $revisionId): void
+    {
+        $this->requireRecord();
+        $draft = $this->requireEditable($revisionId);
+
+        $this->transaction->run(function () use ($draft): void {
+            $this->minutes->saveRevision($this->lifecycle->sendBack($draft));
+        });
+    }
+
+    public function finalize(int $revisionId): void
+    {
+        $this->require(Capabilities::FINALIZE_MINUTES);
+        $revision = $this->requireRevision($revisionId);
+
+        $this->transaction->run(function () use ($revision): void {
+            $finalized = $this->lifecycle->finalize($revision);
+            $this->minutes->saveRevision($finalized);
+            $corrects = $finalized->correctsRevisionId();
+
+            if ($corrects === null) {
+                return;
+            }
+
+            $previous = $this->minutes->findRevision($corrects);
+
+            if (! $previous instanceof MinutesRevision) {
+                throw new \RuntimeException('The corrected revision was not found.');
+            }
+
+            $this->minutes->saveRevision($this->lifecycle->supersede($previous, $finalized));
+        });
+    }
+
+    public function openCorrection(int $meetingId): int
+    {
+        $this->require(Capabilities::FINALIZE_MINUTES);
+        $this->requireHeld($meetingId);
+        $this->requireNoOpenRevision($meetingId);
+        $source = $this->requireCurrentFinalized($meetingId);
+
+        $saved = $this->transaction->run(function () use ($meetingId, $source): MinutesRevision {
+            $this->requireNoOpenRevision($meetingId);
+            $current = $this->minutes->findRevision((int) $source->id());
+
+            if (! $current instanceof MinutesRevision) {
+                throw new \RuntimeException('Minutes revision was not found.');
+            }
+
+            return $this->minutes->addRevision($this->lifecycle->correction($current, $this->minutes->nextNumber($meetingId)));
+        });
+
+        $id = $saved->id();
+
+        if ($id === null) {
+            throw new \RuntimeException('The correction was not saved.');
+        }
+
+        return $id;
     }
 
     private function composition(Meeting $meeting): MinutesComposition
@@ -215,17 +300,46 @@ final class MinutesDrafts
 
     private function requireNoDraft(int $meetingId): void
     {
-        if ($this->minutes->draftForMeeting($meetingId) instanceof MinutesRevision) {
-            throw new MeetingRuleException('This meeting already has a draft.');
+        if ($this->minutes->latestForMeeting($meetingId) instanceof MinutesRevision) {
+            throw new MeetingRuleException('This meeting already has minutes.');
         }
     }
 
-    private function requireDraft(int $revisionId): MinutesRevision
+    private function requireNoOpenRevision(int $meetingId): void
+    {
+        if ($this->minutes->openForMeeting($meetingId) instanceof MinutesRevision) {
+            throw new MeetingRuleException('This meeting already has an open revision.');
+        }
+    }
+
+    private function requireCurrentFinalized(int $meetingId): MinutesRevision
+    {
+        $revision = $this->minutes->latestForMeeting($meetingId);
+
+        if (! $revision instanceof MinutesRevision || $revision->state() !== RevisionState::Finalized || $revision->supersededBy() !== null) {
+            throw new MeetingRuleException('A correction starts from the current finalized revision.');
+        }
+
+        return $revision;
+    }
+
+    private function requireEditable(int $revisionId): MinutesRevision
+    {
+        $revision = $this->requireRevision($revisionId);
+
+        if ($revision->state() !== RevisionState::Draft && $revision->state() !== RevisionState::UnderAdjustment) {
+            throw new MeetingRuleException('A finalized revision cannot be edited.');
+        }
+
+        return $revision;
+    }
+
+    private function requireRevision(int $revisionId): MinutesRevision
     {
         $revision = $this->minutes->findRevision($revisionId);
 
-        if (! $revision instanceof MinutesRevision || $revision->state() !== RevisionState::Draft) {
-            throw new \RuntimeException('Minutes draft was not found.');
+        if (! $revision instanceof MinutesRevision) {
+            throw new \RuntimeException('Minutes revision was not found.');
         }
 
         return $revision;

@@ -6,6 +6,7 @@ namespace Foreningssystem\Tests;
 
 use Foreningssystem\Application\Meeting\MinutesComposer;
 use Foreningssystem\Application\Meeting\MinutesDrafts;
+use Foreningssystem\Domain\Meeting\MinutesLifecycle;
 use Foreningssystem\Application\Meeting\MeetingService;
 use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\NotAllowed;
@@ -139,6 +140,100 @@ final class MinutesDraftTest extends TestCase
         self::assertSame(MeetingStatus::Held, $this->meetingStatus($meetings, $meetingId));
     }
 
+    public function test_finalizing_locks_the_text_and_a_correction_is_a_new_revision(): void
+    {
+        [$meetings, $drafts, $people, $participants, $agenda, $notes, $decisions, $actions] = $this->world([
+            Capabilities::RECORD_MEETING,
+            Capabilities::MANAGE_MEETINGS,
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+            Capabilities::FINALIZE_MINUTES,
+        ]);
+        $personId = (int) $people->add(new Person(null, 'Ada', 'Lovelace', 'ada@example.test', PersonStatus::Known, null))->id();
+        $meetingId = $meetings->schedule(1, 'Styrelsemöte', MeetingMoment::fromLocal('2024-05-02 18:00'), 'Lokalen');
+        $participants->add(new Participant(null, $meetingId, $personId, Presence::Present, MeetingDuty::Chair));
+        $itemId = (int) $agenda->add(new AgendaItem(null, $meetingId, 1, 'Inköp', ''))->id();
+        $notes->add(new MeetingNote(null, $meetingId, $itemId, 'Tre offerter granskades.', true));
+        $decision = $decisions->add(new Decision(null, $meetingId, $itemId, 'Föreningen köper modell X.', null, null, DecisionFollowUp::Open));
+        $actions->add(new ActionItem(null, $meetingId, $itemId, 'Ring kommunen.', null, null, ActionStatus::Open));
+        $meetings->markHeld($meetingId);
+        $draftId = $drafts->create($meetingId);
+
+        try {
+            $drafts->finalize($draftId);
+            self::fail('A draft should be adjusted before it is finalized.');
+        } catch (MeetingRuleException) {
+        }
+
+        $drafts->submit($draftId);
+        self::assertSame(RevisionState::UnderAdjustment, $drafts->current($meetingId)?->state());
+        $drafts->sendBack($draftId);
+        self::assertSame(RevisionState::Draft, $drafts->current($meetingId)?->state());
+        $drafts->submit($draftId);
+        $drafts->finalize($draftId);
+        $locked = $drafts->current($meetingId);
+        self::assertNotNull($locked);
+        self::assertSame(RevisionState::Finalized, $locked->state());
+        self::assertNull($locked->supersededBy());
+        $lockedBody = $locked->body();
+
+        $decisions->save($decision->revised('Föreningen köper modell Y.', null, null));
+        self::assertSame($lockedBody, $drafts->current($meetingId)?->body());
+        self::assertFalse($drafts->isStale($meetingId));
+
+        try {
+            $drafts->replaceBody($draftId, 'Tyst ändring.');
+            self::fail('A finalized revision should not accept a new body.');
+        } catch (MeetingRuleException) {
+        }
+
+        try {
+            $drafts->regenerate($draftId, true);
+            self::fail('A finalized revision should not be regenerated.');
+        } catch (MeetingRuleException) {
+        }
+
+        self::assertSame($lockedBody, $drafts->revision($draftId)->body());
+        $correctionId = $drafts->openCorrection($meetingId);
+        $correction = $drafts->current($meetingId);
+        self::assertNotNull($correction);
+        self::assertSame($correctionId, $correction->id());
+        self::assertSame(2, $correction->number());
+        self::assertSame(RevisionState::Draft, $correction->state());
+        self::assertSame($draftId, $correction->correctsRevisionId());
+        self::assertSame($lockedBody, $correction->body());
+        self::assertStringContainsString('Föreningen köper modell X.', $correction->body());
+        self::assertNull($drafts->revision($draftId)->supersededBy());
+
+        $drafts->submit($correctionId);
+        $drafts->finalize($correctionId);
+        $previous = $drafts->revision($draftId);
+        $latest = $drafts->current($meetingId);
+        self::assertSame($lockedBody, $previous->body());
+        self::assertSame($correctionId, $previous->supersededBy());
+        self::assertSame(RevisionState::Finalized, $previous->state());
+        self::assertNotNull($latest);
+        self::assertSame($correctionId, $latest->id());
+        self::assertSame(RevisionState::Finalized, $latest->state());
+        self::assertNull($latest->supersededBy());
+        self::assertSame($lockedBody, $latest->body());
+    }
+
+    public function test_recording_a_meeting_does_not_allow_finalizing_minutes(): void
+    {
+        [$meetings, $drafts] = $this->world([
+            Capabilities::RECORD_MEETING,
+            Capabilities::MANAGE_MEETINGS,
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+        ]);
+        $meetingId = $meetings->schedule(1, 'Styrelsemöte', MeetingMoment::fromLocal('2024-05-02 18:00'), '');
+        $meetings->markHeld($meetingId);
+        $draftId = $drafts->create($meetingId);
+        $drafts->submit($draftId);
+
+        $this->expectException(NotAllowed::class);
+        $drafts->finalize($draftId);
+    }
+
     public function test_planning_a_meeting_does_not_allow_a_minutes_draft(): void
     {
         [, $drafts] = $this->world([Capabilities::MANAGE_MEETINGS, Capabilities::VIEW_INTERNAL_MEETINGS]);
@@ -205,6 +300,7 @@ final class MinutesDraftTest extends TestCase
                 $actions,
                 new MemoryMinutesRepository(),
                 new MinutesComposer(),
+                new MinutesLifecycle(),
                 new AgendaOrder(),
                 $authorizer,
                 $transaction
@@ -300,12 +396,33 @@ final class MemoryMinutesRepository implements MinutesRepository
         return $this->revisions[$id] ?? null;
     }
 
-    public function draftForMeeting(int $meetingId): ?MinutesRevision
+    public function openForMeeting(int $meetingId): ?MinutesRevision
     {
         $found = null;
 
         foreach ($this->revisions as $revision) {
-            if ($revision->meetingId() === $meetingId && $revision->state() === RevisionState::Draft) {
+            if ($revision->meetingId() !== $meetingId) {
+                continue;
+            }
+
+            if ($revision->state() !== RevisionState::Draft && $revision->state() !== RevisionState::UnderAdjustment) {
+                continue;
+            }
+
+            if ($found === null || $revision->number() > $found->number()) {
+                $found = $revision;
+            }
+        }
+
+        return $found;
+    }
+
+    public function latestForMeeting(int $meetingId): ?MinutesRevision
+    {
+        $found = null;
+
+        foreach ($this->revisions as $revision) {
+            if ($revision->meetingId() === $meetingId && ($found === null || $revision->number() > $found->number())) {
                 $found = $revision;
             }
         }

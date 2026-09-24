@@ -7,6 +7,7 @@ namespace Foreningssystem\Infrastructure\WordPress;
 use Foreningssystem\Application\Meeting\MeetingRecord;
 use Foreningssystem\Application\Meeting\MinutesComposer;
 use Foreningssystem\Application\Meeting\MinutesDrafts;
+use Foreningssystem\Domain\Meeting\MinutesLifecycle;
 use Foreningssystem\Application\Meeting\MeetingService;
 use Foreningssystem\Application\Meeting\MeetingWorkspace;
 use Foreningssystem\Application\People\Authorizer;
@@ -137,6 +138,7 @@ final class WordpressMeetings
             new WpdbActionItemRepository(),
             new WpdbMinutesRepository(),
             new MinutesComposer(),
+            new MinutesLifecycle(),
             new AgendaOrder(),
             new class implements Authorizer {
                 public function allows(string $capability): bool
