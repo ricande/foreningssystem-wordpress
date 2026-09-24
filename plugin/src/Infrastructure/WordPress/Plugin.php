@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Infrastructure\Persistence\MigrationException;
 
 final class Plugin
@@ -29,6 +30,9 @@ final class Plugin
 
         add_action('admin_init', [self::class, 'migrateInAdmin']);
         add_action('admin_menu', [self::class, 'registerAdminMenu']);
+        add_action('admin_post_assoc_register_person', [MembersPage::class, 'registerPerson']);
+        add_action('admin_post_assoc_end_membership', [MembersPage::class, 'endMembership']);
+        add_action('admin_post_assoc_mark_deceased', [MembersPage::class, 'markDeceased']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();
@@ -65,23 +69,39 @@ final class Plugin
         add_menu_page(
             __('Förening', 'foreningsplugin'),
             __('Förening', 'foreningsplugin'),
-            'manage_options',
+            Capabilities::VIEW_MEMBERS,
             'foreningsplugin',
             [self::class, 'renderAdminPage'],
             'dashicons-groups',
             26
         );
+
+        add_submenu_page(
+            'foreningsplugin',
+            __('Medlemmar', 'foreningsplugin'),
+            __('Medlemmar', 'foreningsplugin'),
+            Capabilities::VIEW_MEMBERS,
+            'foreningsplugin-members',
+            [MembersPage::class, 'render']
+        );
     }
 
     public static function renderAdminPage(): void
     {
-        if (! current_user_can('manage_options')) {
+        if (! current_user_can(Capabilities::VIEW_MEMBERS)) {
             return;
         }
+
+        $activeMembers = WordpressPeople::service()->activeMemberCount();
 
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Föreningsplugin', 'foreningsplugin') . '</h1>';
         echo '<p>' . esc_html__('Pluginet är aktivt.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html(sprintf(
+            /* translators: %d: number of active members */
+            __('Aktiva medlemmar: %d', 'foreningsplugin'),
+            $activeMembers
+        )) . '</p>';
         echo '<p>' . esc_html(sprintf(
             /* translators: %d: schema version */
             __('Databasschema: %d', 'foreningsplugin'),
