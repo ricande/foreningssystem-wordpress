@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Domain\Access;
 
+use InvalidArgumentException;
+
 final class RoleBundles
 {
     public const SECRETARY = 'assoc_secretary';
@@ -25,6 +27,17 @@ final class RoleBundles
             self::TREASURER,
             self::BOARD_MEMBER,
         ];
+    }
+
+    public static function auditId(string $role): int
+    {
+        return match ($role) {
+            self::SECRETARY => 1,
+            self::CHAIR => 2,
+            self::TREASURER => 3,
+            self::BOARD_MEMBER => 4,
+            default => throw new InvalidArgumentException('Unknown association role.'),
+        };
     }
 
     /**
