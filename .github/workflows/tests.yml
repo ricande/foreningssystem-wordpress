@@ -1,0 +1,33 @@
+# PHPUnit runs on PHP 8.3, the tested runtime. A lower-version matrix waits until the owner locks the platform floor.
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Check PHP syntax
+        run: find plugin -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: PHPUnit
+        run: vendor/bin/phpunit
+
+  lab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare the lab environment
+        run: cp .env.example .env
+      - name: Install WordPress and activate the plugin
+        run: bash scripts/install.sh
+      - name: Run the lab suite
+        run: bash scripts/test-lab.sh

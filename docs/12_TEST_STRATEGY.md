@@ -62,3 +62,7 @@ Every schema change:
 - is idempotent where intended
 - preserves existing rows
 - handles partial failure safely
+
+## Continuous integration
+
+GitHub Actions runs two jobs. The fast job installs Composer dependencies, checks PHP syntax, and runs PHPUnit on PHP 8.3. The lab job copies `.env.example`, installs WordPress, activates the plugin, and runs `scripts/test-lab.sh`. A matrix for an older PHP or WordPress version waits until that floor is locked.
