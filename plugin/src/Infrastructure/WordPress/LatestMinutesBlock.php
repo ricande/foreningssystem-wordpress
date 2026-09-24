@@ -12,8 +12,8 @@ final class LatestMinutesBlock
     {
         register_block_type('foreningsplugin/latest-minutes', [
             'api_version' => 3,
-            'title' => __('Senaste protokollet', 'foreningsplugin'),
-            'description' => __('Visar den senast publicerade låsta revisionen.', 'foreningsplugin'),
+            'title' => __('Latest minutes', 'foreningsplugin'),
+            'description' => __('Shows the latest published locked revision.', 'foreningsplugin'),
             'category' => 'widgets',
             'icon' => 'media-text',
             'textdomain' => 'foreningsplugin',
@@ -33,7 +33,7 @@ final class LatestMinutesBlock
         $published = WordpressMeetings::publication()->latest();
 
         if (! $published instanceof PublicMinutes) {
-            return '<p class="foreningsplugin-minutes">' . esc_html__('Inget publicerat protokoll.', 'foreningsplugin') . '</p>';
+            return '<p class="foreningsplugin-minutes">' . esc_html__('No published minutes.', 'foreningsplugin') . '</p>';
         }
 
         $meeting = $published->meeting();

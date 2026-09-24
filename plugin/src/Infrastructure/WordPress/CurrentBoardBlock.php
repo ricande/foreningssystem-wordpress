@@ -12,8 +12,8 @@ final class CurrentBoardBlock
     {
         register_block_type('foreningsplugin/current-board', [
             'api_version' => 3,
-            'title' => __('Aktuell styrelse', 'foreningsplugin'),
-            'description' => __('Visar namn, uppdrag och offentlig kontakt för den aktuella styrelsen.', 'foreningsplugin'),
+            'title' => __('Current board', 'foreningsplugin'),
+            'description' => __('Shows the name, role, and public contact for the current board.', 'foreningsplugin'),
             'category' => 'widgets',
             'icon' => 'groups',
             'textdomain' => 'foreningsplugin',
@@ -33,7 +33,7 @@ final class CurrentBoardBlock
         $seats = WordpressBoard::service()->currentPublic(AssociationDate::fromIso(wp_date('Y-m-d')));
 
         if ($seats === []) {
-            return '<p class="foreningsplugin-board">' . esc_html__('Ingen aktuell styrelse.', 'foreningsplugin') . '</p>';
+            return '<p class="foreningsplugin-board">' . esc_html__('No current board.', 'foreningsplugin') . '</p>';
         }
 
         $html = '<ul class="foreningsplugin-board">';

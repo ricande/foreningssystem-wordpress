@@ -25,6 +25,8 @@ A use case receives already-authorized input or checks an authorization port. Te
 
 ADR 0008 proposes PHP 8.2 and WordPress 6.7, and that proposal is not approved. The plugin header follows the tested lab runtime, PHP 8.3 and WordPress 7.1, until the owner locks a lower floor.
 
+Source strings are English. `languages/foreningsplugin-sv_SE.mo` supplies Swedish. PDF headings and the print document language are chosen at the WordPress boundary from the active locale. Domain code does not call the translation functions.
+
 ## Admin experience
 
 Use the WordPress admin menu from `docs/10_ADMIN_UX.md`: Overview, Members, Board, Meetings, Decisions, Documents, Settings.

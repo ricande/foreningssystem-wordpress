@@ -13,8 +13,8 @@ final class PublicDocumentsBlock
     {
         register_block_type('foreningsplugin/documents', [
             'api_version' => 3,
-            'title' => __('Dokumentarkiv', 'foreningsplugin'),
-            'description' => __('Visar offentliga dokument. Hämtningen går via en kontroll.', 'foreningsplugin'),
+            'title' => __('Document archive', 'foreningsplugin'),
+            'description' => __('Shows public documents. The download goes through a check.', 'foreningsplugin'),
             'category' => 'widgets',
             'icon' => 'media-document',
             'textdomain' => 'foreningsplugin',
@@ -34,7 +34,7 @@ final class PublicDocumentsBlock
         $documents = WordpressDocuments::archive()->publicList();
 
         if ($documents === []) {
-            return '<p class="foreningsplugin-documents">' . esc_html__('Inga offentliga dokument.', 'foreningsplugin') . '</p>';
+            return '<p class="foreningsplugin-documents">' . esc_html__('No public documents.', 'foreningsplugin') . '</p>';
         }
 
         $html = '<ul class="foreningsplugin-documents">';

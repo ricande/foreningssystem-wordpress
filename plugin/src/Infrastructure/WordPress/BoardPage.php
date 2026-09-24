@@ -53,7 +53,7 @@ final class BoardPage
     public static function render(): void
     {
         if (! current_user_can(Capabilities::VIEW_MEMBERS)) {
-            wp_die(esc_html__('Du har inte behörighet att se styrelsen.', 'foreningsplugin'));
+            wp_die(esc_html__('You do not have permission to view the board.', 'foreningsplugin'));
         }
 
         $today = AssociationDate::fromIso(wp_date('Y-m-d'));
@@ -62,18 +62,18 @@ final class BoardPage
         $posts = $board->history($today);
 
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('Styrelse', 'foreningsplugin') . '</h1>';
-        echo '<p>' . esc_html__('Ett uppdrag kräver ett medlemskap som täcker hela perioden. Revisor och valberedning följer samma regel. En avslutad rad tas inte bort.', 'foreningsplugin') . '</p>';
+        echo '<h1>' . esc_html__('Board', 'foreningsplugin') . '</h1>';
+        echo '<p>' . esc_html__('An assignment requires a membership that covers the whole period. The auditor and the election committee follow the same rule. A closed row is not deleted.', 'foreningsplugin') . '</p>';
         self::notice();
 
         if ($canEdit) {
-            echo '<h2>' . esc_html__('Nytt uppdrag', 'foreningsplugin') . '</h2>';
-            echo '<p>' . esc_html__('Om rollen bara kan ha en innehavare avslutas det öppna uppdraget dagen före det nya startdatumet.', 'foreningsplugin') . '</p>';
+            echo '<h2>' . esc_html__('New assignment', 'foreningsplugin') . '</h2>';
+            echo '<p>' . esc_html__('If the role can have only one holder, the open assignment ends the day before the new start date.', 'foreningsplugin') . '</p>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_place_assignment">';
             wp_nonce_field('assoc_place_assignment');
             echo '<p><label>' . esc_html__('Person', 'foreningsplugin') . ' <select name="person_id" required>';
-            echo '<option value="">' . esc_html__('Välj person', 'foreningsplugin') . '</option>';
+            echo '<option value="">' . esc_html__('Choose person', 'foreningsplugin') . '</option>';
 
             foreach (WordpressPeople::service()->listPeople() as $record) {
                 $person = $record->person();
@@ -86,8 +86,8 @@ final class BoardPage
             }
 
             echo '</select></label></p>';
-            echo '<p><label>' . esc_html__('Roll', 'foreningsplugin') . ' <select name="role_id" required>';
-            echo '<option value="">' . esc_html__('Välj roll', 'foreningsplugin') . '</option>';
+            echo '<p><label>' . esc_html__('Role', 'foreningsplugin') . ' <select name="role_id" required>';
+            echo '<option value="">' . esc_html__('Choose role', 'foreningsplugin') . '</option>';
 
             foreach ($board->roles() as $role) {
                 if ($role->id() === null) {
@@ -98,29 +98,29 @@ final class BoardPage
             }
 
             echo '</select></label></p>';
-            self::field('started_on', __('Startdatum', 'foreningsplugin'), 'date', true);
-            self::field('ended_on', __('Slutdatum', 'foreningsplugin'), 'date', false);
-            self::field('public_contact', __('Publik kontakt', 'foreningsplugin'), 'text', false);
-            self::field('term_label', __('Mandatperiod', 'foreningsplugin'), 'text', false);
-            submit_button(__('Spara uppdrag', 'foreningsplugin'));
+            self::field('started_on', __('Start date', 'foreningsplugin'), 'date', true);
+            self::field('ended_on', __('End date', 'foreningsplugin'), 'date', false);
+            self::field('public_contact', __('Public contact', 'foreningsplugin'), 'text', false);
+            self::field('term_label', __('Term', 'foreningsplugin'), 'text', false);
+            submit_button(__('Save assignment', 'foreningsplugin'));
             echo '</form>';
         }
 
-        echo '<h2>' . esc_html__('Uppdrag', 'foreningsplugin') . '</h2>';
+        echo '<h2>' . esc_html__('Assignment', 'foreningsplugin') . '</h2>';
         echo '<table class="widefat striped"><thead><tr>';
 
-        foreach ([__('Roll', 'foreningsplugin'), __('Person', 'foreningsplugin'), __('Period', 'foreningsplugin'), __('Publik kontakt', 'foreningsplugin'), __('Idag', 'foreningsplugin')] as $heading) {
+        foreach ([__('Role', 'foreningsplugin'), __('Person', 'foreningsplugin'), __('Period', 'foreningsplugin'), __('Public contact', 'foreningsplugin'), __('Today', 'foreningsplugin')] as $heading) {
             echo '<th>' . esc_html($heading) . '</th>';
         }
 
         if ($canEdit) {
-            echo '<th>' . esc_html__('Åtgärd', 'foreningsplugin') . '</th>';
+            echo '<th>' . esc_html__('Action', 'foreningsplugin') . '</th>';
         }
 
         echo '</tr></thead><tbody>';
 
         if ($posts === []) {
-            echo '<tr><td colspan="6">' . esc_html__('Inga uppdrag ännu.', 'foreningsplugin') . '</td></tr>';
+            echo '<tr><td colspan="6">' . esc_html__('No assignments yet.', 'foreningsplugin') . '</td></tr>';
         }
 
         foreach ($posts as $post) {
@@ -136,7 +136,7 @@ final class BoardPage
             echo '<td>' . esc_html($post->personName()) . '</td>';
             echo '<td>' . esc_html($period) . '</td>';
             echo '<td>' . esc_html($assignment->publicContact()) . '</td>';
-            echo '<td>' . esc_html($post->current() ? __('Ja', 'foreningsplugin') : __('Nej', 'foreningsplugin')) . '</td>';
+            echo '<td>' . esc_html($post->current() ? __('Yes', 'foreningsplugin') : __('No', 'foreningsplugin')) . '</td>';
 
             if ($canEdit) {
                 echo '<td>';
@@ -147,7 +147,7 @@ final class BoardPage
                     echo '<input type="hidden" name="assignment_id" value="' . esc_attr((string) $assignment->id()) . '">';
                     wp_nonce_field('assoc_end_assignment');
                     echo '<input type="date" name="ended_on" required> ';
-                    submit_button(__('Avsluta uppdrag', 'foreningsplugin'), 'secondary', 'submit', false);
+                    submit_button(__('End assignment', 'foreningsplugin'), 'secondary', 'submit', false);
                     echo '</form>';
                 }
 
@@ -163,7 +163,7 @@ final class BoardPage
     private static function guard(string $nonce): void
     {
         if (! current_user_can(Capabilities::MANAGE_BOARD)) {
-            wp_die(esc_html__('Du har inte behörighet att ändra styrelsen.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to change the board.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -194,15 +194,15 @@ final class BoardPage
     {
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
         $messages = [
-            'saved' => __('Uppdraget är sparat.', 'foreningsplugin'),
-            'replaced' => __('Uppdraget är sparat. Den tidigare innehavaren avslutades dagen före, och den raden finns kvar.', 'foreningsplugin'),
-            'ended' => __('Uppdraget är avslutat. Raden finns kvar.', 'foreningsplugin'),
-            'uncovered' => __('Medlemskapet täcker inte hela uppdraget.', 'foreningsplugin'),
-            'overlap' => __('Rollen har redan en innehavare under de datumen.', 'foreningsplugin'),
-            'already_ended' => __('Uppdraget är redan avslutat.', 'foreningsplugin'),
-            'before_start' => __('Uppdraget kan inte avslutas före startdatumet.', 'foreningsplugin'),
-            'deceased' => __('En avliden person kan inte ha ett öppet uppdrag.', 'foreningsplugin'),
-            'invalid' => __('Kontrollera uppgifterna och försök igen.', 'foreningsplugin'),
+            'saved' => __('The assignment is saved.', 'foreningsplugin'),
+            'replaced' => __('The assignment is saved. The previous holder ended the day before, and that row remains.', 'foreningsplugin'),
+            'ended' => __('The assignment is ended. The row remains.', 'foreningsplugin'),
+            'uncovered' => __('The membership does not cover the whole assignment.', 'foreningsplugin'),
+            'overlap' => __('The role already has a holder on those dates.', 'foreningsplugin'),
+            'already_ended' => __('The assignment is already ended.', 'foreningsplugin'),
+            'before_start' => __('The assignment cannot end before the start date.', 'foreningsplugin'),
+            'deceased' => __('A deceased person cannot have an open assignment.', 'foreningsplugin'),
+            'invalid' => __('Check the details and try again.', 'foreningsplugin'),
         ];
 
         if (! isset($messages[$notice])) {
@@ -216,12 +216,12 @@ final class BoardPage
     private static function roleLabel(string $slug, string $stored): string
     {
         return match ($slug) {
-            'chair' => __('Ordförande', 'foreningsplugin'),
-            'treasurer' => __('Kassör', 'foreningsplugin'),
-            'secretary' => __('Sekreterare', 'foreningsplugin'),
-            'alternate' => __('Suppleant', 'foreningsplugin'),
-            'auditor' => __('Revisor', 'foreningsplugin'),
-            'election_committee' => __('Valberedning', 'foreningsplugin'),
+            'chair' => __('Chair', 'foreningsplugin'),
+            'treasurer' => __('Treasurer', 'foreningsplugin'),
+            'secretary' => __('Secretary', 'foreningsplugin'),
+            'alternate' => __('Alternate', 'foreningsplugin'),
+            'auditor' => __('Auditor', 'foreningsplugin'),
+            'election_committee' => __('Election committee', 'foreningsplugin'),
             default => $stored,
         };
     }

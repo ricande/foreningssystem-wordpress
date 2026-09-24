@@ -27,20 +27,20 @@ final class PrivateStorageWarning
         }
 
         echo '<div class="notice notice-warning"><p>' . esc_html__(
-            'Skyddade föreningsfiler ligger under webbplatsens publika filkatalog. Hämtning går via en behörighetskontroll, men en besökare som kan gissa filsökvägen kan läsa filen direkt om webbservern inte blockerar katalogen. En .htaccess-fil kan stoppa det i Apache. Nginx läser inte den filen. Lägg katalogen utanför webbroten med FORENINGSPLUGIN_PRIVATE_DIR, eller blockera wp-content/uploads/assoc-private i webbservern.',
+            'Protected association files are inside the public web root. Downloads check authorization, but a visitor who can guess the file address can read the file directly unless the web server blocks the directory. An .htaccess file can stop that on Apache. Nginx does not read that file. Put the directory outside the web root with FORENINGSPLUGIN_PRIVATE_DIR, or block wp-content/uploads/assoc-private in the web server.',
             'foreningsplugin'
         ) . '</p>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_ack_private_storage">';
         wp_nonce_field('assoc_ack_private_storage');
-        echo '<p><button type="submit" class="button">' . esc_html__('Webbservern blockerar katalogen', 'foreningsplugin') . '</button></p>';
+        echo '<p><button type="submit" class="button">' . esc_html__('The web server blocks the directory', 'foreningsplugin') . '</button></p>';
         echo '</form></div>';
     }
 
     public static function acknowledge(): void
     {
         if (! current_user_can(Capabilities::MANAGE_ASSOCIATION)) {
-            wp_die(esc_html__('Du har inte behörighet att ändra den här inställningen.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You are not allowed to change this setting.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer('assoc_ack_private_storage');
@@ -60,7 +60,7 @@ final class PrivateStorageWarning
         }
 
         $tests['direct']['foreningsplugin_private_files'] = [
-            'label' => __('Skyddade föreningsfiler', 'foreningsplugin'),
+            'label' => __('Protected association files', 'foreningsplugin'),
             'test' => [self::class, 'siteStatus'],
         ];
 
@@ -78,16 +78,16 @@ final class PrivateStorageWarning
 
         return [
             'label' => $good
-                ? __('Skyddade föreningsfiler är placerade eller bekräftade.', 'foreningsplugin')
-                : __('Skyddade föreningsfiler ligger under webbroten.', 'foreningsplugin'),
+                ? __('Protected association files are placed or confirmed.', 'foreningsplugin')
+                : __('Protected association files are inside the web root.', 'foreningsplugin'),
             'status' => $good ? 'good' : 'recommended',
             'badge' => [
-                'label' => __('Säkerhet', 'foreningsplugin'),
+                'label' => __('Security', 'foreningsplugin'),
                 'color' => 'blue',
             ],
             'description' => '<p>' . esc_html($inside
-                ? __('Filerna ligger i wp-content/uploads/assoc-private. En .htaccess-fil gäller Apache när servern tillåter den. Nginx läser inte den filen, så direkt åtkomst måste blockeras i serverkonfigurationen eller genom att flytta katalogen utanför webbroten.', 'foreningsplugin')
-                : __('Filerna ligger utanför WordPress webbrot. Hämtning går fortfarande via behörighetskontrollen.', 'foreningsplugin')) . '</p>',
+                ? __('The files are in wp-content/uploads/assoc-private. An .htaccess file applies to Apache when the server allows it. Nginx does not read that file, so direct access has to be blocked in the server configuration or by moving the directory outside the web root.', 'foreningsplugin')
+                : __('The files are outside the WordPress web root. Downloads still go through the authorization check.', 'foreningsplugin')) . '</p>',
             'actions' => '',
             'test' => 'foreningsplugin_private_files',
         ];

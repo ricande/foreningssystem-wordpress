@@ -184,7 +184,11 @@ final class WordpressMeetings
                 {
                     return current_user_can($capability);
                 }
-            }
+            },
+            /* translators: %d: revision number */
+            __('Revision %d', 'foreningsplugin'),
+            /* translators: 1: page number, 2: page count */
+            __('Page %1$d / %2$d', 'foreningsplugin')
         );
     }
 

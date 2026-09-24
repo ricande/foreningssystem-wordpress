@@ -39,7 +39,7 @@ final class MeetingsPage
 
             self::redirect('scheduled');
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att planera möten.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (MeetingRuleException | \InvalidArgumentException) {
             self::redirect('invalid');
         }
@@ -53,7 +53,7 @@ final class MeetingsPage
             WordpressMeetings::templates()->create(self::integer('type_id'), self::text('name'));
             self::redirect('template_saved');
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att planera möten.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (MeetingRuleException | \InvalidArgumentException) {
             self::redirect('invalid');
         }
@@ -67,7 +67,7 @@ final class MeetingsPage
             WordpressMeetings::templates()->addHeading(self::integer('template_id'), self::text('title'));
             self::redirect('template_saved');
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att planera möten.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (MeetingRuleException | \InvalidArgumentException) {
             self::redirect('invalid');
         }
@@ -81,7 +81,7 @@ final class MeetingsPage
             WordpressMeetings::templates()->remove(self::integer('template_id'));
             self::redirect('template_removed');
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att planera möten.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (MeetingRuleException | \InvalidArgumentException) {
             self::redirect('invalid');
         }
@@ -114,7 +114,7 @@ final class MeetingsPage
     public static function render(): void
     {
         if (! current_user_can(Capabilities::VIEW_INTERNAL_MEETINGS)) {
-            wp_die(esc_html__('Du har inte behörighet att se möten.', 'foreningsplugin'));
+            wp_die(esc_html__('You do not have permission to view meetings.', 'foreningsplugin'));
         }
 
         $meetingId = isset($_GET['meeting']) ? absint($_GET['meeting']) : 0;
@@ -137,17 +137,17 @@ final class MeetingsPage
         }
 
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('Möten', 'foreningsplugin') . '</h1>';
-        echo '<p>' . esc_html__('Ett hållet möte är inte ett protokoll. Anteckningar är arbetsmaterial tills ett protokoll skapas.', 'foreningsplugin') . '</p>';
+        echo '<h1>' . esc_html__('Meetings', 'foreningsplugin') . '</h1>';
+        echo '<p>' . esc_html__('A held meeting is not minutes. Notes are working material until minutes are created.', 'foreningsplugin') . '</p>';
         self::notice();
 
         if ($canManage) {
-            echo '<h2>' . esc_html__('Nytt möte', 'foreningsplugin') . '</h2>';
+            echo '<h2>' . esc_html__('New meeting', 'foreningsplugin') . '</h2>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_schedule_meeting">';
             wp_nonce_field('assoc_schedule_meeting');
-            echo '<p><label>' . esc_html__('Typ', 'foreningsplugin') . ' <select name="type_id" required>';
-            echo '<option value="">' . esc_html__('Välj typ', 'foreningsplugin') . '</option>';
+            echo '<p><label>' . esc_html__('Type', 'foreningsplugin') . ' <select name="type_id" required>';
+            echo '<option value="">' . esc_html__('Choose type', 'foreningsplugin') . '</option>';
 
             foreach ($types as $type) {
                 echo '<option value="' . esc_attr((string) $type->id()) . '">' . esc_html(self::typeLabel($type)) . '</option>';
@@ -155,8 +155,8 @@ final class MeetingsPage
 
             echo '</select></label></p>';
             $templateService = WordpressMeetings::templates();
-            echo '<p><label>' . esc_html__('Mall', 'foreningsplugin') . ' <select name="template_id">';
-            echo '<option value="0">' . esc_html__('Ingen mall', 'foreningsplugin') . '</option>';
+            echo '<p><label>' . esc_html__('Template', 'foreningsplugin') . ' <select name="template_id">';
+            echo '<option value="0">' . esc_html__('No template', 'foreningsplugin') . '</option>';
 
             foreach ($templateService->all() as $template) {
                 $type = $types[$template->typeId()] ?? null;
@@ -165,31 +165,31 @@ final class MeetingsPage
             }
 
             echo '</select></label></p>';
-            self::field('title', __('Titel', 'foreningsplugin'), 'text', true);
-            self::field('meeting_date', __('Datum', 'foreningsplugin'), 'date', true);
-            self::field('meeting_time', __('Tid', 'foreningsplugin'), 'time', true);
-            self::field('place', __('Plats', 'foreningsplugin'), 'text', false);
-            submit_button(__('Spara möte', 'foreningsplugin'));
+            self::field('title', __('Title', 'foreningsplugin'), 'text', true);
+            self::field('meeting_date', __('Date', 'foreningsplugin'), 'date', true);
+            self::field('meeting_time', __('Time', 'foreningsplugin'), 'time', true);
+            self::field('place', __('Place', 'foreningsplugin'), 'text', false);
+            submit_button(__('Save meeting', 'foreningsplugin'));
             echo '</form>';
             self::templateEditor($types, $templateService);
         }
 
-        echo '<h2>' . esc_html__('Planerade och hållna möten', 'foreningsplugin') . '</h2>';
+        echo '<h2>' . esc_html__('Planned and held meetings', 'foreningsplugin') . '</h2>';
         echo '<table class="widefat striped"><thead><tr>';
 
-        foreach ([__('Möte', 'foreningsplugin'), __('Typ', 'foreningsplugin'), __('Tid', 'foreningsplugin'), __('Plats', 'foreningsplugin'), __('Läge', 'foreningsplugin')] as $heading) {
+        foreach ([__('Meeting', 'foreningsplugin'), __('Type', 'foreningsplugin'), __('Time', 'foreningsplugin'), __('Place', 'foreningsplugin'), __('State', 'foreningsplugin')] as $heading) {
             echo '<th>' . esc_html($heading) . '</th>';
         }
 
         if ($canRecord) {
-            echo '<th>' . esc_html__('Åtgärd', 'foreningsplugin') . '</th>';
+            echo '<th>' . esc_html__('Action', 'foreningsplugin') . '</th>';
         }
 
         echo '</tr></thead><tbody>';
         $meetings = $service->listMeetings();
 
         if ($meetings === []) {
-            echo '<tr><td colspan="6">' . esc_html__('Inga möten ännu.', 'foreningsplugin') . '</td></tr>';
+            echo '<tr><td colspan="6">' . esc_html__('No meetings yet.', 'foreningsplugin') . '</td></tr>';
         }
 
         foreach ($meetings as $meeting) {
@@ -209,11 +209,11 @@ final class MeetingsPage
                 echo '<td>';
 
                 if ($meeting->status() === MeetingStatus::Planned) {
-                    self::transitionForm((int) $meeting->id(), 'assoc_start_meeting', __('Starta mötet', 'foreningsplugin'));
+                    self::transitionForm((int) $meeting->id(), 'assoc_start_meeting', __('Start the meeting', 'foreningsplugin'));
                 }
 
                 if ($meeting->status() === MeetingStatus::Planned || $meeting->status() === MeetingStatus::InProgress) {
-                    self::transitionForm((int) $meeting->id(), 'assoc_mark_meeting_held', __('Markera som hållet', 'foreningsplugin'));
+                    self::transitionForm((int) $meeting->id(), 'assoc_mark_meeting_held', __('Mark as held', 'foreningsplugin'));
                 }
 
                 echo '</td>';
@@ -230,21 +230,21 @@ final class MeetingsPage
      */
     private static function templateEditor(array $types, \Foreningssystem\Application\Meeting\MeetingTemplates $templates): void
     {
-        echo '<h2>' . esc_html__('Mallar', 'foreningsplugin') . '</h2>';
-        echo '<p>' . esc_html__('En mall är en lista med rubriker. Den kopieras in när mötet skapas. En senare ändring av mallen ändrar inte mötet, och mallen innehåller ingen färdig årsmötesdagordning.', 'foreningsplugin') . '</p>';
+        echo '<h2>' . esc_html__('Templates', 'foreningsplugin') . '</h2>';
+        echo '<p>' . esc_html__('A template is a list of headings. It is copied in when the meeting is created. A later change to the template does not change the meeting, and the template does not contain a ready-made annual-meeting agenda.', 'foreningsplugin') . '</p>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_save_meeting_template">';
         wp_nonce_field('assoc_save_meeting_template');
-        echo '<p><label>' . esc_html__('Typ', 'foreningsplugin') . ' <select name="type_id" required>';
-        echo '<option value="">' . esc_html__('Välj typ', 'foreningsplugin') . '</option>';
+        echo '<p><label>' . esc_html__('Type', 'foreningsplugin') . ' <select name="type_id" required>';
+        echo '<option value="">' . esc_html__('Choose type', 'foreningsplugin') . '</option>';
 
         foreach ($types as $type) {
             echo '<option value="' . esc_attr((string) $type->id()) . '">' . esc_html(self::typeLabel($type)) . '</option>';
         }
 
         echo '</select></label></p>';
-        self::field('name', __('Namn', 'foreningsplugin'), 'text', true);
-        submit_button(__('Spara mall', 'foreningsplugin'));
+        self::field('name', __('Name', 'foreningsplugin'), 'text', true);
+        submit_button(__('Save template', 'foreningsplugin'));
         echo '</form>';
 
         foreach ($templates->all() as $template) {
@@ -265,14 +265,14 @@ final class MeetingsPage
             echo '<input type="hidden" name="action" value="assoc_add_template_heading">';
             echo '<input type="hidden" name="template_id" value="' . esc_attr((string) $template->id()) . '">';
             wp_nonce_field('assoc_add_template_heading');
-            self::field('title', __('Rubrik', 'foreningsplugin'), 'text', true);
-            submit_button(__('Lägg till rubrik', 'foreningsplugin'), 'secondary');
+            self::field('title', __('Heading', 'foreningsplugin'), 'text', true);
+            submit_button(__('Add heading', 'foreningsplugin'), 'secondary');
             echo '</form>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_remove_meeting_template">';
             echo '<input type="hidden" name="template_id" value="' . esc_attr((string) $template->id()) . '">';
             wp_nonce_field('assoc_remove_meeting_template');
-            submit_button(__('Ta bort mall', 'foreningsplugin'), 'delete');
+            submit_button(__('Remove template', 'foreningsplugin'), 'delete');
             echo '</form>';
         }
     }
@@ -290,7 +290,7 @@ final class MeetingsPage
     private static function guardManage(string $nonce): void
     {
         if (! current_user_can(Capabilities::MANAGE_MEETINGS)) {
-            wp_die(esc_html__('Du har inte behörighet att planera möten.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -299,7 +299,7 @@ final class MeetingsPage
     private static function guardRecord(string $nonce): void
     {
         if (! current_user_can(Capabilities::RECORD_MEETING) && ! current_user_can(Capabilities::MANAGE_MEETINGS)) {
-            wp_die(esc_html__('Du har inte behörighet att föra mötet.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to record the meeting.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -327,14 +327,14 @@ final class MeetingsPage
     {
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
         $messages = [
-            'scheduled' => __('Mötet är sparat som planerat.', 'foreningsplugin'),
-            'template_saved' => __('Mallen är sparad. Möten som redan skapats ändras inte.', 'foreningsplugin'),
-            'template_removed' => __('Mallen är borttagen. Möten som redan skapats behåller sin dagordning.', 'foreningsplugin'),
-            'started' => __('Mötet pågår.', 'foreningsplugin'),
-            'held' => __('Mötet är markerat som hållet.', 'foreningsplugin'),
-            'not_planned' => __('Bara ett planerat möte kan startas.', 'foreningsplugin'),
-            'already_held' => __('Mötet är redan hållet.', 'foreningsplugin'),
-            'invalid' => __('Kontrollera uppgifterna och försök igen.', 'foreningsplugin'),
+            'scheduled' => __('The meeting is saved as planned.', 'foreningsplugin'),
+            'template_saved' => __('The template is saved. Meetings already created do not change.', 'foreningsplugin'),
+            'template_removed' => __('The template is removed. Meetings already created keep their agenda.', 'foreningsplugin'),
+            'started' => __('The meeting is in progress.', 'foreningsplugin'),
+            'held' => __('The meeting is marked as held.', 'foreningsplugin'),
+            'not_planned' => __('Only a planned meeting can be started.', 'foreningsplugin'),
+            'already_held' => __('The meeting is already held.', 'foreningsplugin'),
+            'invalid' => __('Check the details and try again.', 'foreningsplugin'),
         ];
 
         if (! isset($messages[$notice])) {
@@ -348,11 +348,11 @@ final class MeetingsPage
     private static function typeLabel(MeetingType $type): string
     {
         return match ($type->slug()) {
-            'board_meeting' => __('Styrelsemöte', 'foreningsplugin'),
-            'annual_meeting' => __('Årsmöte', 'foreningsplugin'),
-            'extraordinary_annual_meeting' => __('Extra årsmöte', 'foreningsplugin'),
-            'member_meeting' => __('Medlemsmöte', 'foreningsplugin'),
-            'working_meeting' => __('Arbetsmöte', 'foreningsplugin'),
+            'board_meeting' => __('Board meeting', 'foreningsplugin'),
+            'annual_meeting' => __('Annual meeting', 'foreningsplugin'),
+            'extraordinary_annual_meeting' => __('Extraordinary annual meeting', 'foreningsplugin'),
+            'member_meeting' => __('Member meeting', 'foreningsplugin'),
+            'working_meeting' => __('Working meeting', 'foreningsplugin'),
             default => $type->name(),
         };
     }
@@ -360,9 +360,9 @@ final class MeetingsPage
     private static function statusLabel(MeetingStatus $status): string
     {
         return match ($status) {
-            MeetingStatus::Planned => __('Planerat', 'foreningsplugin'),
-            MeetingStatus::InProgress => __('Pågår', 'foreningsplugin'),
-            MeetingStatus::Held => __('Hållet', 'foreningsplugin'),
+            MeetingStatus::Planned => __('Planned', 'foreningsplugin'),
+            MeetingStatus::InProgress => __('In progress', 'foreningsplugin'),
+            MeetingStatus::Held => __('Held', 'foreningsplugin'),
         };
     }
 

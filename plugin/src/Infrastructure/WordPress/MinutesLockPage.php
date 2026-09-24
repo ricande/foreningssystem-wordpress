@@ -26,7 +26,7 @@ final class MinutesLockPage
             WordpressMinutesLock::update($roles);
             self::redirect('minutes_lock_saved');
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att ändra vem som får låsa protokoll.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to change who may lock minutes.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (InvalidArgumentException) {
             self::redirect('minutes_lock_invalid');
         }
@@ -35,13 +35,13 @@ final class MinutesLockPage
     public static function render(): void
     {
         if (! current_user_can(Capabilities::MANAGE_ASSOCIATION)) {
-            wp_die(esc_html__('Du har inte behörighet att se vem som får låsa protokoll.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to see who may lock minutes.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         $setting = WordpressAccess::load();
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('Låsa protokoll', 'foreningsplugin') . '</h1>';
-        echo '<p>' . esc_html__('Ordföranden får låsa protokoll från början. Föreningen kan ge samma behörighet till en annan roll. Den som för protokoll kan fortfarande skriva utkast. Webbplatsens administratör behåller behörigheten och kan ändra tillbaka.', 'foreningsplugin') . '</p>';
+        echo '<h1>' . esc_html__('Lock minutes', 'foreningsplugin') . '</h1>';
+        echo '<p>' . esc_html__('The chair may lock minutes from the start. The association can give the same permission to another role. The person who records minutes can still write drafts. The site administrator keeps the permission and can change it back.', 'foreningsplugin') . '</p>';
         self::notice();
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_save_minutes_lock">';
@@ -52,14 +52,14 @@ final class MinutesLockPage
             echo '<p><label><input type="checkbox" name="lock_roles[]" value="' . esc_attr($role) . '"' . checked($checked, true, false) . '> ' . esc_html($label) . '</label></p>';
         }
 
-        echo '<p><button type="submit">' . esc_html__('Spara behörighet', 'foreningsplugin') . '</button></p>';
+        echo '<p><button type="submit">' . esc_html__('Save permission', 'foreningsplugin') . '</button></p>';
         echo '</form></div>';
     }
 
     private static function guard(): void
     {
         if (! current_user_can(Capabilities::MANAGE_ASSOCIATION)) {
-            wp_die(esc_html__('Du har inte behörighet att ändra vem som får låsa protokoll.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to change who may lock minutes.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer('assoc_save_minutes_lock');
@@ -79,13 +79,13 @@ final class MinutesLockPage
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
 
         if ($notice === 'minutes_lock_saved') {
-            echo '<div class="notice notice-success"><p>' . esc_html__('Behörigheten att låsa protokoll är sparad.', 'foreningsplugin') . '</p></div>';
+            echo '<div class="notice notice-success"><p>' . esc_html__('The permission to lock minutes is saved.', 'foreningsplugin') . '</p></div>';
 
             return;
         }
 
         if ($notice === 'minutes_lock_invalid') {
-            echo '<div class="notice notice-error"><p>' . esc_html__('Rollen kunde inte sparas.', 'foreningsplugin') . '</p></div>';
+            echo '<div class="notice notice-error"><p>' . esc_html__('The role could not be saved.', 'foreningsplugin') . '</p></div>';
         }
     }
 
@@ -95,10 +95,10 @@ final class MinutesLockPage
     private static function labels(): array
     {
         return [
-            RoleBundles::SECRETARY => __('Sekreterare', 'foreningsplugin'),
-            RoleBundles::CHAIR => __('Ordförande', 'foreningsplugin'),
-            RoleBundles::TREASURER => __('Kassör', 'foreningsplugin'),
-            RoleBundles::BOARD_MEMBER => __('Styrelseledamot', 'foreningsplugin'),
+            RoleBundles::SECRETARY => __('Secretary', 'foreningsplugin'),
+            RoleBundles::CHAIR => __('Chair', 'foreningsplugin'),
+            RoleBundles::TREASURER => __('Treasurer', 'foreningsplugin'),
+            RoleBundles::BOARD_MEMBER => __('Board member', 'foreningsplugin'),
         ];
     }
 }

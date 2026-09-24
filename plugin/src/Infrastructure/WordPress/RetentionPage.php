@@ -21,7 +21,7 @@ final class RetentionPage
             WordpressRetention::save(new RetentionPeriod($years));
             self::redirect(['assoc_notice' => 'retention_saved']);
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att ändra kvarhållningen.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to change the retention period.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (InvalidArgumentException) {
             self::redirect(['assoc_notice' => 'retention_invalid']);
         }
@@ -39,31 +39,31 @@ final class RetentionPage
                 'assoc_audits' => (string) $result->removedAudits(),
             ]);
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att tillämpa kvarhållningen.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to apply the retention.', 'foreningsplugin'), '', ['response' => 403]);
         }
     }
 
     public static function render(): void
     {
         if (! current_user_can(Capabilities::MANAGE_ASSOCIATION)) {
-            wp_die(esc_html__('Du har inte behörighet att se kvarhållningen.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to view the retention.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         $years = WordpressRetention::load()->years();
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('Kvarhållning', 'foreningsplugin') . '</h1>';
-        echo '<p>' . esc_html__('Kontaktuppgifter avidentifieras det här antalet år efter att medlemskapet har avslutats. Granskningshändelser tas bort efter samma tid. Låsta protokoll och signerade skanningar behålls.', 'foreningsplugin') . '</p>';
+        echo '<h1>' . esc_html__('Retention', 'foreningsplugin') . '</h1>';
+        echo '<p>' . esc_html__('Contact details are anonymized this many years after the membership has ended. Audit events are removed after the same time. Locked minutes and signed scans are kept.', 'foreningsplugin') . '</p>';
         self::notice();
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_save_retention">';
         wp_nonce_field('assoc_save_retention');
-        echo '<p><label>' . esc_html__('År', 'foreningsplugin') . ' <input type="number" name="years" min="1" max="100" required value="' . esc_attr((string) $years) . '"></label></p>';
-        echo '<p><button type="submit">' . esc_html__('Spara kvarhållning', 'foreningsplugin') . '</button></p>';
+        echo '<p><label>' . esc_html__('Years', 'foreningsplugin') . ' <input type="number" name="years" min="1" max="100" required value="' . esc_attr((string) $years) . '"></label></p>';
+        echo '<p><button type="submit">' . esc_html__('Save retention', 'foreningsplugin') . '</button></p>';
         echo '</form>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_apply_retention_now">';
         wp_nonce_field('assoc_apply_retention_now');
-        echo '<p><button type="submit">' . esc_html__('Tillämpa nu', 'foreningsplugin') . '</button></p>';
+        echo '<p><button type="submit">' . esc_html__('Apply now', 'foreningsplugin') . '</button></p>';
         echo '</form>';
         echo '</div>';
     }
@@ -71,7 +71,7 @@ final class RetentionPage
     private static function guard(string $nonce): void
     {
         if (! current_user_can(Capabilities::MANAGE_ASSOCIATION)) {
-            wp_die(esc_html__('Du har inte behörighet att ändra kvarhållningen.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to change the retention period.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -93,13 +93,13 @@ final class RetentionPage
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
 
         if ($notice === 'retention_saved') {
-            echo '<div class="notice notice-success"><p>' . esc_html__('Kvarhållningen är sparad.', 'foreningsplugin') . '</p></div>';
+            echo '<div class="notice notice-success"><p>' . esc_html__('The retention period is saved.', 'foreningsplugin') . '</p></div>';
 
             return;
         }
 
         if ($notice === 'retention_invalid') {
-            echo '<div class="notice notice-error"><p>' . esc_html__('Ange ett antal år mellan 1 och 100.', 'foreningsplugin') . '</p></div>';
+            echo '<div class="notice notice-error"><p>' . esc_html__('Enter a number of years between 1 and 100.', 'foreningsplugin') . '</p></div>';
 
             return;
         }
@@ -112,7 +112,7 @@ final class RetentionPage
         $audits = isset($_GET['assoc_audits']) ? absint($_GET['assoc_audits']) : 0;
         echo '<div class="notice notice-success"><p>' . esc_html(sprintf(
             /* translators: 1: number of people anonymized, 2: number of audit events removed */
-            __('Kvarhållningen är tillämpad. %1$d personer avidentifierades. %2$d granskningshändelser togs bort.', 'foreningsplugin'),
+            __('The retention has been applied. %1$d people were anonymized. %2$d audit events were removed.', 'foreningsplugin'),
             $anonymized,
             $audits
         )) . '</p></div>';

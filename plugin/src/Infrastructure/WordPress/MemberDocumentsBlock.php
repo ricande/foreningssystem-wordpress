@@ -10,8 +10,8 @@ final class MemberDocumentsBlock
     {
         register_block_type('foreningsplugin/member-documents', [
             'api_version' => 3,
-            'title' => __('Medlemsdokument', 'foreningsplugin'),
-            'description' => __('Visar dokument för en inloggad person med aktivt medlemskap. Hämtningen går via en kontroll.', 'foreningsplugin'),
+            'title' => __('Member documents', 'foreningsplugin'),
+            'description' => __('Shows documents for a logged-in person with an active membership. The download goes through a check.', 'foreningsplugin'),
             'category' => 'widgets',
             'icon' => 'media-document',
             'textdomain' => 'foreningsplugin',
@@ -31,11 +31,11 @@ final class MemberDocumentsBlock
         $documents = WordpressDocuments::archive()->memberList();
 
         if ($documents === null) {
-            return '<p class="foreningsplugin-member-documents">' . esc_html__('Logga in med ett aktivt medlemskap för att se medlemsdokument.', 'foreningsplugin') . '</p>';
+            return '<p class="foreningsplugin-member-documents">' . esc_html__('Log in with an active membership to see member documents.', 'foreningsplugin') . '</p>';
         }
 
         if ($documents === []) {
-            return '<p class="foreningsplugin-member-documents">' . esc_html__('Inga medlemsdokument.', 'foreningsplugin') . '</p>';
+            return '<p class="foreningsplugin-member-documents">' . esc_html__('No member documents.', 'foreningsplugin') . '</p>';
         }
 
         $html = '<ul class="foreningsplugin-member-documents">';

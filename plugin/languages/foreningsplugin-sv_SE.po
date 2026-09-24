@@ -1,0 +1,1130 @@
+msgid ""
+msgstr ""
+"Language: sv_SE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Page %1$d / %2$d"
+msgstr "Sida %1$d / %2$d"
+
+msgid "A deceased person cannot have an open assignment."
+msgstr "En avliden person kan inte ha ett öppet uppdrag."
+
+msgid "A deceased person cannot receive a new membership period."
+msgstr "En avliden person kan inte få en ny medlemsperiod."
+
+msgid "A held meeting is not minutes. Notes are working material until minutes are created."
+msgstr "Ett hållet möte är inte ett protokoll. Anteckningar är arbetsmaterial tills ett protokoll skapas."
+
+msgid "A new membership period is saved. The earlier period remains."
+msgstr "En ny medlemsperiod är sparad. Den tidigare perioden finns kvar."
+
+msgid "A signed copy can be attached only to a locked revision."
+msgstr "En signerad kopia kan bara knytas till en låst revision."
+
+msgid "A task is something to be done, not a decision. Marking it done does not change the text."
+msgstr "En uppgift är något som ska göras, inte ett beslut. Att markera den som klar ändrar inte texten."
+
+msgid "A template is a list of headings. It is copied in when the meeting is created. A later change to the template does not change the meeting, and the template does not contain a ready-made annual-meeting agenda."
+msgstr "En mall är en lista med rubriker. Den kopieras in när mötet skapas. En senare ändring av mallen ändrar inte mötet, och mallen innehåller ingen färdig årsmötesdagordning."
+
+msgid "Absent"
+msgstr "Frånvarande"
+
+msgid "Action"
+msgstr "Åtgärd"
+
+msgid "Active"
+msgstr "Aktiv"
+
+msgid "Active members: %d"
+msgstr "Aktiva medlemmar: %d"
+
+msgid "Add heading"
+msgstr "Lägg till rubrik"
+
+msgid "Add item"
+msgstr "Lägg till punkt"
+
+msgid "Add participant"
+msgstr "Lägg till deltagare"
+
+msgid "Address"
+msgstr "Adress"
+
+msgid "Adjunct"
+msgstr "Adjungerad"
+
+msgid "Adjuster"
+msgstr "Justerare"
+
+msgid "Administrator"
+msgstr "Administratör"
+
+msgid "Agenda"
+msgstr "Dagordning"
+
+msgid "All meetings"
+msgstr "Alla möten"
+
+msgid "Alternate"
+msgstr "Suppleant"
+
+msgid "An adjunct person does not have to be a member. The list shows names, not private email."
+msgstr "En adjungerad person behöver inte vara medlem. Listan visar namn, inte privat e-post."
+
+msgid "An assignment requires a membership that covers the whole period. The auditor and the election committee follow the same rule. A closed row is not deleted."
+msgstr "Ett uppdrag kräver ett medlemskap som täcker hela perioden. Revisor och valberedning följer samma regel. En avslutad rad tas inte bort."
+
+msgid "An open board assignment does not fit the date, so nothing changed."
+msgstr "Ett öppet styrelseuppdrag passar inte datumet, så inget ändrades."
+
+msgid "Annual meeting"
+msgstr "Årsmöte"
+
+msgid "Apply now"
+msgstr "Tillämpa nu"
+
+msgid "April"
+msgstr "april"
+
+msgid "Assignment"
+msgstr "Uppdrag"
+
+msgid "Assignment dates and roles are kept."
+msgstr "Uppdragsdatum och roller behålls."
+
+msgid "Association"
+msgstr "Förening"
+
+msgid "Association plugin"
+msgstr "Föreningsplugin"
+
+msgid "Attendance"
+msgstr "Närvaro"
+
+msgid "Auditor"
+msgstr "Revisor"
+
+msgid "August"
+msgstr "augusti"
+
+msgid "Board"
+msgstr "Styrelse"
+
+msgid "Board assignment"
+msgstr "Styrelseuppdrag"
+
+msgid "Board assignments today: %d"
+msgstr "Styrelseuppdrag idag: %d"
+
+msgid "Board meeting"
+msgstr "Styrelsemöte"
+
+msgid "Board member"
+msgstr "Styrelseledamot"
+
+msgid "Chair"
+msgstr "Ordförande"
+
+msgid "Check the details and try again."
+msgstr "Kontrollera uppgifterna och försök igen."
+
+msgid "Check the title, the visibility, and that the file is a PDF, JPEG, or PNG."
+msgstr "Kontrollera titel, synlighet och att filen är en PDF, JPEG eller PNG."
+
+msgid "Choose image"
+msgstr "Välj bild"
+
+msgid "Choose person"
+msgstr "Välj person"
+
+msgid "Choose role"
+msgstr "Välj roll"
+
+msgid "Choose type"
+msgstr "Välj typ"
+
+msgid "Confirm whether the edited text should be replaced."
+msgstr "Bekräfta om den ändrade texten ska ersättas."
+
+msgid "Contact details are anonymized this many years after the membership has ended. Audit events are removed after the same time. Locked minutes and signed scans are kept."
+msgstr "Kontaktuppgifter avidentifieras det här antalet år efter att medlemskapet har avslutats. Granskningshändelser tas bort efter samma tid. Låsta protokoll och signerade skanningar behålls."
+
+msgid "Create correction"
+msgstr "Skapa rättelse"
+
+msgid "Create minutes draft"
+msgstr "Skapa protokollutkast"
+
+msgid "Current board"
+msgstr "Aktuell styrelse"
+
+msgid "Current membership year: %1$s–%2$s"
+msgstr "Pågående verksamhetsår: %1$s–%2$s"
+
+msgid "Date"
+msgstr "Datum"
+
+msgid "Day"
+msgstr "Dag"
+
+msgid "Deceased"
+msgstr "Avliden"
+
+msgid "December"
+msgstr "december"
+
+msgid "Decision"
+msgstr "Beslut"
+
+msgid "Document archive"
+msgstr "Dokumentarkiv"
+
+msgid "Documents"
+msgstr "Dokument"
+
+msgid "Done"
+msgstr "Klar"
+
+msgid "Dormant"
+msgstr "Vilande"
+
+msgid "Down"
+msgstr "Ner"
+
+msgid "Download"
+msgstr "Hämta"
+
+msgid "Download PDF"
+msgstr "Ladda ner PDF"
+
+msgid "Download signed copy"
+msgstr "Hämta signerad kopia"
+
+msgid "Draft"
+msgstr "Utkast"
+
+msgid "Duty"
+msgstr "Funktion"
+
+msgid "Election committee"
+msgstr "Valberedning"
+
+msgid "Email"
+msgstr "E-post"
+
+msgid "End"
+msgstr "Slut"
+
+msgid "End assignment"
+msgstr "Avsluta uppdrag"
+
+msgid "End date"
+msgstr "Slutdatum"
+
+msgid "End membership"
+msgstr "Avsluta medlemskap"
+
+msgid "Ended"
+msgstr "Avslutad"
+
+msgid "English"
+msgstr "Engelska"
+
+msgid "Enter a number of years between 1 and 100."
+msgstr "Ange ett antal år mellan 1 och 100."
+
+msgid "Export"
+msgstr "Exportera"
+
+msgid "Export members"
+msgstr "Exportera medlemmar"
+
+msgid "Extraordinary annual meeting"
+msgstr "Extra årsmöte"
+
+msgid "February"
+msgstr "februari"
+
+msgid "First name"
+msgstr "Förnamn"
+
+msgid "Heading"
+msgstr "Rubrik"
+
+msgid "Held"
+msgstr "Hållet"
+
+msgid "If the role can have only one holder, the open assignment ends the day before the new start date."
+msgstr "Om rollen bara kan ha en innehavare avslutas det öppna uppdraget dagen före det nya startdatumet."
+
+msgid "Import"
+msgstr "Importera"
+
+msgid "Import members"
+msgstr "Importera medlemmar"
+
+msgid "In progress"
+msgstr "Pågår"
+
+msgid "Include in the minutes"
+msgstr "Ta med i protokollet"
+
+msgid "Included in the minutes"
+msgstr "Tas med i protokollet"
+
+msgid "Internal"
+msgstr "Intern"
+
+msgid "Item"
+msgstr "Punkt"
+
+msgid "January"
+msgstr "januari"
+
+msgid "July"
+msgstr "juli"
+
+msgid "June"
+msgstr "juni"
+
+msgid "Known"
+msgstr "Känd"
+
+msgid "Language"
+msgstr "Språk"
+
+msgid "Last name"
+msgstr "Efternamn"
+
+msgid "Latest board meeting"
+msgstr "Senaste styrelsemötet"
+
+msgid "Latest documents"
+msgstr "Senaste dokument"
+
+msgid "Latest held meeting"
+msgstr "Senaste hållet möte"
+
+msgid "Latest minutes"
+msgstr "Senaste protokollet"
+
+msgid "Lock minutes"
+msgstr "Låsa protokoll"
+
+msgid "Lock the revision"
+msgstr "Lås revisionen"
+
+msgid "Locked"
+msgstr "Låst"
+
+msgid "Log in with an active membership to see member documents."
+msgstr "Logga in med ett aktivt medlemskap för att se medlemsdokument."
+
+msgid "Logo"
+msgstr "Logotyp"
+
+msgid "March"
+msgstr "mars"
+
+msgid "Mark as deceased"
+msgstr "Markera som avliden"
+
+msgid "Mark as done"
+msgstr "Markera som klar"
+
+msgid "Mark as held"
+msgstr "Markera som hållet"
+
+msgid "May"
+msgstr "maj"
+
+msgid "Meeting"
+msgstr "Möte"
+
+msgid "Meetings"
+msgstr "Möten"
+
+msgid "Member"
+msgstr "Medlem"
+
+msgid "Member count"
+msgstr "Medlemsantal"
+
+msgid "Member documents"
+msgstr "Medlemsdokument"
+
+msgid "Member meeting"
+msgstr "Medlemsmöte"
+
+msgid "Members"
+msgstr "Medlemmar"
+
+msgid "Membership"
+msgstr "Medlemskap"
+
+msgid "Membership number"
+msgstr "Medlemsnummer"
+
+msgid "Membership type"
+msgstr "Medlemstyp"
+
+msgid "Minutes"
+msgstr "Protokoll"
+
+msgid "Minutes may contain your name and are kept. The minutes text is not included in the export."
+msgstr "Protokoll kan innehålla ditt namn och behålls. Protokolltexten ingår inte i exporten."
+
+msgid "Minutes, revision %d"
+msgstr "Protokoll, revision %d"
+
+msgid "Month"
+msgstr "Månad"
+
+msgid "Name"
+msgstr "Namn"
+
+msgid "New assignment"
+msgstr "Nytt uppdrag"
+
+msgid "New document"
+msgstr "Nytt dokument"
+
+msgid "New item"
+msgstr "Ny punkt"
+
+msgid "New meeting"
+msgstr "Nytt möte"
+
+msgid "New period"
+msgstr "Ny period"
+
+msgid "New person"
+msgstr "Ny person"
+
+msgid "Next meeting"
+msgstr "Nästa möte"
+
+msgid "No"
+msgstr "Nej"
+
+msgid "No agenda yet."
+msgstr "Ingen dagordning ännu."
+
+msgid "No assignments yet."
+msgstr "Inga uppdrag ännu."
+
+msgid "No current board."
+msgstr "Ingen aktuell styrelse."
+
+msgid "No documents to show."
+msgstr "Inga dokument att visa."
+
+msgid "No draft yet."
+msgstr "Inget utkast ännu."
+
+msgid "No held meeting."
+msgstr "Inget hållet möte."
+
+msgid "No meetings yet."
+msgstr "Inga möten ännu."
+
+msgid "No member documents."
+msgstr "Inga medlemsdokument."
+
+msgid "No membership"
+msgstr "Utan medlemskap"
+
+msgid "No overdue tasks."
+msgstr "Inga försenade uppgifter."
+
+msgid "No participants yet."
+msgstr "Inga deltagare ännu."
+
+msgid "No people yet."
+msgstr "Inga personer ännu."
+
+msgid "No public documents."
+msgstr "Inga offentliga dokument."
+
+msgid "No published board meeting."
+msgstr "Inget publicerat styrelsemöte."
+
+msgid "No published minutes."
+msgstr "Inget publicerat protokoll."
+
+msgid "No signed copy yet."
+msgstr "Ingen signerad kopia ännu."
+
+msgid "No template"
+msgstr "Ingen mall"
+
+msgid "No upcoming meeting."
+msgstr "Inget kommande möte."
+
+msgid "No."
+msgstr "Nr"
+
+msgid "None"
+msgstr "Ingen"
+
+msgid "Note"
+msgstr "Anteckning"
+
+msgid "Notes about the meeting"
+msgstr "Anteckningar om mötet"
+
+msgid "Notes are working material, not the minutes. Mark what should be included later."
+msgstr "Anteckningar är arbetsmaterial, inte protokollet. Markera det som ska tas med senare."
+
+msgid "November"
+msgstr "november"
+
+msgid "Number"
+msgstr "Nummer"
+
+msgid "October"
+msgstr "oktober"
+
+msgid "Only a planned meeting can be started."
+msgstr "Bara ett planerat möte kan startas."
+
+msgid "Open"
+msgstr "Öppen"
+
+msgid "Open decisions: %d"
+msgstr "Öppna beslut: %d"
+
+msgid "Organization number"
+msgstr "Organisationsnummer"
+
+msgid "Overdue tasks"
+msgstr "Försenade uppgifter"
+
+msgid "PDF, JPEG, or PNG"
+msgstr "PDF, JPEG eller PNG"
+
+msgid "Participants"
+msgstr "Deltagare"
+
+msgid "Pending"
+msgstr "Väntande"
+
+msgid "People"
+msgstr "Personer"
+
+msgid "Phone"
+msgstr "Telefon"
+
+msgid "Place"
+msgstr "Plats"
+
+msgid "Planned"
+msgstr "Planerat"
+
+msgid "Planned and held meetings"
+msgstr "Planerade och hållna möten"
+
+msgid "Planned meetings: %d"
+msgstr "Planerade möten: %d"
+
+msgid "Present"
+msgstr "Närvarande"
+
+msgid "Print view"
+msgstr "Utskriftsvy"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Protected association files"
+msgstr "Skyddade föreningsfiler"
+
+msgid "Protected association files are inside the public web root. Downloads check authorization, but a visitor who can guess the file address can read the file directly unless the web server blocks the directory. An .htaccess file can stop that on Apache. Nginx does not read that file. Put the directory outside the web root with FORENINGSPLUGIN_PRIVATE_DIR, or block wp-content/uploads/assoc-private in the web server."
+msgstr "Skyddade föreningsfiler ligger under webbplatsens publika filkatalog. Hämtning går via en behörighetskontroll, men en besökare som kan gissa filsökvägen kan läsa filen direkt om webbservern inte blockerar katalogen. En .htaccess-fil kan stoppa det i Apache. Nginx läser inte den filen. Lägg katalogen utanför webbroten med FORENINGSPLUGIN_PRIVATE_DIR, eller blockera wp-content/uploads/assoc-private i webbservern."
+
+msgid "Protected association files are inside the web root."
+msgstr "Skyddade föreningsfiler ligger under webbroten."
+
+msgid "Protected association files are placed or confirmed."
+msgstr "Skyddade föreningsfiler är placerade eller bekräftade."
+
+msgid "Public"
+msgstr "Offentlig"
+
+msgid "Public contact"
+msgstr "Offentlig kontakt"
+
+msgid "Public documents are shown on the site. Member documents are shown to a logged-in person with an active membership. Internal documents are visible to the board. Administrator documents are visible only to someone who may manage documents. The download goes through a check, not through the file address."
+msgstr "Offentliga dokument visas på webbplatsen. Medlemsdokument visas för en inloggad person med aktivt medlemskap. Interna dokument syns för styrelsen. Administratörsdokument syns bara för den som får hantera dokument. Hämtningen går via en kontroll, inte via filens adress."
+
+msgid "Publication"
+msgstr "Publicering"
+
+msgid "Publish"
+msgstr "Publicera"
+
+msgid "Publish minutes"
+msgstr "Publicera protokoll"
+
+msgid "Recreate from the meeting details"
+msgstr "Skapa om från mötesuppgifterna"
+
+msgid "Remove decision"
+msgstr "Ta bort beslut"
+
+msgid "Remove image"
+msgstr "Ta bort bild"
+
+msgid "Remove item"
+msgstr "Ta bort punkt"
+
+msgid "Remove note"
+msgstr "Ta bort anteckning"
+
+msgid "Remove participant"
+msgstr "Ta bort deltagare"
+
+msgid "Remove task"
+msgstr "Ta bort uppgift"
+
+msgid "Remove template"
+msgstr "Ta bort mall"
+
+msgid "Reopen"
+msgstr "Återöppna"
+
+msgid "Replace the edited text"
+msgstr "Ersätt den ändrade texten"
+
+msgid "Responsible"
+msgstr "Ansvarig"
+
+msgid "Retained records"
+msgstr "Behållna handlingar"
+
+msgid "Retention"
+msgstr "Kvarhållning"
+
+msgid "Role"
+msgstr "Roll"
+
+msgid "Save assignment"
+msgstr "Spara uppdrag"
+
+msgid "Save decision"
+msgstr "Spara beslut"
+
+msgid "Save document"
+msgstr "Spara dokument"
+
+msgid "Save meeting"
+msgstr "Spara möte"
+
+msgid "Save note"
+msgstr "Spara anteckning"
+
+msgid "Save permission"
+msgstr "Spara behörighet"
+
+msgid "Save person"
+msgstr "Spara person"
+
+msgid "Save profile"
+msgstr "Spara profil"
+
+msgid "Save retention"
+msgstr "Spara kvarhållning"
+
+msgid "Save task"
+msgstr "Spara uppgift"
+
+msgid "Save template"
+msgstr "Spara mall"
+
+msgid "Save the draft text"
+msgstr "Spara utkastets text"
+
+msgid "Save visibility"
+msgstr "Spara synlighet"
+
+msgid "Saved documents"
+msgstr "Sparade dokument"
+
+msgid "Secretary"
+msgstr "Sekreterare"
+
+msgid "Security"
+msgstr "Säkerhet"
+
+msgid "Send back"
+msgstr "Skicka tillbaka"
+
+msgid "September"
+msgstr "september"
+
+msgid "Shows documents for a logged-in person with an active membership. The download goes through a check."
+msgstr "Visar dokument för en inloggad person med aktivt medlemskap. Hämtningen går via en kontroll."
+
+msgid "Shows how many active members the association has, without names."
+msgstr "Visar hur många aktiva medlemmar föreningen har, utan namn."
+
+msgid "Shows public documents. The download goes through a check."
+msgstr "Visar offentliga dokument. Hämtningen går via en kontroll."
+
+msgid "Shows the latest published locked revision."
+msgstr "Visar den senast publicerade låsta revisionen."
+
+msgid "Shows the name, role, and public contact for the current board."
+msgstr "Visar namn, uppdrag och offentlig kontakt för den aktuella styrelsen."
+
+msgid "Shows the title, date, and place of the latest board meeting with published minutes."
+msgstr "Visar rubrik, datum och plats för det senaste styrelsemötet med ett publicerat protokoll."
+
+msgid "Signed scan"
+msgstr "Signerad skanning"
+
+msgid "Start date"
+msgstr "Startdatum"
+
+msgid "Start the meeting"
+msgstr "Starta mötet"
+
+msgid "State"
+msgstr "Läge"
+
+msgid "Submit for adjustment"
+msgstr "Skicka till justering"
+
+msgid "Swedish"
+msgstr "Svenska"
+
+msgid "Task"
+msgstr "Uppgift"
+
+msgid "Task at the meeting"
+msgstr "Uppgift på mötet"
+
+msgid "Template"
+msgstr "Mall"
+
+msgid "Templates"
+msgstr "Mallar"
+
+msgid "Term"
+msgstr "Mandatperiod"
+
+msgid "The PDF is downloaded after a permission check and is not shown as a public link."
+msgstr "PDF-filen hämtas efter behörighetskontroll och visas inte som en offentlig länk."
+
+msgid "The agenda is reordered."
+msgstr "Dagordningen är omordnad."
+
+msgid "The assignment cannot end before the start date."
+msgstr "Uppdraget kan inte avslutas före startdatumet."
+
+msgid "The assignment is already ended."
+msgstr "Uppdraget är redan avslutat."
+
+msgid "The assignment is ended. The row remains."
+msgstr "Uppdraget är avslutat. Raden finns kvar."
+
+msgid "The assignment is saved."
+msgstr "Uppdraget är sparat."
+
+msgid "The assignment is saved. The previous holder ended the day before, and that row remains."
+msgstr "Uppdraget är sparat. Den tidigare innehavaren avslutades dagen före, och den raden finns kvar."
+
+msgid "The association profile is saved."
+msgstr "Föreningsprofilen är sparad."
+
+msgid "The association's name, contact details, and when the membership year starts. The logo is an image in the media library. A membership year can start on a day other than 1 January. The setting does not change membership periods that already exist."
+msgstr "Föreningens namn, kontaktuppgifter och när verksamhetsåret börjar. Logotypen är en bild i mediabiblioteket. Ett verksamhetsår kan börja en annan dag än den 1 januari. Inställningen ändrar inte medlemsperioder som redan finns."
+
+msgid "The chair may lock minutes from the start. The association can give the same permission to another role. The person who records minutes can still write drafts. The site administrator keeps the permission and can change it back."
+msgstr "Ordföranden får låsa protokoll från början. Föreningen kan ge samma behörighet till en annan roll. Den som för protokoll kan fortfarande skriva utkast. Webbplatsens administratör behåller behörigheten och kan ändra tillbaka."
+
+msgid "The chair may publish locked minutes from the start. The association can give the same permission to another role. Publishing shows the text on the site and leaves the minutes unchanged. The site administrator keeps the permission and can change it back."
+msgstr "Ordföranden får publicera ett låst protokoll från början. Föreningen kan ge samma behörighet till en annan roll. Publicering visar texten på webbplatsen och lämnar protokollet oförändrat. Webbplatsens administratör behåller behörigheten och kan ändra tillbaka."
+
+msgid "The contact details are anonymized and the account link is removed."
+msgstr "Kontaktuppgifterna är avidentifierade och kontolänken är borttagen."
+
+msgid "The correction is a new draft with the locked text."
+msgstr "Rättelsen är ett nytt utkast med den låsta texten."
+
+msgid "The decision is removed."
+msgstr "Beslutet är borttaget."
+
+msgid "The decision is saved."
+msgstr "Beslutet är sparat."
+
+msgid "The document could not be downloaded."
+msgstr "Dokumentet kunde inte hämtas."
+
+msgid "The document is saved."
+msgstr "Dokumentet är sparat."
+
+msgid "The draft has been submitted for adjustment."
+msgstr "Utkastet är skickat till justering."
+
+msgid "The draft is a copy of the meeting, attendance, agenda, marked notes, decisions, and tasks. Later changes to those rows do not rewrite the copy."
+msgstr "Utkastet är en kopia av mötet, närvaron, dagordningen, markerade anteckningar, beslut och uppgifter. Senare ändringar i de raderna skriver inte om kopian."
+
+msgid "The draft is created when the meeting is held, and only once."
+msgstr "Utkastet skapas när mötet är hållet, och bara en gång."
+
+msgid "The draft is created when the meeting is held."
+msgstr "Utkastet skapas när mötet är hållet."
+
+msgid "The draft is recreated from the meeting details."
+msgstr "Utkastet är skapat om från mötesuppgifterna."
+
+msgid "The draft text is saved. The source details are unchanged."
+msgstr "Utkastets text är sparad. Källuppgifterna är oförändrade."
+
+msgid "The file is UTF-8 and semicolon-separated, with one row per membership period. A membership number that already exists is left unchanged. The import does not link a WordPress account and does not rename a person who already exists."
+msgstr "Filen är UTF-8 och semikolonseparerad, med en rad per medlemsperiod. Ett medlemsnummer som redan finns lämnas orört. Importen kopplar inget WordPress-konto och byter inte namn på en person som redan finns."
+
+msgid "The file is larger than 2 MB."
+msgstr "Filen är större än 2 MB."
+
+msgid "The file must be UTF-8 with the expected columns, separated by semicolons."
+msgstr "Filen måste vara UTF-8 med de förväntade kolumnerna, separerade med semikolon."
+
+msgid "The files are in wp-content/uploads/assoc-private. An .htaccess file applies to Apache when the server allows it. Nginx does not read that file, so direct access has to be blocked in the server configuration or by moving the directory outside the web root."
+msgstr "Filerna ligger i wp-content/uploads/assoc-private. En .htaccess-fil gäller Apache när servern tillåter den. Nginx läser inte den filen, så direkt åtkomst måste blockeras i serverkonfigurationen eller genom att flytta katalogen utanför webbroten."
+
+msgid "The files are outside the WordPress web root. Downloads still go through the authorization check."
+msgstr "Filerna ligger utanför WordPress webbrot. Hämtning går fortfarande via behörighetskontrollen."
+
+msgid "The follow-up is changed. The wording of the decision is the same."
+msgstr "Uppföljningen är ändrad. Beslutets lydelse är densamma."
+
+msgid "The import created %1$d membership periods and left %2$d unchanged."
+msgstr "Importen skapade %1$d medlemsperioder och lämnade %2$d orörda."
+
+msgid "The item cannot be moved that way."
+msgstr "Punkten kan inte flyttas åt det hållet."
+
+msgid "The item does not belong to this meeting."
+msgstr "Punkten hör inte till det här mötet."
+
+msgid "The item is added."
+msgstr "Punkten är tillagd."
+
+msgid "The item is removed and the numbers are recalculated."
+msgstr "Punkten är borttagen och numren är räknade om."
+
+msgid "The meeting details changed after the draft. Recreate the draft if the new text should be included."
+msgstr "Mötesuppgifterna har ändrats efter utkastet. Skapa om utkastet om den nya texten ska med."
+
+msgid "The meeting does not exist."
+msgstr "Mötet finns inte."
+
+msgid "The meeting is already held."
+msgstr "Mötet är redan hållet."
+
+msgid "The meeting is in progress."
+msgstr "Mötet pågår."
+
+msgid "The meeting is marked as held."
+msgstr "Mötet är markerat som hållet."
+
+msgid "The meeting is saved as planned."
+msgstr "Mötet är sparat som planerat."
+
+msgid "The membership does not cover the whole assignment."
+msgstr "Medlemskapet täcker inte hela uppdraget."
+
+msgid "The membership is already ended."
+msgstr "Medlemskapet är redan avslutat."
+
+msgid "The membership is ended. The person remains."
+msgstr "Medlemskapet är avslutat. Personen finns kvar."
+
+msgid "The membership number is already used."
+msgstr "Medlemsnumret används redan."
+
+msgid "The membership periods are kept."
+msgstr "Medlemsperioderna behålls."
+
+msgid "The membership periods overlap."
+msgstr "Medlemsperioderna överlappar."
+
+msgid "The membership year starts"
+msgstr "Verksamhetsåret börjar"
+
+msgid "The minutes could not be downloaded."
+msgstr "Protokollet kunde inte hämtas."
+
+msgid "The minutes draft is created from the meeting details."
+msgstr "Protokollutkastet är skapat från mötesuppgifterna."
+
+msgid "The name in locked minutes is kept."
+msgstr "Namnet i ett låst protokoll behålls."
+
+msgid "The note is removed."
+msgstr "Anteckningen är borttagen."
+
+msgid "The note is saved."
+msgstr "Anteckningen är sparad."
+
+msgid "The participant is added."
+msgstr "Deltagaren är tillagd."
+
+msgid "The participant is removed from the meeting."
+msgstr "Deltagaren är borttagen från mötet."
+
+msgid "The permission to lock minutes is saved."
+msgstr "Behörigheten att låsa protokoll är sparad."
+
+msgid "The permission to publish minutes is saved."
+msgstr "Behörigheten att publicera protokoll är sparad."
+
+msgid "The person is already at the meeting."
+msgstr "Personen finns redan på mötet."
+
+msgid "The person is marked as deceased and open memberships are ended."
+msgstr "Personen är markerad som avliden och öppna medlemskap är avslutade."
+
+msgid "The person is saved."
+msgstr "Personen är sparad."
+
+msgid "The plugin is active."
+msgstr "Pluginet är aktivt."
+
+msgid "The profile could not be saved. Check the email, phone, language, logo, and start day."
+msgstr "Profilen kunde inte sparas. Kontrollera e-post, telefon, språk, logotyp och startdag."
+
+msgid "The public contact on the assignment is removed."
+msgstr "Den offentliga kontaktuppgiften på uppdraget är borttagen."
+
+msgid "The retention has been applied. %1$d people were anonymized. %2$d audit events were removed."
+msgstr "Kvarhållningen är tillämpad. %1$d personer avidentifierades. %2$d granskningshändelser togs bort."
+
+msgid "The retention period is saved."
+msgstr "Kvarhållningen är sparad."
+
+msgid "The revision is back as a draft."
+msgstr "Revisionen är tillbaka som utkast."
+
+msgid "The revision is locked. The text does not change if the meeting rows change."
+msgstr "Revisionen är låst. Texten ändras inte om mötesraderna ändras."
+
+msgid "The revision is locked. The text no longer changes."
+msgstr "Revisionen är låst. Texten ändras inte längre."
+
+msgid "The revision is not published. Publishing shows the locked text and leaves the signed scan internal."
+msgstr "Revisionen är inte publicerad. Publicering visar den låsta texten och lämnar den signerade skanningen intern."
+
+msgid "The revision is shown on the site. The text is unchanged, and the signed scan stays internal."
+msgstr "Revisionen visas på webbplatsen. Texten är oförändrad, och den signerade skanningen stannar internt."
+
+msgid "The revision is shown on the site. The text is unchanged."
+msgstr "Revisionen visas på webbplatsen. Texten är oförändrad."
+
+msgid "The revision is unpublished. The text is unchanged."
+msgstr "Revisionen är avpublicerad. Texten är oförändrad."
+
+msgid "The role already has a holder on those dates."
+msgstr "Rollen har redan en innehavare under de datumen."
+
+msgid "The role could not be saved."
+msgstr "Rollen kunde inte sparas."
+
+msgid "The signed copy could not be downloaded."
+msgstr "Den signerade kopian kunde inte hämtas."
+
+msgid "The signed copy is replaced. The minutes text is unchanged."
+msgstr "Den signerade kopian är ersatt. Protokolltexten är oförändrad."
+
+msgid "The signed copy is saved. The minutes text is unchanged."
+msgstr "Den signerade kopian är sparad. Protokolltexten är oförändrad."
+
+msgid "The signed copy must be a PDF, JPEG, or PNG."
+msgstr "Den signerade kopian ska vara en PDF, JPEG eller PNG."
+
+msgid "The signed scan is kept."
+msgstr "Den signerade skanningen behålls."
+
+msgid "The signed scan is the original. The minutes text does not change when the scan is uploaded."
+msgstr "Den signerade skanningen är originalet. Protokolltexten ändras inte när skanningen laddas upp."
+
+msgid "The task is removed."
+msgstr "Uppgiften är borttagen."
+
+msgid "The task is saved."
+msgstr "Uppgiften är sparad."
+
+msgid "The task status is changed. The text is the same."
+msgstr "Uppgiftens status är ändrad. Texten är densamma."
+
+msgid "The template is removed. Meetings already created keep their agenda."
+msgstr "Mallen är borttagen. Möten som redan skapats behåller sin dagordning."
+
+msgid "The template is saved. Meetings already created do not change."
+msgstr "Mallen är sparad. Möten som redan skapats ändras inte."
+
+msgid "The text has been edited by hand. The source copy remains until the draft is recreated."
+msgstr "Texten är ändrad för hand. Källkopian finns kvar tills utkastet skapas om."
+
+msgid "The visibility is changed. The file is the same."
+msgstr "Synligheten är ändrad. Filen är densamma."
+
+msgid "The web server blocks the directory"
+msgstr "Webbservern blockerar katalogen"
+
+msgid "This change does not fit the revision's state."
+msgstr "Den här ändringen passar inte revisionens läge."
+
+msgid "This is a correction of a locked revision."
+msgstr "Det här är en rättelse av en låst revision."
+
+msgid "Time"
+msgstr "Tid"
+
+msgid "Title"
+msgstr "Titel"
+
+msgid "Today"
+msgstr "Idag"
+
+msgid "Treasurer"
+msgstr "Kassör"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Under adjustment"
+msgstr "Under justering"
+
+msgid "Unpublish"
+msgstr "Avpublicera"
+
+msgid "Up"
+msgstr "Upp"
+
+msgid "Upload signed copy"
+msgstr "Ladda upp signerad kopia"
+
+msgid "Visibility"
+msgstr "Synlighet"
+
+msgid "Working meeting"
+msgstr "Arbetsmöte"
+
+msgid "Working note"
+msgstr "Arbetsanteckning"
+
+msgid "Years"
+msgstr "År"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "You are not allowed to change this setting."
+msgstr "Du har inte behörighet att ändra den här inställningen."
+
+msgid "You do not have permission to add documents."
+msgstr "Du har inte behörighet att lägga till dokument."
+
+msgid "You do not have permission to anonymize the person."
+msgstr "Du har inte behörighet att avidentifiera personen."
+
+msgid "You do not have permission to apply the retention."
+msgstr "Du har inte behörighet att tillämpa kvarhållningen."
+
+msgid "You do not have permission to change members."
+msgstr "Du har inte behörighet att ändra medlemmar."
+
+msgid "You do not have permission to change the association profile."
+msgstr "Du har inte behörighet att ändra föreningsprofilen."
+
+msgid "You do not have permission to change the board."
+msgstr "Du har inte behörighet att ändra styrelsen."
+
+msgid "You do not have permission to change the document."
+msgstr "Du har inte behörighet att ändra dokumentet."
+
+msgid "You do not have permission to change the documents."
+msgstr "Du har inte behörighet att ändra dokumenten."
+
+msgid "You do not have permission to change the meeting."
+msgstr "Du har inte behörighet att ändra mötet."
+
+msgid "You do not have permission to change the retention period."
+msgstr "Du har inte behörighet att ändra kvarhållningen."
+
+msgid "You do not have permission to change who may lock minutes."
+msgstr "Du har inte behörighet att ändra vem som får låsa protokoll."
+
+msgid "You do not have permission to change who may publish minutes."
+msgstr "Du har inte behörighet att ändra vem som får publicera protokoll."
+
+msgid "You do not have permission to download the document."
+msgstr "Du har inte behörighet att hämta dokumentet."
+
+msgid "You do not have permission to download the minutes."
+msgstr "Du har inte behörighet att hämta protokollet."
+
+msgid "You do not have permission to download the signed copy."
+msgstr "Du har inte behörighet att hämta den signerade kopian."
+
+msgid "You do not have permission to export members."
+msgstr "Du har inte behörighet att exportera medlemmar."
+
+msgid "You do not have permission to import members."
+msgstr "Du har inte behörighet att importera medlemmar."
+
+msgid "You do not have permission to lock the minutes."
+msgstr "Du har inte behörighet att låsa protokollet."
+
+msgid "You do not have permission to plan meetings."
+msgstr "Du har inte behörighet att planera möten."
+
+msgid "You do not have permission to print the minutes."
+msgstr "Du har inte behörighet att skriva ut protokollet."
+
+msgid "You do not have permission to publish the minutes."
+msgstr "Du har inte behörighet att publicera protokollet."
+
+msgid "You do not have permission to record notes, decisions, or tasks."
+msgstr "Du har inte behörighet att föra anteckningar, beslut eller uppgifter."
+
+msgid "You do not have permission to record the meeting."
+msgstr "Du har inte behörighet att föra mötet."
+
+msgid "You do not have permission to see who may lock minutes."
+msgstr "Du har inte behörighet att se vem som får låsa protokoll."
+
+msgid "You do not have permission to see who may publish minutes."
+msgstr "Du har inte behörighet att se vem som får publicera protokoll."
+
+msgid "You do not have permission to upload the signed copy."
+msgstr "Du har inte behörighet att ladda upp den signerade kopian."
+
+msgid "You do not have permission to view meetings."
+msgstr "Du har inte behörighet att se möten."
+
+msgid "You do not have permission to view members."
+msgstr "Du har inte behörighet att se medlemmar."
+
+msgid "You do not have permission to view the association profile."
+msgstr "Du har inte behörighet att se föreningsprofilen."
+
+msgid "You do not have permission to view the board."
+msgstr "Du har inte behörighet att se styrelsen."
+
+msgid "You do not have permission to view the documents."
+msgstr "Du har inte behörighet att se dokumenten."
+
+msgid "You do not have permission to view the retention."
+msgstr "Du har inte behörighet att se kvarhållningen."
+
+msgid "deceased"
+msgstr "avliden"
+

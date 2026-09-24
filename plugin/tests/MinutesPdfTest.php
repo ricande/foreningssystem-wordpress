@@ -36,7 +36,7 @@ final class MinutesPdfTest extends TestCase
         }
 
         $body .= "Avslutning\nJusterare: Ada Ärlig";
-        $pdf = (new MinutesPdfDocument(new MinutesPdfLayout(10)))->render($body, 1);
+        $pdf = (new MinutesPdfDocument(new MinutesPdfLayout(10)))->render($body, 'Revision 1', 'Page %1$d / %2$d');
         $swedish = iconv('UTF-8', 'Windows-1252', 'Föreningen köper modell X.');
         $adjuster = iconv('UTF-8', 'Windows-1252', 'Justerare: Ada Ärlig');
 
@@ -49,7 +49,9 @@ final class MinutesPdfTest extends TestCase
         self::assertStringContainsString((string) iconv('UTF-8', 'Windows-1252', 'José Núñez träffar François Müller.'), $this->pdf('José Núñez träffar François Müller.'));
         $pageCount = substr_count($pdf, '/Type /Page /Parent');
         self::assertGreaterThanOrEqual(3, $pageCount);
-        self::assertSame($pageCount, preg_match_all('/Sida (\d+) \/ (\d+)/', $pdf, $pages));
+        self::assertSame($pageCount, preg_match_all('/Page (\d+) \/ (\d+)/', $pdf, $pages));
+        $swedishPages = (new MinutesPdfDocument(new MinutesPdfLayout(10)))->render($body, 'Revision 1', 'Sida %1$d / %2$d');
+        self::assertSame($pageCount, preg_match_all('/Sida (\d+) \/ (\d+)/', $swedishPages, $swedishPageNumbers));
         self::assertSame(range(1, $pageCount), array_map(intval(...), $pages[1]));
         self::assertSame(array_fill(0, $pageCount, (string) $pageCount), $pages[2]);
     }
@@ -130,7 +132,7 @@ final class MinutesPdfTest extends TestCase
 
     private function pdf(string $body): string
     {
-        return (new MinutesPdfDocument())->render($body, 1);
+        return (new MinutesPdfDocument())->render($body, 'Revision 1', 'Page %1$d / %2$d');
     }
 
     /**

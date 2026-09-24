@@ -166,6 +166,37 @@ final class PeopleServiceTest extends TestCase
         }
     }
 
+    public function test_listing_people_reads_memberships_once(): void
+    {
+        $people = new MemoryPersonRepository();
+        $memberships = new CountingMembershipRepository(new MemoryMembershipRepository());
+        $service = new PeopleService(
+            $people,
+            $memberships,
+            new MembershipLedger(),
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return true;
+                }
+            },
+            new class implements Transaction {
+                public function run(callable $callback): mixed
+                {
+                    return $callback();
+                }
+            },
+            new RecordingOpenAssignments()
+        );
+        $service->register('Ada', 'Lovelace', 'ada@example.test', 'M-1', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
+        $service->register('Grace', 'Hopper', 'grace@example.test', 'M-2', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
+        $before = $memberships->allCalls;
+        $listed = $service->listPeople();
+
+        self::assertCount(2, $listed);
+        self::assertSame($before + 1, $memberships->allCalls);
+    }
+
     public function test_schema_migration_creates_person_and_membership_tables(): void
     {
         $sql = (new MembershipSchemaMigration('wp_', 'DEFAULT CHARSET utf8mb4'))->statements();
@@ -254,6 +285,37 @@ final class MemoryPersonRepository implements PersonRepository
     public function all(): array
     {
         return array_values($this->people);
+    }
+}
+
+final class CountingMembershipRepository implements MembershipRepository
+{
+    public int $allCalls = 0;
+
+    public function __construct(private readonly MemoryMembershipRepository $inner)
+    {
+    }
+
+    public function add(MembershipPeriod $period): MembershipPeriod
+    {
+        return $this->inner->add($period);
+    }
+
+    public function save(MembershipPeriod $period): void
+    {
+        $this->inner->save($period);
+    }
+
+    public function find(int $id): ?MembershipPeriod
+    {
+        return $this->inner->find($id);
+    }
+
+    public function all(): array
+    {
+        $this->allCalls++;
+
+        return $this->inner->all();
     }
 }
 

@@ -10,14 +10,14 @@ final class MinutesPdfDocument
     {
     }
 
-    public function render(string $body, int $revisionNumber): string
+    public function render(string $body, string $heading, string $pageLabel): string
     {
-        $pages = $this->layout->pages('Revision ' . $revisionNumber . "\n\n" . $body);
+        $pages = $this->layout->pages($heading . "\n\n" . $body);
         $streams = [];
         $count = count($pages);
 
         foreach ($pages as $index => $lines) {
-            $streams[] = $this->stream($lines, $index + 1, $count);
+            $streams[] = $this->stream($lines, $index + 1, $count, $pageLabel);
         }
 
         return $this->pdf($streams);
@@ -26,7 +26,7 @@ final class MinutesPdfDocument
     /**
      * @param list<string> $lines
      */
-    private function stream(array $lines, int $pageNumber, int $pageCount): string
+    private function stream(array $lines, int $pageNumber, int $pageCount, string $pageLabel): string
     {
         $commands = ['BT', '/F1 11 Tf', '14 TL', '1 0 0 1 50 800 Tm'];
 
@@ -42,7 +42,7 @@ final class MinutesPdfDocument
         $commands[] = 'BT';
         $commands[] = '/F1 9 Tf';
         $commands[] = '1 0 0 1 270 36 Tm';
-        $commands[] = $this->literal('Sida ' . $pageNumber . ' / ' . $pageCount) . ' Tj';
+        $commands[] = $this->literal(sprintf($pageLabel, $pageNumber, $pageCount)) . ' Tj';
         $commands[] = 'ET';
 
         return implode("\n", $commands);

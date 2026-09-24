@@ -43,10 +43,10 @@ final class WordpressAccess
     private static function displayNames(): array
     {
         return [
-            RoleBundles::SECRETARY => __('Sekreterare', 'foreningsplugin'),
-            RoleBundles::CHAIR => __('Ordförande', 'foreningsplugin'),
-            RoleBundles::TREASURER => __('Kassör', 'foreningsplugin'),
-            RoleBundles::BOARD_MEMBER => __('Styrelseledamot', 'foreningsplugin'),
+            RoleBundles::SECRETARY => __('Secretary', 'foreningsplugin'),
+            RoleBundles::CHAIR => __('Chair', 'foreningsplugin'),
+            RoleBundles::TREASURER => __('Treasurer', 'foreningsplugin'),
+            RoleBundles::BOARD_MEMBER => __('Board member', 'foreningsplugin'),
         ];
     }
 }

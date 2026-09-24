@@ -153,6 +153,12 @@ final class PeopleService
     public function listPeople(): array
     {
         $this->require(Capabilities::VIEW_MEMBERS);
+        $byPerson = [];
+
+        foreach ($this->memberships->all() as $period) {
+            $byPerson[$period->personId()][] = $period;
+        }
+
         $records = [];
 
         foreach ($this->people->all() as $person) {
@@ -162,7 +168,7 @@ final class PeopleService
                 continue;
             }
 
-            $records[] = new PersonRecord($person, $this->latestPeriod($this->periodsFor($person)));
+            $records[] = new PersonRecord($person, $this->latestPeriod($byPerson[$personId] ?? []));
         }
 
         return $records;

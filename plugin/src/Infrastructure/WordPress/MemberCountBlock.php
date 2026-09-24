@@ -12,8 +12,8 @@ final class MemberCountBlock
     {
         register_block_type('foreningsplugin/member-count', [
             'api_version' => 3,
-            'title' => __('Medlemsantal', 'foreningsplugin'),
-            'description' => __('Visar hur många aktiva medlemmar föreningen har, utan namn.', 'foreningsplugin'),
+            'title' => __('Member count', 'foreningsplugin'),
+            'description' => __('Shows how many active members the association has, without names.', 'foreningsplugin'),
             'category' => 'widgets',
             'icon' => 'groups',
             'textdomain' => 'foreningsplugin',
@@ -34,7 +34,7 @@ final class MemberCountBlock
 
         return '<p class="foreningsplugin-member-count">' . esc_html(sprintf(
             /* translators: %d: number of active members */
-            __('Aktiva medlemmar: %d', 'foreningsplugin'),
+            __('Active members: %d', 'foreningsplugin'),
             $count
         )) . '</p>';
     }

@@ -31,7 +31,7 @@ final class WordpressPrivacy
     public static function registerExporter(array $exporters): array
     {
         $exporters['foreningsplugin'] = [
-            'exporter_friendly_name' => __('Föreningsplugin', 'foreningsplugin'),
+            'exporter_friendly_name' => __('Association plugin', 'foreningsplugin'),
             'callback' => [self::class, 'export'],
         ];
 
@@ -45,7 +45,7 @@ final class WordpressPrivacy
     public static function registerEraser(array $erasers): array
     {
         $erasers['foreningsplugin'] = [
-            'eraser_friendly_name' => __('Föreningsplugin', 'foreningsplugin'),
+            'eraser_friendly_name' => __('Association plugin', 'foreningsplugin'),
             'callback' => [self::class, 'erase'],
         ];
 
@@ -68,7 +68,7 @@ final class WordpressPrivacy
             $outcomes = self::eraser()->erase($email, $linkedUserId, get_current_user_id());
         } catch (NotAllowed) {
             return self::response(false, false, [
-                __('Du har inte behörighet att avidentifiera personen.', 'foreningsplugin'),
+                __('You do not have permission to anonymize the person.', 'foreningsplugin'),
             ]);
         }
 
@@ -154,52 +154,52 @@ final class WordpressPrivacy
 
         foreach ($report->people() as $person) {
             $groups[] = self::item('foreningsplugin-person', __('Person', 'foreningsplugin'), 'person-' . $person->id(), [
-                [__('Förnamn', 'foreningsplugin'), $person->firstName()],
-                [__('Efternamn', 'foreningsplugin'), $person->lastName()],
-                [__('E-post', 'foreningsplugin'), $person->email()],
+                [__('First name', 'foreningsplugin'), $person->firstName()],
+                [__('Last name', 'foreningsplugin'), $person->lastName()],
+                [__('Email', 'foreningsplugin'), $person->email()],
                 [__('Status', 'foreningsplugin'), self::personStatus($person->status())],
             ]);
 
             foreach ($person->memberships() as $membership) {
                 $fields = [
-                    [__('Medlemsnummer', 'foreningsplugin'), $membership->number()],
-                    [__('Typ', 'foreningsplugin'), $membership->type()],
+                    [__('Membership number', 'foreningsplugin'), $membership->number()],
+                    [__('Type', 'foreningsplugin'), $membership->type()],
                     [__('Status', 'foreningsplugin'), self::membershipStatus($membership->status())],
                     [__('Start', 'foreningsplugin'), $membership->startedOn()],
                 ];
 
                 if ($membership->endedOn() !== null) {
-                    $fields[] = [__('Slut', 'foreningsplugin'), $membership->endedOn()];
+                    $fields[] = [__('End', 'foreningsplugin'), $membership->endedOn()];
                 }
 
-                $groups[] = self::item('foreningsplugin-membership', __('Medlemskap', 'foreningsplugin'), 'membership-' . $membership->id(), $fields);
+                $groups[] = self::item('foreningsplugin-membership', __('Membership', 'foreningsplugin'), 'membership-' . $membership->id(), $fields);
             }
 
             foreach ($person->assignments() as $assignment) {
                 $fields = [
-                    [__('Uppdrag', 'foreningsplugin'), $assignment->roleName()],
+                    [__('Assignment', 'foreningsplugin'), $assignment->roleName()],
                     [__('Start', 'foreningsplugin'), $assignment->startedOn()],
-                    [__('Offentlig kontakt', 'foreningsplugin'), $assignment->publicContact()],
+                    [__('Public contact', 'foreningsplugin'), $assignment->publicContact()],
                 ];
 
                 if ($assignment->endedOn() !== null) {
-                    $fields[] = [__('Slut', 'foreningsplugin'), $assignment->endedOn()];
+                    $fields[] = [__('End', 'foreningsplugin'), $assignment->endedOn()];
                 }
 
-                $groups[] = self::item('foreningsplugin-board', __('Styrelseuppdrag', 'foreningsplugin'), 'assignment-' . $assignment->id(), $fields);
+                $groups[] = self::item('foreningsplugin-board', __('Board assignment', 'foreningsplugin'), 'assignment-' . $assignment->id(), $fields);
             }
 
             foreach ($person->attendance() as $attendance) {
-                $groups[] = self::item('foreningsplugin-attendance', __('Närvaro', 'foreningsplugin'), 'attendance-' . $attendance->participantId(), [
-                    [__('Möte', 'foreningsplugin'), $attendance->meetingTitle()],
-                    [__('Datum', 'foreningsplugin'), $attendance->meetingDate()],
-                    [__('Närvaro', 'foreningsplugin'), self::presence($attendance->presence())],
-                    [__('Uppgift på mötet', 'foreningsplugin'), self::duty($attendance->duty())],
+                $groups[] = self::item('foreningsplugin-attendance', __('Attendance', 'foreningsplugin'), 'attendance-' . $attendance->participantId(), [
+                    [__('Meeting', 'foreningsplugin'), $attendance->meetingTitle()],
+                    [__('Date', 'foreningsplugin'), $attendance->meetingDate()],
+                    [__('Attendance', 'foreningsplugin'), self::presence($attendance->presence())],
+                    [__('Task at the meeting', 'foreningsplugin'), self::duty($attendance->duty())],
                 ]);
             }
 
-            $groups[] = self::item('foreningsplugin-retained', __('Behållna handlingar', 'foreningsplugin'), 'retained-' . $person->id(), [
-                [__('Protokoll', 'foreningsplugin'), __('Protokoll kan innehålla ditt namn och behålls. Protokolltexten ingår inte i exporten.', 'foreningsplugin')],
+            $groups[] = self::item('foreningsplugin-retained', __('Retained records', 'foreningsplugin'), 'retained-' . $person->id(), [
+                [__('Minutes', 'foreningsplugin'), __('Minutes may contain your name and are kept. The minutes text is not included in the export.', 'foreningsplugin')],
             ]);
         }
 
@@ -264,27 +264,27 @@ final class WordpressPrivacy
 
         foreach ($outcomes as $outcome) {
             if ($outcome->identifiersCleared()) {
-                $messages[] = __('Kontaktuppgifterna är avidentifierade och kontolänken är borttagen.', 'foreningsplugin');
+                $messages[] = __('The contact details are anonymized and the account link is removed.', 'foreningsplugin');
             }
 
             if ($outcome->publicContactCleared()) {
-                $messages[] = __('Den offentliga kontaktuppgiften på uppdraget är borttagen.', 'foreningsplugin');
+                $messages[] = __('The public contact on the assignment is removed.', 'foreningsplugin');
             }
 
             if ($outcome->membershipRetained()) {
-                $messages[] = __('Medlemsperioderna behålls.', 'foreningsplugin');
+                $messages[] = __('The membership periods are kept.', 'foreningsplugin');
             }
 
             if ($outcome->assignmentRetained()) {
-                $messages[] = __('Uppdragsdatum och roller behålls.', 'foreningsplugin');
+                $messages[] = __('Assignment dates and roles are kept.', 'foreningsplugin');
             }
 
             if ($outcome->minutesNameRetained()) {
-                $messages[] = __('Namnet i ett låst protokoll behålls.', 'foreningsplugin');
+                $messages[] = __('The name in locked minutes is kept.', 'foreningsplugin');
             }
 
             if ($outcome->signedCopyRetained()) {
-                $messages[] = __('Den signerade skanningen behålls.', 'foreningsplugin');
+                $messages[] = __('The signed scan is kept.', 'foreningsplugin');
             }
         }
 
@@ -308,36 +308,36 @@ final class WordpressPrivacy
     private static function personStatus(string $status): string
     {
         return match ($status) {
-            PersonStatus::Deceased->value => __('Avliden', 'foreningsplugin'),
-            default => __('Känd', 'foreningsplugin'),
+            PersonStatus::Deceased->value => __('Deceased', 'foreningsplugin'),
+            default => __('Known', 'foreningsplugin'),
         };
     }
 
     private static function membershipStatus(string $status): string
     {
         return match ($status) {
-            MembershipStatus::Pending->value => __('Väntande', 'foreningsplugin'),
-            MembershipStatus::Dormant->value => __('Vilande', 'foreningsplugin'),
-            MembershipStatus::Ended->value => __('Avslutad', 'foreningsplugin'),
-            default => __('Aktiv', 'foreningsplugin'),
+            MembershipStatus::Pending->value => __('Pending', 'foreningsplugin'),
+            MembershipStatus::Dormant->value => __('Dormant', 'foreningsplugin'),
+            MembershipStatus::Ended->value => __('Ended', 'foreningsplugin'),
+            default => __('Active', 'foreningsplugin'),
         };
     }
 
     private static function presence(string $presence): string
     {
         return match ($presence) {
-            Presence::Absent->value => __('Frånvarande', 'foreningsplugin'),
-            Presence::CoOpted->value => __('Adjungerad', 'foreningsplugin'),
-            default => __('Närvarande', 'foreningsplugin'),
+            Presence::Absent->value => __('Absent', 'foreningsplugin'),
+            Presence::CoOpted->value => __('Adjunct', 'foreningsplugin'),
+            default => __('Present', 'foreningsplugin'),
         };
     }
 
     private static function duty(string $duty): string
     {
         return match ($duty) {
-            MeetingDuty::Chair->value => __('Ordförande', 'foreningsplugin'),
-            MeetingDuty::Adjuster->value => __('Justerare', 'foreningsplugin'),
-            default => __('Ingen', 'foreningsplugin'),
+            MeetingDuty::Chair->value => __('Chair', 'foreningsplugin'),
+            MeetingDuty::Adjuster->value => __('Adjuster', 'foreningsplugin'),
+            default => __('None', 'foreningsplugin'),
         };
     }
 }

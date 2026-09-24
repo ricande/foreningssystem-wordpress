@@ -368,9 +368,9 @@ final class MeetingDetailPage
             $revision = $pdf->readable($revisionId);
             $bytes = $pdf->bytes($revisionId);
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att hämta protokollet.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to download the minutes.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (\RuntimeException) {
-            wp_die(esc_html__('Protokollet kunde inte hämtas.', 'foreningsplugin'), '', ['response' => 404]);
+            wp_die(esc_html__('The minutes could not be downloaded.', 'foreningsplugin'), '', ['response' => 404]);
         }
 
         nocache_headers();
@@ -382,6 +382,11 @@ final class MeetingDetailPage
         exit;
     }
 
+    public static function htmlLanguage(): string
+    {
+        return str_replace('_', '-', determine_locale());
+    }
+
     public static function printMinutes(): void
     {
         $revisionId = self::queryInteger('revision_id');
@@ -390,16 +395,16 @@ final class MeetingDetailPage
         try {
             $revision = WordpressMeetings::pdf()->readable($revisionId);
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att skriva ut protokollet.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to print the minutes.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (\RuntimeException) {
-            wp_die(esc_html__('Protokollet kunde inte hämtas.', 'foreningsplugin'), '', ['response' => 404]);
+            wp_die(esc_html__('The minutes could not be downloaded.', 'foreningsplugin'), '', ['response' => 404]);
         }
 
         nocache_headers();
         header('Content-Type: text/html; charset=UTF-8');
-        echo '<!DOCTYPE html><html lang="sv"><head><meta charset="utf-8"><title>' . esc_html(sprintf(
+        echo '<!DOCTYPE html><html lang="' . esc_attr(self::htmlLanguage()) . '"><head><meta charset="utf-8"><title>' . esc_html(sprintf(
             /* translators: %d: revision number */
-            __('Protokoll, revision %d', 'foreningsplugin'),
+            __('Minutes, revision %d', 'foreningsplugin'),
             $revision->number()
         )) . '</title>';
         echo '<style>@page{size:A4;margin:18mm}body{font-family:Georgia,serif;font-size:12pt;line-height:1.4;white-space:pre-wrap;margin:0}</style>';
@@ -420,7 +425,7 @@ final class MeetingDetailPage
             );
             self::redirect($meetingId, $result === 'replaced' ? 'signed_replaced' : 'signed_uploaded');
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att ladda upp den signerade kopian.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to upload the signed copy.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (MeetingRuleException) {
             self::redirect($meetingId, 'signed_blocked');
         } catch (\InvalidArgumentException | \RuntimeException) {
@@ -438,13 +443,13 @@ final class MeetingDetailPage
             $current = $copies->current($revisionId);
             $bytes = $copies->read($revisionId);
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att hämta den signerade kopian.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to download the signed copy.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (\RuntimeException) {
-            wp_die(esc_html__('Den signerade kopian kunde inte hämtas.', 'foreningsplugin'), '', ['response' => 404]);
+            wp_die(esc_html__('The signed copy could not be downloaded.', 'foreningsplugin'), '', ['response' => 404]);
         }
 
         if (! $current instanceof \Foreningssystem\Domain\Meeting\SignedCopy) {
-            wp_die(esc_html__('Den signerade kopian kunde inte hämtas.', 'foreningsplugin'), '', ['response' => 404]);
+            wp_die(esc_html__('The signed copy could not be downloaded.', 'foreningsplugin'), '', ['response' => 404]);
         }
 
         $extension = \Foreningssystem\Domain\Meeting\SignedCopyType::extension($current->mediaType());
@@ -462,12 +467,12 @@ final class MeetingDetailPage
         $meeting = self::meeting($meetingId);
 
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html($meeting instanceof Meeting ? $meeting->title() : __('Möte', 'foreningsplugin')) . '</h1>';
-        echo '<p><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-meetings')) . '">' . esc_html__('Alla möten', 'foreningsplugin') . '</a></p>';
+        echo '<h1>' . esc_html($meeting instanceof Meeting ? $meeting->title() : __('Meeting', 'foreningsplugin')) . '</h1>';
+        echo '<p><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-meetings')) . '">' . esc_html__('All meetings', 'foreningsplugin') . '</a></p>';
         self::notice();
 
         if (! $meeting instanceof Meeting) {
-            echo '<p>' . esc_html__('Mötet finns inte.', 'foreningsplugin') . '</p></div>';
+            echo '<p>' . esc_html__('The meeting does not exist.', 'foreningsplugin') . '</p></div>';
 
             return;
         }
@@ -480,16 +485,16 @@ final class MeetingDetailPage
         $canEdit = current_user_can(Capabilities::MANAGE_MEETINGS) || current_user_can(Capabilities::RECORD_MEETING);
         $canRecord = current_user_can(Capabilities::RECORD_MEETING);
         echo '<p>' . esc_html($meeting->startsAt()->date() . ' ' . $meeting->startsAt()->time()) . '</p>';
-        echo '<p>' . esc_html__('En adjungerad person behöver inte vara medlem. Listan visar namn, inte privat e-post.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('An adjunct person does not have to be a member. The list shows names, not private email.', 'foreningsplugin') . '</p>';
 
         if ($canEdit) {
-            echo '<h2>' . esc_html__('Lägg till deltagare', 'foreningsplugin') . '</h2>';
+            echo '<h2>' . esc_html__('Add participant', 'foreningsplugin') . '</h2>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_add_participant">';
             echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
             wp_nonce_field('assoc_add_participant');
             echo '<p><label>' . esc_html__('Person', 'foreningsplugin') . ' <select name="person_id" required>';
-            echo '<option value="">' . esc_html__('Välj person', 'foreningsplugin') . '</option>';
+            echo '<option value="">' . esc_html__('Choose person', 'foreningsplugin') . '</option>';
 
             foreach (WordpressPeople::service()->listPeople() as $record) {
                 $person = $record->person();
@@ -501,40 +506,40 @@ final class MeetingDetailPage
                 $name = $person->firstName() . ' ' . $person->lastName();
 
                 if ($person->status() === PersonStatus::Deceased) {
-                    $name .= ' (' . __('avliden', 'foreningsplugin') . ')';
+                    $name .= ' (' . __('deceased', 'foreningsplugin') . ')';
                 }
 
                 echo '<option value="' . esc_attr((string) $person->id()) . '">' . esc_html($name) . '</option>';
             }
 
             echo '</select></label></p>';
-            echo '<p><label>' . esc_html__('Närvaro', 'foreningsplugin') . ' <select name="presence">';
+            echo '<p><label>' . esc_html__('Attendance', 'foreningsplugin') . ' <select name="presence">';
             foreach (Presence::cases() as $presence) {
                 echo '<option value="' . esc_attr($presence->value) . '">' . esc_html(self::presenceLabel($presence)) . '</option>';
             }
             echo '</select></label></p>';
-            echo '<p><label>' . esc_html__('Funktion', 'foreningsplugin') . ' <select name="meeting_duty">';
+            echo '<p><label>' . esc_html__('Duty', 'foreningsplugin') . ' <select name="meeting_duty">';
             foreach (MeetingDuty::cases() as $duty) {
                 echo '<option value="' . esc_attr($duty->value) . '">' . esc_html(self::dutyLabel($duty)) . '</option>';
             }
             echo '</select></label></p>';
-            submit_button(__('Lägg till deltagare', 'foreningsplugin'));
+            submit_button(__('Add participant', 'foreningsplugin'));
             echo '</form>';
         }
 
-        echo '<h2>' . esc_html__('Deltagare', 'foreningsplugin') . '</h2>';
+        echo '<h2>' . esc_html__('Participants', 'foreningsplugin') . '</h2>';
         echo '<table class="widefat striped"><thead><tr>';
-        foreach ([__('Namn', 'foreningsplugin'), __('Närvaro', 'foreningsplugin'), __('Funktion', 'foreningsplugin')] as $heading) {
+        foreach ([__('Name', 'foreningsplugin'), __('Attendance', 'foreningsplugin'), __('Duty', 'foreningsplugin')] as $heading) {
             echo '<th>' . esc_html($heading) . '</th>';
         }
         if ($canEdit) {
-            echo '<th>' . esc_html__('Åtgärd', 'foreningsplugin') . '</th>';
+            echo '<th>' . esc_html__('Action', 'foreningsplugin') . '</th>';
         }
         echo '</tr></thead><tbody>';
         $attendance = $workspace->attendance($meetingId);
 
         if ($attendance === []) {
-            echo '<tr><td colspan="4">' . esc_html__('Inga deltagare ännu.', 'foreningsplugin') . '</td></tr>';
+            echo '<tr><td colspan="4">' . esc_html__('No participants yet.', 'foreningsplugin') . '</td></tr>';
         }
 
         foreach ($attendance as $row) {
@@ -548,7 +553,7 @@ final class MeetingDetailPage
                 echo '<td>';
                 self::postForm('assoc_remove_participant', $meetingId, [
                     'participant_id' => (string) $participant->id(),
-                ], __('Ta bort deltagare', 'foreningsplugin'));
+                ], __('Remove participant', 'foreningsplugin'));
                 echo '</td>';
             }
 
@@ -557,36 +562,36 @@ final class MeetingDetailPage
 
         echo '</tbody></table>';
 
-        echo '<h2>' . esc_html__('Anteckningar om mötet', 'foreningsplugin') . '</h2>';
-        echo '<p>' . esc_html__('Anteckningar är arbetsmaterial, inte protokollet. Markera det som ska tas med senare.', 'foreningsplugin') . '</p>';
-        echo '<p>' . esc_html__('En uppgift är något som ska göras, inte ett beslut. Att markera den som klar ändrar inte texten.', 'foreningsplugin') . '</p>';
+        echo '<h2>' . esc_html__('Notes about the meeting', 'foreningsplugin') . '</h2>';
+        echo '<p>' . esc_html__('Notes are working material, not the minutes. Mark what should be included later.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('A task is something to be done, not a decision. Marking it done does not change the text.', 'foreningsplugin') . '</p>';
         self::renderCapture($meetingId, null, $notes, $decisionRows, $actionRows, $canRecord);
 
         if ($canEdit) {
-            echo '<h2>' . esc_html__('Ny punkt', 'foreningsplugin') . '</h2>';
+            echo '<h2>' . esc_html__('New item', 'foreningsplugin') . '</h2>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_add_agenda_item">';
             echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
             wp_nonce_field('assoc_add_agenda_item');
-            echo '<p><label>' . esc_html__('Punkt', 'foreningsplugin') . ' <input class="regular-text" type="text" name="title" required></label></p>';
-            echo '<p><label>' . esc_html__('Nummer', 'foreningsplugin') . ' <input class="regular-text" type="text" name="number_override"></label></p>';
-            submit_button(__('Lägg till punkt', 'foreningsplugin'));
+            echo '<p><label>' . esc_html__('Item', 'foreningsplugin') . ' <input class="regular-text" type="text" name="title" required></label></p>';
+            echo '<p><label>' . esc_html__('Number', 'foreningsplugin') . ' <input class="regular-text" type="text" name="number_override"></label></p>';
+            submit_button(__('Add item', 'foreningsplugin'));
             echo '</form>';
         }
 
-        echo '<h2>' . esc_html__('Dagordning', 'foreningsplugin') . '</h2>';
+        echo '<h2>' . esc_html__('Agenda', 'foreningsplugin') . '</h2>';
         echo '<table class="widefat striped"><thead><tr>';
-        foreach ([__('Nr', 'foreningsplugin'), __('Punkt', 'foreningsplugin')] as $heading) {
+        foreach ([__('No.', 'foreningsplugin'), __('Item', 'foreningsplugin')] as $heading) {
             echo '<th>' . esc_html($heading) . '</th>';
         }
         if ($canEdit) {
-            echo '<th>' . esc_html__('Åtgärd', 'foreningsplugin') . '</th>';
+            echo '<th>' . esc_html__('Action', 'foreningsplugin') . '</th>';
         }
         echo '</tr></thead><tbody>';
         $agenda = $workspace->agenda($meetingId);
 
         if ($agenda === []) {
-            echo '<tr><td colspan="3">' . esc_html__('Ingen dagordning ännu.', 'foreningsplugin') . '</td></tr>';
+            echo '<tr><td colspan="3">' . esc_html__('No agenda yet.', 'foreningsplugin') . '</td></tr>';
         }
 
         foreach ($agenda as $item) {
@@ -599,14 +604,14 @@ final class MeetingDetailPage
                 self::postForm('assoc_move_agenda_item', $meetingId, [
                     'item_id' => (string) $item->id(),
                     'direction' => '-1',
-                ], __('Upp', 'foreningsplugin'));
+                ], __('Up', 'foreningsplugin'));
                 self::postForm('assoc_move_agenda_item', $meetingId, [
                     'item_id' => (string) $item->id(),
                     'direction' => '1',
-                ], __('Ner', 'foreningsplugin'));
+                ], __('Down', 'foreningsplugin'));
                 self::postForm('assoc_remove_agenda_item', $meetingId, [
                     'item_id' => (string) $item->id(),
-                ], __('Ta bort punkt', 'foreningsplugin'));
+                ], __('Remove item', 'foreningsplugin'));
                 echo '</td>';
             }
 
@@ -623,11 +628,11 @@ final class MeetingDetailPage
     private static function renderMinutes(Meeting $meeting, bool $canRecord, bool $canFinalize): void
     {
         $meetingId = (int) $meeting->id();
-        echo '<h2>' . esc_html__('Protokoll', 'foreningsplugin') . '</h2>';
-        echo '<p>' . esc_html__('Utkastet är en kopia av mötet, närvaron, dagordningen, markerade anteckningar, beslut och uppgifter. Senare ändringar i de raderna skriver inte om kopian.', 'foreningsplugin') . '</p>';
+        echo '<h2>' . esc_html__('Minutes', 'foreningsplugin') . '</h2>';
+        echo '<p>' . esc_html__('The draft is a copy of the meeting, attendance, agenda, marked notes, decisions, and tasks. Later changes to those rows do not rewrite the copy.', 'foreningsplugin') . '</p>';
 
         if ($meeting->status() !== MeetingStatus::Held) {
-            echo '<p>' . esc_html__('Utkastet skapas när mötet är hållet.', 'foreningsplugin') . '</p>';
+            echo '<p>' . esc_html__('The draft is created when the meeting is held.', 'foreningsplugin') . '</p>';
 
             return;
         }
@@ -637,7 +642,7 @@ final class MeetingDetailPage
 
         if (! $draft instanceof \Foreningssystem\Domain\Meeting\MinutesRevision) {
             if (! $canRecord) {
-                echo '<p>' . esc_html__('Inget utkast ännu.', 'foreningsplugin') . '</p>';
+                echo '<p>' . esc_html__('No draft yet.', 'foreningsplugin') . '</p>';
 
                 return;
             }
@@ -646,7 +651,7 @@ final class MeetingDetailPage
             echo '<input type="hidden" name="action" value="assoc_create_minutes_draft">';
             echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
             wp_nonce_field('assoc_create_minutes_draft');
-            submit_button(__('Skapa protokollutkast', 'foreningsplugin'), 'secondary');
+            submit_button(__('Create minutes draft', 'foreningsplugin'), 'secondary');
             echo '</form>';
 
             return;
@@ -657,20 +662,20 @@ final class MeetingDetailPage
         echo '<p>' . esc_html(self::revisionLabel($draft->state())) . '</p>';
 
         if ($draft->correctsRevisionId() !== null) {
-            echo '<p>' . esc_html__('Det här är en rättelse av en låst revision.', 'foreningsplugin') . '</p>';
+            echo '<p>' . esc_html__('This is a correction of a locked revision.', 'foreningsplugin') . '</p>';
         }
 
         if ($draft->state() === \Foreningssystem\Domain\Meeting\RevisionState::Finalized) {
-            echo '<p>' . esc_html__('Revisionen är låst. Texten ändras inte om mötesraderna ändras.', 'foreningsplugin') . '</p>';
+            echo '<p>' . esc_html__('The revision is locked. The text does not change if the meeting rows change.', 'foreningsplugin') . '</p>';
             self::renderPublication($meetingId, $draft);
         }
 
         if ($drafts->isStale($meetingId)) {
-            echo '<p>' . esc_html__('Mötesuppgifterna har ändrats efter utkastet. Skapa om utkastet om den nya texten ska med.', 'foreningsplugin') . '</p>';
+            echo '<p>' . esc_html__('The meeting details changed after the draft. Recreate the draft if the new text should be included.', 'foreningsplugin') . '</p>';
         }
 
         if ($editable && $draft->handEdited()) {
-            echo '<p>' . esc_html__('Texten är ändrad för hand. Källkopian finns kvar tills utkastet skapas om.', 'foreningsplugin') . '</p>';
+            echo '<p>' . esc_html__('The text has been edited by hand. The source copy remains until the draft is recreated.', 'foreningsplugin') . '</p>';
         }
 
         if (! $editable || ! $canRecord) {
@@ -682,7 +687,7 @@ final class MeetingDetailPage
             echo '<input type="hidden" name="revision_id" value="' . esc_attr((string) $draft->id()) . '">';
             wp_nonce_field('assoc_replace_minutes_body');
             echo '<p><label>' . esc_html__('Text', 'foreningsplugin') . '<br><textarea class="large-text" name="body" rows="16" required>' . esc_textarea($draft->body()) . '</textarea></label></p>';
-            submit_button(__('Spara utkastets text', 'foreningsplugin'), 'secondary');
+            submit_button(__('Save the draft text', 'foreningsplugin'), 'secondary');
             echo '</form>';
 
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
@@ -692,33 +697,33 @@ final class MeetingDetailPage
             wp_nonce_field('assoc_regenerate_minutes_draft');
 
             if ($draft->handEdited()) {
-                echo '<p><label><input type="checkbox" name="confirmed" value="1"> ' . esc_html__('Ersätt den ändrade texten', 'foreningsplugin') . '</label></p>';
+                echo '<p><label><input type="checkbox" name="confirmed" value="1"> ' . esc_html__('Replace the edited text', 'foreningsplugin') . '</label></p>';
             }
 
-            submit_button(__('Skapa om från mötesuppgifterna', 'foreningsplugin'), 'secondary');
+            submit_button(__('Recreate from the meeting details', 'foreningsplugin'), 'secondary');
             echo '</form>';
         }
 
         if ($draft->state() === \Foreningssystem\Domain\Meeting\RevisionState::Draft && $canRecord) {
             self::postForm('assoc_submit_minutes', $meetingId, [
                 'revision_id' => (string) $draft->id(),
-            ], __('Skicka till justering', 'foreningsplugin'));
+            ], __('Submit for adjustment', 'foreningsplugin'));
         }
 
         if ($draft->state() === \Foreningssystem\Domain\Meeting\RevisionState::UnderAdjustment && $canRecord) {
             self::postForm('assoc_send_minutes_back', $meetingId, [
                 'revision_id' => (string) $draft->id(),
-            ], __('Skicka tillbaka', 'foreningsplugin'));
+            ], __('Send back', 'foreningsplugin'));
         }
 
         if ($draft->state() === \Foreningssystem\Domain\Meeting\RevisionState::UnderAdjustment && $canFinalize) {
             self::postForm('assoc_finalize_minutes', $meetingId, [
                 'revision_id' => (string) $draft->id(),
-            ], __('Lås revisionen', 'foreningsplugin'));
+            ], __('Lock the revision', 'foreningsplugin'));
         }
 
         if ($draft->state() === \Foreningssystem\Domain\Meeting\RevisionState::Finalized && $canFinalize) {
-            self::postForm('assoc_open_minutes_correction', $meetingId, [], __('Skapa rättelse', 'foreningsplugin'));
+            self::postForm('assoc_open_minutes_correction', $meetingId, [], __('Create correction', 'foreningsplugin'));
         }
 
         if ($draft->state() === \Foreningssystem\Domain\Meeting\RevisionState::Finalized || $canRecord) {
@@ -735,10 +740,10 @@ final class MeetingDetailPage
         }
 
         $public = $draft->visibility() === \Foreningssystem\Domain\Meeting\PublicationVisibility::Public;
-        echo '<h3>' . esc_html__('Publicering', 'foreningsplugin') . '</h3>';
+        echo '<h3>' . esc_html__('Publication', 'foreningsplugin') . '</h3>';
         echo '<p>' . esc_html($public
-            ? __('Revisionen visas på webbplatsen. Texten är oförändrad, och den signerade skanningen stannar internt.', 'foreningsplugin')
-            : __('Revisionen är inte publicerad. Publicering visar den låsta texten och lämnar den signerade skanningen intern.', 'foreningsplugin')
+            ? __('The revision is shown on the site. The text is unchanged, and the signed scan stays internal.', 'foreningsplugin')
+            : __('The revision is not published. Publishing shows the locked text and leaves the signed scan internal.', 'foreningsplugin')
         ) . '</p>';
 
         if (! current_user_can(Capabilities::PUBLISH_MINUTES)) {
@@ -749,7 +754,7 @@ final class MeetingDetailPage
             $public ? 'assoc_unpublish_minutes' : 'assoc_publish_minutes',
             $meetingId,
             ['revision_id' => (string) $draft->id()],
-            $public ? __('Avpublicera', 'foreningsplugin') : __('Publicera', 'foreningsplugin')
+            $public ? __('Unpublish', 'foreningsplugin') : __('Publish', 'foreningsplugin')
         );
     }
 
@@ -759,8 +764,8 @@ final class MeetingDetailPage
             return;
         }
 
-        echo '<h3>' . esc_html__('Signerad skanning', 'foreningsplugin') . '</h3>';
-        echo '<p>' . esc_html__('Den signerade skanningen är originalet. Protokolltexten ändras inte när skanningen laddas upp.', 'foreningsplugin') . '</p>';
+        echo '<h3>' . esc_html__('Signed scan', 'foreningsplugin') . '</h3>';
+        echo '<p>' . esc_html__('The signed scan is the original. The minutes text does not change when the scan is uploaded.', 'foreningsplugin') . '</p>';
         $current = WordpressMeetings::signedCopies()->current($draft->id());
 
         if ($current instanceof \Foreningssystem\Domain\Meeting\SignedCopy) {
@@ -769,9 +774,9 @@ final class MeetingDetailPage
                 'meeting_id' => (string) $meetingId,
                 'revision_id' => (string) $draft->id(),
             ], admin_url('admin-post.php')), 'assoc_download_signed_copy');
-            echo '<p><a class="button" href="' . esc_url($download) . '">' . esc_html__('Hämta signerad kopia', 'foreningsplugin') . '</a></p>';
+            echo '<p><a class="button" href="' . esc_url($download) . '">' . esc_html__('Download signed copy', 'foreningsplugin') . '</a></p>';
         } else {
-            echo '<p>' . esc_html__('Ingen signerad kopia ännu.', 'foreningsplugin') . '</p>';
+            echo '<p>' . esc_html__('No signed copy yet.', 'foreningsplugin') . '</p>';
         }
 
         if (! $canUpload) {
@@ -783,8 +788,8 @@ final class MeetingDetailPage
         echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
         echo '<input type="hidden" name="revision_id" value="' . esc_attr((string) $draft->id()) . '">';
         wp_nonce_field('assoc_upload_signed_copy');
-        echo '<p><label>' . esc_html__('PDF, JPEG eller PNG', 'foreningsplugin') . ' <input type="file" name="signed_copy" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required></label></p>';
-        submit_button(__('Ladda upp signerad kopia', 'foreningsplugin'), 'secondary');
+        echo '<p><label>' . esc_html__('PDF, JPEG, or PNG', 'foreningsplugin') . ' <input type="file" name="signed_copy" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required></label></p>';
+        submit_button(__('Upload signed copy', 'foreningsplugin'), 'secondary');
         echo '</form>';
     }
 
@@ -800,17 +805,17 @@ final class MeetingDetailPage
             'meeting_id' => (string) $meetingId,
             'revision_id' => (string) $revisionId,
         ], admin_url('admin-post.php')), 'assoc_print_minutes');
-        echo '<p><a class="button" href="' . esc_url($download) . '">' . esc_html__('Ladda ner PDF', 'foreningsplugin') . '</a> ';
-        echo '<a class="button" href="' . esc_url($print) . '" target="_blank" rel="noopener">' . esc_html__('Utskriftsvy', 'foreningsplugin') . '</a></p>';
-        echo '<p>' . esc_html__('PDF-filen hämtas efter behörighetskontroll och visas inte som en offentlig länk.', 'foreningsplugin') . '</p>';
+        echo '<p><a class="button" href="' . esc_url($download) . '">' . esc_html__('Download PDF', 'foreningsplugin') . '</a> ';
+        echo '<a class="button" href="' . esc_url($print) . '" target="_blank" rel="noopener">' . esc_html__('Print view', 'foreningsplugin') . '</a></p>';
+        echo '<p>' . esc_html__('The PDF is downloaded after a permission check and is not shown as a public link.', 'foreningsplugin') . '</p>';
     }
 
     private static function revisionLabel(\Foreningssystem\Domain\Meeting\RevisionState $state): string
     {
         return match ($state) {
-            \Foreningssystem\Domain\Meeting\RevisionState::Draft => __('Utkast', 'foreningsplugin'),
-            \Foreningssystem\Domain\Meeting\RevisionState::UnderAdjustment => __('Under justering', 'foreningsplugin'),
-            \Foreningssystem\Domain\Meeting\RevisionState::Finalized => __('Låst', 'foreningsplugin'),
+            \Foreningssystem\Domain\Meeting\RevisionState::Draft => __('Draft', 'foreningsplugin'),
+            \Foreningssystem\Domain\Meeting\RevisionState::UnderAdjustment => __('Under adjustment', 'foreningsplugin'),
+            \Foreningssystem\Domain\Meeting\RevisionState::Finalized => __('Locked', 'foreningsplugin'),
         };
     }
 
@@ -846,7 +851,7 @@ final class MeetingDetailPage
     private static function guard(string $nonce): void
     {
         if (! current_user_can(Capabilities::MANAGE_MEETINGS) && ! current_user_can(Capabilities::RECORD_MEETING)) {
-            wp_die(esc_html__('Du har inte behörighet att ändra mötet.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to change the meeting.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -855,7 +860,7 @@ final class MeetingDetailPage
     private static function guardPublish(string $nonce): void
     {
         if (! current_user_can(Capabilities::PUBLISH_MINUTES)) {
-            wp_die(esc_html__('Du har inte behörighet att publicera protokollet.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to publish the minutes.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -864,7 +869,7 @@ final class MeetingDetailPage
     private static function guardFinalize(string $nonce): void
     {
         if (! current_user_can(Capabilities::FINALIZE_MINUTES)) {
-            wp_die(esc_html__('Du har inte behörighet att låsa protokollet.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to lock the minutes.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -873,7 +878,7 @@ final class MeetingDetailPage
     private static function guardSignedUpload(string $nonce): void
     {
         if (! current_user_can(Capabilities::FINALIZE_MINUTES) || ! current_user_can(Capabilities::MANAGE_DOCUMENTS)) {
-            wp_die(esc_html__('Du har inte behörighet att ladda upp den signerade kopian.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to upload the signed copy.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -916,39 +921,39 @@ final class MeetingDetailPage
     {
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
         $messages = [
-            'participant_added' => __('Deltagaren är tillagd.', 'foreningsplugin'),
-            'participant_removed' => __('Deltagaren är borttagen från mötet.', 'foreningsplugin'),
-            'duplicate_participant' => __('Personen finns redan på mötet.', 'foreningsplugin'),
-            'agenda_added' => __('Punkten är tillagd.', 'foreningsplugin'),
-            'agenda_moved' => __('Dagordningen är omordnad.', 'foreningsplugin'),
-            'agenda_removed' => __('Punkten är borttagen och numren är räknade om.', 'foreningsplugin'),
-            'cannot_move' => __('Punkten kan inte flyttas åt det hållet.', 'foreningsplugin'),
-            'note_added' => __('Anteckningen är sparad.', 'foreningsplugin'),
-            'note_removed' => __('Anteckningen är borttagen.', 'foreningsplugin'),
-            'decision_added' => __('Beslutet är sparat.', 'foreningsplugin'),
-            'follow_up' => __('Uppföljningen är ändrad. Beslutets lydelse är densamma.', 'foreningsplugin'),
-            'decision_removed' => __('Beslutet är borttaget.', 'foreningsplugin'),
-            'action_added' => __('Uppgiften är sparad.', 'foreningsplugin'),
-            'action_status' => __('Uppgiftens status är ändrad. Texten är densamma.', 'foreningsplugin'),
-            'action_removed' => __('Uppgiften är borttagen.', 'foreningsplugin'),
-            'draft_created' => __('Protokollutkastet är skapat från mötesuppgifterna.', 'foreningsplugin'),
-            'draft_saved' => __('Utkastets text är sparad. Källuppgifterna är oförändrade.', 'foreningsplugin'),
-            'draft_regenerated' => __('Utkastet är skapat om från mötesuppgifterna.', 'foreningsplugin'),
-            'draft_blocked' => __('Utkastet skapas när mötet är hållet, och bara en gång.', 'foreningsplugin'),
-            'confirm_regenerate' => __('Bekräfta om den ändrade texten ska ersättas.', 'foreningsplugin'),
-            'minutes_submitted' => __('Utkastet är skickat till justering.', 'foreningsplugin'),
-            'minutes_returned' => __('Revisionen är tillbaka som utkast.', 'foreningsplugin'),
-            'minutes_finalized' => __('Revisionen är låst. Texten ändras inte längre.', 'foreningsplugin'),
-            'minutes_correction' => __('Rättelsen är ett nytt utkast med den låsta texten.', 'foreningsplugin'),
-            'minutes_published' => __('Revisionen visas på webbplatsen. Texten är oförändrad.', 'foreningsplugin'),
-            'minutes_unpublished' => __('Revisionen är avpublicerad. Texten är oförändrad.', 'foreningsplugin'),
-            'minutes_blocked' => __('Den här ändringen passar inte revisionens läge.', 'foreningsplugin'),
-            'signed_uploaded' => __('Den signerade kopian är sparad. Protokolltexten är oförändrad.', 'foreningsplugin'),
-            'signed_replaced' => __('Den signerade kopian är ersatt. Protokolltexten är oförändrad.', 'foreningsplugin'),
-            'signed_blocked' => __('En signerad kopia kan bara knytas till en låst revision.', 'foreningsplugin'),
-            'signed_type' => __('Den signerade kopian ska vara en PDF, JPEG eller PNG.', 'foreningsplugin'),
-            'wrong_item' => __('Punkten hör inte till det här mötet.', 'foreningsplugin'),
-            'invalid' => __('Kontrollera uppgifterna och försök igen.', 'foreningsplugin'),
+            'participant_added' => __('The participant is added.', 'foreningsplugin'),
+            'participant_removed' => __('The participant is removed from the meeting.', 'foreningsplugin'),
+            'duplicate_participant' => __('The person is already at the meeting.', 'foreningsplugin'),
+            'agenda_added' => __('The item is added.', 'foreningsplugin'),
+            'agenda_moved' => __('The agenda is reordered.', 'foreningsplugin'),
+            'agenda_removed' => __('The item is removed and the numbers are recalculated.', 'foreningsplugin'),
+            'cannot_move' => __('The item cannot be moved that way.', 'foreningsplugin'),
+            'note_added' => __('The note is saved.', 'foreningsplugin'),
+            'note_removed' => __('The note is removed.', 'foreningsplugin'),
+            'decision_added' => __('The decision is saved.', 'foreningsplugin'),
+            'follow_up' => __('The follow-up is changed. The wording of the decision is the same.', 'foreningsplugin'),
+            'decision_removed' => __('The decision is removed.', 'foreningsplugin'),
+            'action_added' => __('The task is saved.', 'foreningsplugin'),
+            'action_status' => __('The task status is changed. The text is the same.', 'foreningsplugin'),
+            'action_removed' => __('The task is removed.', 'foreningsplugin'),
+            'draft_created' => __('The minutes draft is created from the meeting details.', 'foreningsplugin'),
+            'draft_saved' => __('The draft text is saved. The source details are unchanged.', 'foreningsplugin'),
+            'draft_regenerated' => __('The draft is recreated from the meeting details.', 'foreningsplugin'),
+            'draft_blocked' => __('The draft is created when the meeting is held, and only once.', 'foreningsplugin'),
+            'confirm_regenerate' => __('Confirm whether the edited text should be replaced.', 'foreningsplugin'),
+            'minutes_submitted' => __('The draft has been submitted for adjustment.', 'foreningsplugin'),
+            'minutes_returned' => __('The revision is back as a draft.', 'foreningsplugin'),
+            'minutes_finalized' => __('The revision is locked. The text no longer changes.', 'foreningsplugin'),
+            'minutes_correction' => __('The correction is a new draft with the locked text.', 'foreningsplugin'),
+            'minutes_published' => __('The revision is shown on the site. The text is unchanged.', 'foreningsplugin'),
+            'minutes_unpublished' => __('The revision is unpublished. The text is unchanged.', 'foreningsplugin'),
+            'minutes_blocked' => __('This change does not fit the revision\'s state.', 'foreningsplugin'),
+            'signed_uploaded' => __('The signed copy is saved. The minutes text is unchanged.', 'foreningsplugin'),
+            'signed_replaced' => __('The signed copy is replaced. The minutes text is unchanged.', 'foreningsplugin'),
+            'signed_blocked' => __('A signed copy can be attached only to a locked revision.', 'foreningsplugin'),
+            'signed_type' => __('The signed copy must be a PDF, JPEG, or PNG.', 'foreningsplugin'),
+            'wrong_item' => __('The item does not belong to this meeting.', 'foreningsplugin'),
+            'invalid' => __('Check the details and try again.', 'foreningsplugin'),
         ];
 
         if (! isset($messages[$notice])) {
@@ -964,18 +969,18 @@ final class MeetingDetailPage
     private static function presenceLabel(Presence $presence): string
     {
         return match ($presence) {
-            Presence::Present => __('Närvarande', 'foreningsplugin'),
-            Presence::Absent => __('Frånvarande', 'foreningsplugin'),
-            Presence::CoOpted => __('Adjungerad', 'foreningsplugin'),
+            Presence::Present => __('Present', 'foreningsplugin'),
+            Presence::Absent => __('Absent', 'foreningsplugin'),
+            Presence::CoOpted => __('Adjunct', 'foreningsplugin'),
         };
     }
 
     private static function dutyLabel(MeetingDuty $duty): string
     {
         return match ($duty) {
-            MeetingDuty::None => __('Ingen', 'foreningsplugin'),
-            MeetingDuty::Chair => __('Ordförande', 'foreningsplugin'),
-            MeetingDuty::Adjuster => __('Justerare', 'foreningsplugin'),
+            MeetingDuty::None => __('None', 'foreningsplugin'),
+            MeetingDuty::Chair => __('Chair', 'foreningsplugin'),
+            MeetingDuty::Adjuster => __('Adjuster', 'foreningsplugin'),
         };
     }
 
@@ -1029,7 +1034,7 @@ final class MeetingDetailPage
     private static function guardRecord(string $nonce): void
     {
         if (! current_user_can(Capabilities::RECORD_MEETING)) {
-            wp_die(esc_html__('Du har inte behörighet att föra anteckningar, beslut eller uppgifter.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to record notes, decisions, or tasks.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -1047,14 +1052,14 @@ final class MeetingDetailPage
                 continue;
             }
 
-            echo '<p><strong>' . esc_html__('Anteckning', 'foreningsplugin') . '</strong> ';
-            echo esc_html($note->includeInMinutes() ? __('Tas med i protokollet', 'foreningsplugin') : __('Arbetsanteckning', 'foreningsplugin'));
+            echo '<p><strong>' . esc_html__('Note', 'foreningsplugin') . '</strong> ';
+            echo esc_html($note->includeInMinutes() ? __('Included in the minutes', 'foreningsplugin') : __('Working note', 'foreningsplugin'));
             echo '<br>' . esc_html($note->body()) . '</p>';
 
             if ($canRecord) {
                 self::postForm('assoc_remove_note', $meetingId, [
                     'note_id' => (string) $note->id(),
-                ], __('Ta bort anteckning', 'foreningsplugin'));
+                ], __('Remove note', 'foreningsplugin'));
             }
         }
 
@@ -1066,8 +1071,8 @@ final class MeetingDetailPage
             }
 
             $meta = $decision->followUp() === DecisionFollowUp::Done
-                ? __('Klar', 'foreningsplugin')
-                : __('Öppen', 'foreningsplugin');
+                ? __('Done', 'foreningsplugin')
+                : __('Open', 'foreningsplugin');
 
             if ($row->responsibleName() !== null) {
                 $meta .= ', ' . $row->responsibleName();
@@ -1077,21 +1082,21 @@ final class MeetingDetailPage
                 $meta .= ', ' . $decision->deadline()->iso();
             }
 
-            echo '<p><strong>' . esc_html__('Beslut', 'foreningsplugin') . '</strong> ' . esc_html($meta);
+            echo '<p><strong>' . esc_html__('Decision', 'foreningsplugin') . '</strong> ' . esc_html($meta);
             echo '<br>' . esc_html($decision->wording()) . '</p>';
 
             if ($canRecord) {
                 $next = $decision->followUp() === DecisionFollowUp::Open ? DecisionFollowUp::Done : DecisionFollowUp::Open;
                 $label = $next === DecisionFollowUp::Done
-                    ? __('Markera som klar', 'foreningsplugin')
-                    : __('Återöppna', 'foreningsplugin');
+                    ? __('Mark as done', 'foreningsplugin')
+                    : __('Reopen', 'foreningsplugin');
                 self::postForm('assoc_set_decision_follow_up', $meetingId, [
                     'decision_id' => (string) $decision->id(),
                     'follow_up' => $next->value,
                 ], $label);
                 self::postForm('assoc_remove_decision', $meetingId, [
                     'decision_id' => (string) $decision->id(),
-                ], __('Ta bort beslut', 'foreningsplugin'));
+                ], __('Remove decision', 'foreningsplugin'));
             }
         }
 
@@ -1103,8 +1108,8 @@ final class MeetingDetailPage
             }
 
             $meta = $action->status() === ActionStatus::Done
-                ? __('Klar', 'foreningsplugin')
-                : __('Öppen', 'foreningsplugin');
+                ? __('Done', 'foreningsplugin')
+                : __('Open', 'foreningsplugin');
 
             if ($actionRow->assigneeName() !== null) {
                 $meta .= ', ' . $actionRow->assigneeName();
@@ -1114,21 +1119,21 @@ final class MeetingDetailPage
                 $meta .= ', ' . $action->dueOn()->iso();
             }
 
-            echo '<p><strong>' . esc_html__('Uppgift', 'foreningsplugin') . '</strong> ' . esc_html($meta);
+            echo '<p><strong>' . esc_html__('Task', 'foreningsplugin') . '</strong> ' . esc_html($meta);
             echo '<br>' . esc_html($action->task()) . '</p>';
 
             if ($canRecord) {
                 $next = $action->status() === ActionStatus::Open ? ActionStatus::Done : ActionStatus::Open;
                 $label = $next === ActionStatus::Done
-                    ? __('Markera som klar', 'foreningsplugin')
-                    : __('Återöppna', 'foreningsplugin');
+                    ? __('Mark as done', 'foreningsplugin')
+                    : __('Reopen', 'foreningsplugin');
                 self::postForm('assoc_set_action_status', $meetingId, [
                     'action_item_id' => (string) $action->id(),
                     'status' => $next->value,
                 ], $label);
                 self::postForm('assoc_remove_action_item', $meetingId, [
                     'action_item_id' => (string) $action->id(),
-                ], __('Ta bort uppgift', 'foreningsplugin'));
+                ], __('Remove task', 'foreningsplugin'));
             }
         }
 
@@ -1142,9 +1147,9 @@ final class MeetingDetailPage
         echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
         echo $itemField;
         wp_nonce_field('assoc_add_note');
-        echo '<p><label>' . esc_html__('Anteckning', 'foreningsplugin') . '<br><textarea class="large-text" name="body" rows="3" required></textarea></label></p>';
-        echo '<p><label><input type="checkbox" name="include_in_minutes" value="1"> ' . esc_html__('Ta med i protokollet', 'foreningsplugin') . '</label></p>';
-        submit_button(__('Spara anteckning', 'foreningsplugin'), 'secondary');
+        echo '<p><label>' . esc_html__('Note', 'foreningsplugin') . '<br><textarea class="large-text" name="body" rows="3" required></textarea></label></p>';
+        echo '<p><label><input type="checkbox" name="include_in_minutes" value="1"> ' . esc_html__('Include in the minutes', 'foreningsplugin') . '</label></p>';
+        submit_button(__('Save note', 'foreningsplugin'), 'secondary');
         echo '</form>';
 
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
@@ -1152,9 +1157,9 @@ final class MeetingDetailPage
         echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
         echo $itemField;
         wp_nonce_field('assoc_add_decision');
-        echo '<p><label>' . esc_html__('Beslut', 'foreningsplugin') . '<br><textarea class="large-text" name="wording" rows="3" required></textarea></label></p>';
-        echo '<p><label>' . esc_html__('Ansvarig', 'foreningsplugin') . ' <select name="responsible_person_id">';
-        echo '<option value="">' . esc_html__('Ingen', 'foreningsplugin') . '</option>';
+        echo '<p><label>' . esc_html__('Decision', 'foreningsplugin') . '<br><textarea class="large-text" name="wording" rows="3" required></textarea></label></p>';
+        echo '<p><label>' . esc_html__('Responsible', 'foreningsplugin') . ' <select name="responsible_person_id">';
+        echo '<option value="">' . esc_html__('None', 'foreningsplugin') . '</option>';
 
         foreach (WordpressPeople::service()->listPeople() as $personRecord) {
             $person = $personRecord->person();
@@ -1168,7 +1173,7 @@ final class MeetingDetailPage
 
         echo '</select></label></p>';
         echo '<p><label>' . esc_html__('Deadline', 'foreningsplugin') . ' <input type="date" name="deadline"></label></p>';
-        submit_button(__('Spara beslut', 'foreningsplugin'), 'secondary');
+        submit_button(__('Save decision', 'foreningsplugin'), 'secondary');
         echo '</form>';
 
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
@@ -1176,9 +1181,9 @@ final class MeetingDetailPage
         echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
         echo $itemField;
         wp_nonce_field('assoc_add_action_item');
-        echo '<p><label>' . esc_html__('Uppgift', 'foreningsplugin') . '<br><textarea class="large-text" name="task" rows="3" required></textarea></label></p>';
-        echo '<p><label>' . esc_html__('Ansvarig', 'foreningsplugin') . ' <select name="assignee_person_id">';
-        echo '<option value="">' . esc_html__('Ingen', 'foreningsplugin') . '</option>';
+        echo '<p><label>' . esc_html__('Task', 'foreningsplugin') . '<br><textarea class="large-text" name="task" rows="3" required></textarea></label></p>';
+        echo '<p><label>' . esc_html__('Responsible', 'foreningsplugin') . ' <select name="assignee_person_id">';
+        echo '<option value="">' . esc_html__('None', 'foreningsplugin') . '</option>';
 
         foreach (WordpressPeople::service()->listPeople() as $personRecord) {
             $person = $personRecord->person();
@@ -1192,7 +1197,7 @@ final class MeetingDetailPage
 
         echo '</select></label></p>';
         echo '<p><label>' . esc_html__('Deadline', 'foreningsplugin') . ' <input type="date" name="due_on"></label></p>';
-        submit_button(__('Spara uppgift', 'foreningsplugin'), 'secondary');
+        submit_button(__('Save task', 'foreningsplugin'), 'secondary');
         echo '</form>';
     }
 }

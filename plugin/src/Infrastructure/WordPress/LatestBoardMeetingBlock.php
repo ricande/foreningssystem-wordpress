@@ -12,8 +12,8 @@ final class LatestBoardMeetingBlock
     {
         register_block_type('foreningsplugin/latest-board-meeting', [
             'api_version' => 3,
-            'title' => __('Senaste styrelsemötet', 'foreningsplugin'),
-            'description' => __('Visar rubrik, datum och plats för det senaste styrelsemötet med ett publicerat protokoll.', 'foreningsplugin'),
+            'title' => __('Latest board meeting', 'foreningsplugin'),
+            'description' => __('Shows the title, date, and place of the latest board meeting with published minutes.', 'foreningsplugin'),
             'category' => 'widgets',
             'icon' => 'calendar-alt',
             'textdomain' => 'foreningsplugin',
@@ -33,7 +33,7 @@ final class LatestBoardMeetingBlock
         $meeting = WordpressMeetings::publication()->latestBoardMeeting();
 
         if (! $meeting instanceof PublicBoardMeeting) {
-            return '<p class="foreningsplugin-board-meeting">' . esc_html__('Inget publicerat styrelsemöte.', 'foreningsplugin') . '</p>';
+            return '<p class="foreningsplugin-board-meeting">' . esc_html__('No published board meeting.', 'foreningsplugin') . '</p>';
         }
 
         $html = '<article class="foreningsplugin-board-meeting">';

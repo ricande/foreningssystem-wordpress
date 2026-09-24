@@ -18,6 +18,8 @@ final class MinutesPdf
         private readonly MinutesPdfStore $files,
         private readonly MinutesPdfDocument $document,
         private readonly Authorizer $authorizer,
+        private readonly string $revisionLabel = 'Revision %d',
+        private readonly string $pageLabel = 'Page %1$d / %2$d',
     ) {
     }
 
@@ -52,7 +54,11 @@ final class MinutesPdf
             }
         }
 
-        $bytes = $this->document->render($revision->body(), $revision->number());
+        $bytes = $this->document->render(
+            $revision->body(),
+            sprintf($this->revisionLabel, $revision->number()),
+            $this->pageLabel
+        );
         $this->files->put($revisionId, $hash, $bytes);
 
         return $bytes;

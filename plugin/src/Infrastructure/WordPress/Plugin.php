@@ -125,8 +125,8 @@ final class Plugin
     public static function registerAdminMenu(): void
     {
         add_menu_page(
-            __('Förening', 'foreningsplugin'),
-            __('Förening', 'foreningsplugin'),
+            __('Association', 'foreningsplugin'),
+            __('Association', 'foreningsplugin'),
             Capabilities::VIEW_MEMBERS,
             'foreningsplugin',
             [self::class, 'renderAdminPage'],
@@ -136,8 +136,8 @@ final class Plugin
 
         add_submenu_page(
             'foreningsplugin',
-            __('Medlemmar', 'foreningsplugin'),
-            __('Medlemmar', 'foreningsplugin'),
+            __('Members', 'foreningsplugin'),
+            __('Members', 'foreningsplugin'),
             Capabilities::VIEW_MEMBERS,
             'foreningsplugin-members',
             [MembersPage::class, 'render']
@@ -145,8 +145,8 @@ final class Plugin
 
         add_submenu_page(
             'foreningsplugin',
-            __('Styrelse', 'foreningsplugin'),
-            __('Styrelse', 'foreningsplugin'),
+            __('Board', 'foreningsplugin'),
+            __('Board', 'foreningsplugin'),
             Capabilities::VIEW_MEMBERS,
             'foreningsplugin-board',
             [BoardPage::class, 'render']
@@ -154,8 +154,8 @@ final class Plugin
 
         add_submenu_page(
             'foreningsplugin',
-            __('Dokument', 'foreningsplugin'),
-            __('Dokument', 'foreningsplugin'),
+            __('Documents', 'foreningsplugin'),
+            __('Documents', 'foreningsplugin'),
             Capabilities::VIEW_BOARD_DOCUMENTS,
             'foreningsplugin-documents',
             [DocumentsPage::class, 'render']
@@ -163,8 +163,8 @@ final class Plugin
 
         add_submenu_page(
             'foreningsplugin',
-            __('Möten', 'foreningsplugin'),
-            __('Möten', 'foreningsplugin'),
+            __('Meetings', 'foreningsplugin'),
+            __('Meetings', 'foreningsplugin'),
             Capabilities::VIEW_INTERNAL_MEETINGS,
             'foreningsplugin-meetings',
             [MeetingsPage::class, 'render']
@@ -172,8 +172,8 @@ final class Plugin
 
         add_submenu_page(
             'foreningsplugin',
-            __('Profil', 'foreningsplugin'),
-            __('Profil', 'foreningsplugin'),
+            __('Profile', 'foreningsplugin'),
+            __('Profile', 'foreningsplugin'),
             Capabilities::MANAGE_ASSOCIATION,
             'foreningsplugin-profile',
             [AssociationProfilePage::class, 'render']
@@ -181,8 +181,8 @@ final class Plugin
 
         add_submenu_page(
             'foreningsplugin',
-            __('Kvarhållning', 'foreningsplugin'),
-            __('Kvarhållning', 'foreningsplugin'),
+            __('Retention', 'foreningsplugin'),
+            __('Retention', 'foreningsplugin'),
             Capabilities::MANAGE_ASSOCIATION,
             'foreningsplugin-retention',
             [RetentionPage::class, 'render']
@@ -190,8 +190,8 @@ final class Plugin
 
         add_submenu_page(
             'foreningsplugin',
-            __('Låsa protokoll', 'foreningsplugin'),
-            __('Låsa protokoll', 'foreningsplugin'),
+            __('Lock minutes', 'foreningsplugin'),
+            __('Lock minutes', 'foreningsplugin'),
             Capabilities::MANAGE_ASSOCIATION,
             'foreningsplugin-minutes-lock',
             [MinutesLockPage::class, 'render']
@@ -199,8 +199,8 @@ final class Plugin
 
         add_submenu_page(
             'foreningsplugin',
-            __('Publicera protokoll', 'foreningsplugin'),
-            __('Publicera protokoll', 'foreningsplugin'),
+            __('Publish minutes', 'foreningsplugin'),
+            __('Publish minutes', 'foreningsplugin'),
             Capabilities::MANAGE_ASSOCIATION,
             'foreningsplugin-minutes-publish',
             [MinutesPublishPage::class, 'render']
@@ -218,21 +218,21 @@ final class Plugin
         $currentBoard = WordpressBoard::service()->currentCount(AssociationDate::fromIso(wp_date('Y-m-d')));
 
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('Föreningsplugin', 'foreningsplugin') . '</h1>';
+        echo '<h1>' . esc_html__('Association plugin', 'foreningsplugin') . '</h1>';
 
         if ($profile->name() !== '') {
             echo '<p>' . esc_html($profile->name()) . '</p>';
         }
 
-        echo '<p>' . esc_html__('Pluginet är aktivt.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('The plugin is active.', 'foreningsplugin') . '</p>';
         echo '<p>' . esc_html(sprintf(
             /* translators: %d: number of active members */
-            __('Aktiva medlemmar: %d', 'foreningsplugin'),
+            __('Active members: %d', 'foreningsplugin'),
             $activeMembers
         )) . '</p>';
         echo '<p>' . esc_html(sprintf(
             /* translators: %d: number of current board assignments */
-            __('Styrelseuppdrag idag: %d', 'foreningsplugin'),
+            __('Board assignments today: %d', 'foreningsplugin'),
             $currentBoard
         )) . '</p>';
 
@@ -244,25 +244,25 @@ final class Plugin
             $allMeetings = $meetings->listMeetings();
             $next = $overview->nextPlanned($allMeetings, $now);
             $last = $overview->lastHeld($allMeetings);
-            echo '<h2>' . esc_html__('Nästa möte', 'foreningsplugin') . '</h2>';
-            echo '<p>' . esc_html($next === null ? __('Inget kommande möte.', 'foreningsplugin') : $next->title() . ' ' . $next->startsAt()->date()) . '</p>';
-            echo '<h2>' . esc_html__('Senaste hållet möte', 'foreningsplugin') . '</h2>';
-            echo '<p>' . esc_html($last === null ? __('Inget hållet möte.', 'foreningsplugin') : $last->title() . ' ' . $last->startsAt()->date()) . '</p>';
+            echo '<h2>' . esc_html__('Next meeting', 'foreningsplugin') . '</h2>';
+            echo '<p>' . esc_html($next === null ? __('No upcoming meeting.', 'foreningsplugin') : $next->title() . ' ' . $next->startsAt()->date()) . '</p>';
+            echo '<h2>' . esc_html__('Latest held meeting', 'foreningsplugin') . '</h2>';
+            echo '<p>' . esc_html($last === null ? __('No held meeting.', 'foreningsplugin') : $last->title() . ' ' . $last->startsAt()->date()) . '</p>';
             echo '<p>' . esc_html(sprintf(
                 /* translators: %d: number of planned meetings */
-                __('Planerade möten: %d', 'foreningsplugin'),
+                __('Planned meetings: %d', 'foreningsplugin'),
                 $meetings->countWithStatus(MeetingStatus::Planned)
             )) . '</p>';
             echo '<p>' . esc_html(sprintf(
                 /* translators: %d: number of open decisions */
-                __('Öppna beslut: %d', 'foreningsplugin'),
+                __('Open decisions: %d', 'foreningsplugin'),
                 WordpressMeetings::record()->openCount()
             )) . '</p>';
-            echo '<h2>' . esc_html__('Försenade uppgifter', 'foreningsplugin') . '</h2>';
+            echo '<h2>' . esc_html__('Overdue tasks', 'foreningsplugin') . '</h2>';
             $overdue = array_slice($overview->overdue(WordpressMeetings::record()->actions(), $today), 0, 8);
 
             if ($overdue === []) {
-                echo '<p>' . esc_html__('Inga försenade uppgifter.', 'foreningsplugin') . '</p>';
+                echo '<p>' . esc_html__('No overdue tasks.', 'foreningsplugin') . '</p>';
             } else {
                 echo '<ul>';
 
@@ -278,10 +278,10 @@ final class Plugin
         if (current_user_can(Capabilities::VIEW_BOARD_DOCUMENTS) || current_user_can(Capabilities::MANAGE_DOCUMENTS)) {
             $documents = WordpressDocuments::archive()->officerList();
             usort($documents, static fn ($left, $right): int => $right->id() <=> $left->id());
-            echo '<h2>' . esc_html__('Senaste dokument', 'foreningsplugin') . '</h2>';
+            echo '<h2>' . esc_html__('Latest documents', 'foreningsplugin') . '</h2>';
 
             if ($documents === []) {
-                echo '<p>' . esc_html__('Inga dokument att visa.', 'foreningsplugin') . '</p>';
+                echo '<p>' . esc_html__('No documents to show.', 'foreningsplugin') . '</p>';
             } else {
                 echo '<ul>';
 

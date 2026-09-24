@@ -26,9 +26,9 @@ final class DocumentDownload
             $document = $archive->open($id);
             $bytes = $archive->read($id);
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att hämta dokumentet.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to download the document.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (\RuntimeException) {
-            wp_die(esc_html__('Dokumentet kunde inte hämtas.', 'foreningsplugin'), '', ['response' => 404]);
+            wp_die(esc_html__('The document could not be downloaded.', 'foreningsplugin'), '', ['response' => 404]);
         }
 
         $extension = DocumentFileType::extension($document->mediaType());

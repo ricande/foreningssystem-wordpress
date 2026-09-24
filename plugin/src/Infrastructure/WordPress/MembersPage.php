@@ -81,7 +81,7 @@ final class MembersPage
     public static function exportMembers(): void
     {
         if (! current_user_can(Capabilities::EXPORT_MEMBERS)) {
-            wp_die(esc_html__('Du har inte behörighet att exportera medlemmar.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to export members.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer('assoc_export_members');
@@ -121,7 +121,7 @@ final class MembersPage
         try {
             $result = WordpressPeople::exchange()->import($csv);
         } catch (NotAllowed) {
-            wp_die(esc_html__('Du har inte behörighet att importera medlemmar.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to import members.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (\InvalidArgumentException) {
             self::redirect('import_invalid');
         }
@@ -153,60 +153,60 @@ final class MembersPage
     public static function render(): void
     {
         if (! current_user_can(Capabilities::VIEW_MEMBERS)) {
-            wp_die(esc_html__('Du har inte behörighet att se medlemmar.', 'foreningsplugin'));
+            wp_die(esc_html__('You do not have permission to view members.', 'foreningsplugin'));
         }
 
         $canEdit = current_user_can(Capabilities::EDIT_MEMBERS);
         $records = WordpressPeople::service()->listPeople();
 
         echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('Medlemmar', 'foreningsplugin') . '</h1>';
+        echo '<h1>' . esc_html__('Members', 'foreningsplugin') . '</h1>';
         self::notice();
 
         if ($canEdit) {
-            echo '<h2>' . esc_html__('Ny person', 'foreningsplugin') . '</h2>';
+            echo '<h2>' . esc_html__('New person', 'foreningsplugin') . '</h2>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_register_person">';
             wp_nonce_field('assoc_register_person');
-            self::field('first_name', __('Förnamn', 'foreningsplugin'), 'text', true);
-            self::field('last_name', __('Efternamn', 'foreningsplugin'), 'text', true);
-            self::field('email', __('E-post', 'foreningsplugin'), 'email', false);
-            self::field('membership_number', __('Medlemsnummer', 'foreningsplugin'), 'text', true);
-            self::field('membership_type', __('Medlemstyp', 'foreningsplugin'), 'text', false);
-            self::field('started_on', __('Startdatum', 'foreningsplugin'), 'date', true);
-            submit_button(__('Spara person', 'foreningsplugin'));
+            self::field('first_name', __('First name', 'foreningsplugin'), 'text', true);
+            self::field('last_name', __('Last name', 'foreningsplugin'), 'text', true);
+            self::field('email', __('Email', 'foreningsplugin'), 'email', false);
+            self::field('membership_number', __('Membership number', 'foreningsplugin'), 'text', true);
+            self::field('membership_type', __('Membership type', 'foreningsplugin'), 'text', false);
+            self::field('started_on', __('Start date', 'foreningsplugin'), 'date', true);
+            submit_button(__('Save person', 'foreningsplugin'));
             echo '</form>';
-            echo '<h2>' . esc_html__('Importera', 'foreningsplugin') . '</h2>';
-            echo '<p>' . esc_html__('Filen är UTF-8 och semikolonseparerad, med en rad per medlemsperiod. Ett medlemsnummer som redan finns lämnas orört. Importen kopplar inget WordPress-konto och byter inte namn på en person som redan finns.', 'foreningsplugin') . '</p>';
+            echo '<h2>' . esc_html__('Import', 'foreningsplugin') . '</h2>';
+            echo '<p>' . esc_html__('The file is UTF-8 and semicolon-separated, with one row per membership period. A membership number that already exists is left unchanged. The import does not link a WordPress account and does not rename a person who already exists.', 'foreningsplugin') . '</p>';
             echo '<form method="post" enctype="multipart/form-data" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_import_members">';
             wp_nonce_field('assoc_import_members');
             echo '<p><input type="file" name="member_csv" accept=".csv,text/csv" required></p>';
-            submit_button(__('Importera medlemmar', 'foreningsplugin'));
+            submit_button(__('Import members', 'foreningsplugin'));
             echo '</form>';
         }
 
         if (current_user_can(Capabilities::EXPORT_MEMBERS)) {
-            echo '<h2>' . esc_html__('Exportera', 'foreningsplugin') . '</h2>';
+            echo '<h2>' . esc_html__('Export', 'foreningsplugin') . '</h2>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_export_members">';
             wp_nonce_field('assoc_export_members');
-            submit_button(__('Exportera medlemmar', 'foreningsplugin'));
+            submit_button(__('Export members', 'foreningsplugin'));
             echo '</form>';
         }
 
-        echo '<h2>' . esc_html__('Personer', 'foreningsplugin') . '</h2>';
+        echo '<h2>' . esc_html__('People', 'foreningsplugin') . '</h2>';
         echo '<table class="widefat striped"><thead><tr>';
-        foreach ([__('Namn', 'foreningsplugin'), __('E-post', 'foreningsplugin'), __('Medlemsnummer', 'foreningsplugin'), __('Status', 'foreningsplugin'), __('Period', 'foreningsplugin')] as $heading) {
+        foreach ([__('Name', 'foreningsplugin'), __('Email', 'foreningsplugin'), __('Membership number', 'foreningsplugin'), __('Status', 'foreningsplugin'), __('Period', 'foreningsplugin')] as $heading) {
             echo '<th>' . esc_html($heading) . '</th>';
         }
         if ($canEdit) {
-            echo '<th>' . esc_html__('Åtgärd', 'foreningsplugin') . '</th>';
+            echo '<th>' . esc_html__('Action', 'foreningsplugin') . '</th>';
         }
         echo '</tr></thead><tbody>';
 
         if ($records === []) {
-            echo '<tr><td colspan="6">' . esc_html__('Inga personer ännu.', 'foreningsplugin') . '</td></tr>';
+            echo '<tr><td colspan="6">' . esc_html__('No people yet.', 'foreningsplugin') . '</td></tr>';
         }
 
         foreach ($records as $record) {
@@ -232,7 +232,7 @@ final class MembersPage
                     echo '<input type="hidden" name="membership_id" value="' . esc_attr((string) $membership->id()) . '">';
                     wp_nonce_field('assoc_end_membership');
                     echo '<input type="date" name="ended_on" required> ';
-                    submit_button(__('Avsluta medlemskap', 'foreningsplugin'), 'secondary', 'submit', false);
+                    submit_button(__('End membership', 'foreningsplugin'), 'secondary', 'submit', false);
                     echo '</form>';
                 }
                 if ($person->status() !== PersonStatus::Deceased && ($membership === null || $membership->status() === MembershipStatus::Ended)) {
@@ -240,10 +240,10 @@ final class MembersPage
                     echo '<input type="hidden" name="action" value="assoc_add_membership">';
                     echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
                     wp_nonce_field('assoc_add_membership');
-                    echo '<input type="text" name="membership_number" required placeholder="' . esc_attr__('Medlemsnummer', 'foreningsplugin') . '"> ';
-                    echo '<input type="text" name="membership_type" placeholder="' . esc_attr__('Medlemstyp', 'foreningsplugin') . '"> ';
+                    echo '<input type="text" name="membership_number" required placeholder="' . esc_attr__('Membership number', 'foreningsplugin') . '"> ';
+                    echo '<input type="text" name="membership_type" placeholder="' . esc_attr__('Membership type', 'foreningsplugin') . '"> ';
                     echo '<input type="date" name="started_on" required> ';
-                    submit_button(__('Ny period', 'foreningsplugin'), 'secondary', 'submit', false);
+                    submit_button(__('New period', 'foreningsplugin'), 'secondary', 'submit', false);
                     echo '</form>';
                 }
                 if ($person->status() !== PersonStatus::Deceased) {
@@ -252,7 +252,7 @@ final class MembersPage
                     echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
                     wp_nonce_field('assoc_mark_deceased');
                     echo '<input type="date" name="deceased_on" required> ';
-                    submit_button(__('Markera som avliden', 'foreningsplugin'), 'delete', 'submit', false);
+                    submit_button(__('Mark as deceased', 'foreningsplugin'), 'delete', 'submit', false);
                     echo '</form>';
                 }
                 echo '</td>';
@@ -266,7 +266,7 @@ final class MembersPage
     private static function guardEdit(string $nonce): void
     {
         if (! current_user_can(Capabilities::EDIT_MEMBERS)) {
-            wp_die(esc_html__('Du har inte behörighet att ändra medlemmar.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('You do not have permission to change members.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -288,18 +288,18 @@ final class MembersPage
     {
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
         $messages = [
-            'created' => __('Personen är sparad.', 'foreningsplugin'),
-            'renewed' => __('En ny medlemsperiod är sparad. Den tidigare perioden finns kvar.', 'foreningsplugin'),
-            'ended' => __('Medlemskapet är avslutat. Personen finns kvar.', 'foreningsplugin'),
-            'deceased' => __('Personen är markerad som avliden och öppna medlemskap är avslutade.', 'foreningsplugin'),
-            'duplicate_number' => __('Medlemsnumret används redan.', 'foreningsplugin'),
-            'overlap' => __('Medlemsperioderna överlappar.', 'foreningsplugin'),
-            'already_ended' => __('Medlemskapet är redan avslutat.', 'foreningsplugin'),
-            'assignment' => __('Ett öppet styrelseuppdrag passar inte datumet, så inget ändrades.', 'foreningsplugin'),
-            'invalid' => __('Kontrollera uppgifterna och försök igen.', 'foreningsplugin'),
-            'deceased_period' => __('En avliden person kan inte få en ny medlemsperiod.', 'foreningsplugin'),
-            'import_invalid' => __('Filen måste vara UTF-8 med de förväntade kolumnerna, separerade med semikolon.', 'foreningsplugin'),
-            'import_too_large' => __('Filen är större än 2 MB.', 'foreningsplugin'),
+            'created' => __('The person is saved.', 'foreningsplugin'),
+            'renewed' => __('A new membership period is saved. The earlier period remains.', 'foreningsplugin'),
+            'ended' => __('The membership is ended. The person remains.', 'foreningsplugin'),
+            'deceased' => __('The person is marked as deceased and open memberships are ended.', 'foreningsplugin'),
+            'duplicate_number' => __('The membership number is already used.', 'foreningsplugin'),
+            'overlap' => __('The membership periods overlap.', 'foreningsplugin'),
+            'already_ended' => __('The membership is already ended.', 'foreningsplugin'),
+            'assignment' => __('An open board assignment does not fit the date, so nothing changed.', 'foreningsplugin'),
+            'invalid' => __('Check the details and try again.', 'foreningsplugin'),
+            'deceased_period' => __('A deceased person cannot receive a new membership period.', 'foreningsplugin'),
+            'import_invalid' => __('The file must be UTF-8 with the expected columns, separated by semicolons.', 'foreningsplugin'),
+            'import_too_large' => __('The file is larger than 2 MB.', 'foreningsplugin'),
         ];
 
         if ($notice === 'import_done') {
@@ -307,7 +307,7 @@ final class MembersPage
             $skipped = isset($_GET['assoc_skipped']) ? absint($_GET['assoc_skipped']) : 0;
             echo '<div class="notice notice-success"><p>' . esc_html(sprintf(
                 /* translators: 1: created memberships, 2: skipped memberships */
-                __('Importen skapade %1$d medlemsperioder och lämnade %2$d orörda.', 'foreningsplugin'),
+                __('The import created %1$d membership periods and left %2$d unchanged.', 'foreningsplugin'),
                 $created,
                 $skipped
             )) . '</p></div>';
@@ -357,15 +357,15 @@ final class MembersPage
     private static function statusLabel(string $personStatus, ?MembershipStatus $membershipStatus): string
     {
         if ($personStatus === PersonStatus::Deceased->value) {
-            return __('Avliden', 'foreningsplugin');
+            return __('Deceased', 'foreningsplugin');
         }
 
         return match ($membershipStatus) {
-            MembershipStatus::Active => __('Aktiv', 'foreningsplugin'),
-            MembershipStatus::Pending => __('Väntande', 'foreningsplugin'),
-            MembershipStatus::Dormant => __('Vilande', 'foreningsplugin'),
-            MembershipStatus::Ended => __('Avslutad', 'foreningsplugin'),
-            default => __('Utan medlemskap', 'foreningsplugin'),
+            MembershipStatus::Active => __('Active', 'foreningsplugin'),
+            MembershipStatus::Pending => __('Pending', 'foreningsplugin'),
+            MembershipStatus::Dormant => __('Dormant', 'foreningsplugin'),
+            MembershipStatus::Ended => __('Ended', 'foreningsplugin'),
+            default => __('No membership', 'foreningsplugin'),
         };
     }
 }
