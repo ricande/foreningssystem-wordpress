@@ -1997,3 +1997,120 @@ msgstr "Protokollet är låst"
 
 msgid "Minutes: awaiting draft"
 msgstr "Protokoll: utkast saknas"
+
+msgid "A WordPress account already uses this email."
+msgstr "Ett WordPress-konto använder redan den här e-postadressen."
+
+msgid "A member account can be created for this person."
+msgstr "Ett medlemskonto kan skapas för den här personen."
+
+msgid "Account email"
+msgstr "Kontots e-post"
+
+msgid "Confirm the WordPress account before linking it."
+msgstr "Bekräfta WordPress-kontot innan det kopplas."
+
+msgid "Create member account now"
+msgstr "Skapa medlemskonto nu"
+
+msgid "Existing account"
+msgstr "Befintligt konto"
+
+msgid "Find account"
+msgstr "Hitta konto"
+
+msgid "Link this WordPress account to the member."
+msgstr "Koppla det här WordPress-kontot till medlemmen."
+
+msgid "Link this account"
+msgstr "Länka det här kontot"
+
+msgid "Linked"
+msgstr "Kopplat"
+
+msgid "Member account"
+msgstr "Medlemskonto"
+
+msgid "Member email"
+msgstr "Medlemmens e-post"
+
+msgid "Needs attention"
+msgstr "Behöver åtgärd"
+
+msgid "No WordPress account is linked."
+msgstr "Inget WordPress-konto är kopplat."
+
+msgid "No WordPress account matches that username or email."
+msgstr "Inget WordPress-konto matchar det användarnamnet eller den e-postadressen."
+
+msgid "No WordPress account was created."
+msgstr "Inget WordPress-konto skapades."
+
+msgid "No account is created automatically for members under 18."
+msgstr "Inget konto skapas automatiskt för medlemmar under 18 år."
+
+msgid "No email address"
+msgstr "Ingen e-postadress"
+
+msgid "Not automatically created"
+msgstr "Inte skapat automatiskt"
+
+msgid "Not created"
+msgstr "Inte skapat"
+
+msgid "Retry account creation"
+msgstr "Försök skapa kontot igen"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "That WordPress account is already linked to another person."
+msgstr "Det WordPress-kontot är redan kopplat till en annan person."
+
+msgid "The WordPress account is created. WordPress sends the password setup message."
+msgstr "WordPress-kontot är skapat. WordPress skickar meddelandet för att välja lösenord."
+
+msgid "The WordPress account is linked to this member."
+msgstr "WordPress-kontot är kopplat till den här medlemmen."
+
+msgid "The WordPress account is unlinked. The WordPress user was not deleted."
+msgstr "WordPress-kontot är frånkopplat. Själva WordPress-användaren är inte borttagen."
+
+msgid "The account could not be created."
+msgstr "Kontot kunde inte skapas."
+
+msgid "The member email and the WordPress account email are different. WordPress keeps its own account email."
+msgstr "Medlemmens e-post och WordPress-kontots e-post skiljer sig. WordPress behåller kontots egen e-post."
+
+msgid "The WordPress account could not be created."
+msgstr "WordPress-kontot kunde inte skapas."
+
+msgid "This email address is used by more than one person. Resolve the member email addresses before automatic account creation."
+msgstr "Den här e-postadressen används av mer än en person. Ordna medlemmarnas e-postadresser innan ett konto skapas automatiskt."
+
+msgid "This person is deceased."
+msgstr "Personen är avliden."
+
+msgid "This person is not an active individual member."
+msgstr "Personen är inte en aktiv enskild medlem."
+
+msgid "Unlink account"
+msgstr "Koppla loss konto"
+
+msgid "Unlink the current WordPress account before linking a different one."
+msgstr "Koppla loss det nuvarande WordPress-kontot innan ett annat kopplas."
+
+msgid "Unlink this WordPress account from the member? The WordPress user itself will not be deleted."
+msgstr "Koppla loss det här WordPress-kontot från medlemmen? Själva WordPress-användaren tas inte bort."
+
+msgid "WordPress account email"
+msgstr "WordPress-kontots e-post"
+
+msgid "WordPress account to link"
+msgstr "WordPress-konto att koppla"
+
+msgid "WordPress user"
+msgstr "WordPress-användare"
+
+msgid "WordPress username or email"
+msgstr "WordPress-användarnamn eller e-post"

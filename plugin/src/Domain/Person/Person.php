@@ -84,4 +84,18 @@ final class Person
     {
         return new self($this->id, self::ANONYMOUS_FIRST_NAME, self::ANONYMOUS_LAST_NAME, '', $this->status, null, null);
     }
+
+    public function linkedToWordpressUser(int $userId): self
+    {
+        if ($userId < 1) {
+            throw new InvalidArgumentException('A WordPress user id is required.');
+        }
+
+        return new self($this->id, $this->firstName, $this->lastName, $this->email, $this->status, $userId, $this->birthDate);
+    }
+
+    public function withoutWordpressUser(): self
+    {
+        return new self($this->id, $this->firstName, $this->lastName, $this->email, $this->status, null, $this->birthDate);
+    }
 }

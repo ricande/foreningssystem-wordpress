@@ -43,6 +43,8 @@ Critical tasks:
 - link WordPress account where needed
 - export/import where authorized
 
+Member detail has a Member account section. An active individual member with a usable email normally receives a WordPress subscriber account. A known age under 18 does not. A missing birth date is not treated as proof of minority in this version; that is implementation behavior, not a legal conclusion. The section shows whether the account is linked, not created, or needs attention because the email is shared or already belongs to a WordPress user. An authorized officer can create the account, link an existing WordPress user after confirming that exact account, or unlink it. Unlinking does not delete the WordPress user. The plugin does not set or display a password. Changing the member's contact email does not change the WordPress account email. Ending the membership leaves the account in place; member-only access follows current membership coverage.
+
 Dangerous actions must distinguish:
 - end membership
 - anonymize

@@ -151,6 +151,8 @@ final class MembersScreen
             }
         }
 
+        MemberAccountSection::render($personId, $canEdit);
+
         echo '<h2>' . esc_html__('Membership', 'foreningsplugin') . '</h2>';
         $memberships = is_array($detail['memberships']) ? $detail['memberships'] : [];
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Account\AccountOutcome;
 use Foreningssystem\Application\People\BoardCoverageNotice;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
@@ -31,6 +32,7 @@ final class MembersPage
                 $birth === '' ? null : AssociationDate::fromIso($birth),
                 AssociationDate::fromIso(wp_date('Y-m-d'))
             );
+            WordpressMemberAccounts::provisionPerson($personId);
             self::redirect('created', ['assoc_person' => (string) $personId]);
         } catch (MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
             self::redirect(self::noticeCode($error));
@@ -42,10 +44,12 @@ final class MembersPage
         self::guardEdit('assoc_add_membership');
 
         try {
+            $membershipId = self::integer('membership_id');
             WordpressPeople::service()->addPeriod(
-                self::integer('membership_id'),
+                $membershipId,
                 AssociationDate::fromIso(self::text('started_on'))
             );
+            WordpressMemberAccounts::provisionMembership($membershipId);
             self::redirect('renewed', self::returnArgs());
         } catch (MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
             self::redirect(self::noticeCode($error), self::returnArgs());
@@ -96,7 +100,7 @@ final class MembersPage
                     $startedOn
                 );
             } else {
-                WordpressPeople::service()->addPersonToMembership(
+                $personId = WordpressPeople::service()->addPersonToMembership(
                     self::integer('membership_id'),
                     self::text('first_name'),
                     self::text('last_name'),
@@ -109,6 +113,7 @@ final class MembersPage
                 );
             }
 
+            WordpressMemberAccounts::provisionPerson($personId);
             self::redirect('participant_saved', self::returnArgs());
         } catch (MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
             self::redirect(self::noticeCode($error), self::returnArgs());
@@ -286,6 +291,7 @@ final class MembersPage
                 $kind,
                 AssociationDate::fromIso(self::text('started_on'))
             );
+            WordpressMemberAccounts::provisionPerson($personId);
             self::redirect('created', ['assoc_person' => (string) $personId]);
         } catch (MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
             self::redirect(self::noticeCode($error));
@@ -313,6 +319,7 @@ final class MembersPage
                 $birthDate,
                 AssociationDate::fromIso(wp_date('Y-m-d'))
             );
+            WordpressMemberAccounts::provisionPerson($personId);
             self::redirect('person_saved', ['assoc_person' => (string) $personId]);
         } catch (\InvalidArgumentException | \RuntimeException $error) {
             self::redirect(self::noticeCode($error), ['assoc_person' => (string) $personId]);
@@ -624,6 +631,77 @@ final class MembersPage
         exit;
     }
 
+    public static function createMemberAccount(): void
+    {
+        self::guardEdit('assoc_create_member_account');
+        $personId = self::integer('person_id');
+        $result = WordpressMemberAccounts::service()->provision($personId, AssociationDate::fromIso(wp_date('Y-m-d')));
+        $notice = match ($result->outcome) {
+            AccountOutcome::Created => 'account_created',
+            AccountOutcome::AlreadyLinked => 'account_linked',
+            AccountOutcome::KnownMinor => 'minor_account',
+            AccountOutcome::Failed => 'account_failed',
+            default => 'account_unchanged',
+        };
+        self::redirect($notice, ['assoc_person' => (string) $personId]);
+    }
+
+    public static function findMemberAccount(): void
+    {
+        self::guardEdit('assoc_find_member_account');
+        $personId = self::integer('person_id');
+        $userId = WordpressMemberAccounts::findUser(self::text('account_login'));
+
+        if ($userId === null) {
+            self::redirect('account_not_found', ['assoc_person' => (string) $personId]);
+        }
+
+        self::redirect('account_review', [
+            'assoc_person' => (string) $personId,
+            'assoc_account_user' => (string) $userId,
+        ]);
+    }
+
+    public static function linkMemberAccount(): void
+    {
+        self::guardEdit('assoc_link_member_account');
+        $personId = self::integer('person_id');
+
+        if (! self::confirmed()) {
+            self::redirect('confirm', ['assoc_person' => (string) $personId]);
+        }
+
+        $result = WordpressMemberAccounts::service()->linkExisting(
+            $personId,
+            self::integer('wp_user_id'),
+            AssociationDate::fromIso(wp_date('Y-m-d'))
+        );
+        $notice = match ($result->outcome) {
+            AccountOutcome::Linked, AccountOutcome::AlreadyLinked => 'account_linked',
+            AccountOutcome::UserTaken => 'account_taken',
+            AccountOutcome::UnlinkFirst => 'account_unlink_first',
+            AccountOutcome::MinorLinkRefused => 'minor_account',
+            AccountOutcome::UserNotFound => 'account_not_found',
+            default => 'account_failed',
+        };
+        self::redirect($notice, ['assoc_person' => (string) $personId]);
+    }
+
+    public static function unlinkMemberAccount(): void
+    {
+        self::guardEdit('assoc_unlink_member_account');
+        $personId = self::integer('person_id');
+
+        if (! self::confirmed()) {
+            self::redirect('confirm', ['assoc_person' => (string) $personId]);
+        }
+
+        $result = WordpressMemberAccounts::service()->unlink($personId);
+        self::redirect($result->outcome === AccountOutcome::Unlinked ? 'account_unlinked' : 'account_failed', [
+            'assoc_person' => (string) $personId,
+        ]);
+    }
+
     public static function notice(): void
     {
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
@@ -665,6 +743,16 @@ final class MembersPage
             'deceased_period' => __('A deceased person cannot receive a new membership period.', 'foreningsplugin'),
             'import_invalid' => __('The file must be UTF-8 with the expected columns, separated by semicolons.', 'foreningsplugin'),
             'import_too_large' => __('The file is larger than 2 MB.', 'foreningsplugin'),
+            'account_created' => __('The WordPress account is created. WordPress sends the password setup message.', 'foreningsplugin'),
+            'account_linked' => __('The WordPress account is linked to this member.', 'foreningsplugin'),
+            'account_unlinked' => __('The WordPress account is unlinked. The WordPress user was not deleted.', 'foreningsplugin'),
+            'account_unchanged' => __('No WordPress account was created.', 'foreningsplugin'),
+            'account_review' => __('Confirm the WordPress account before linking it.', 'foreningsplugin'),
+            'account_not_found' => __('No WordPress account matches that username or email.', 'foreningsplugin'),
+            'account_taken' => __('That WordPress account is already linked to another person.', 'foreningsplugin'),
+            'account_unlink_first' => __('Unlink the current WordPress account before linking a different one.', 'foreningsplugin'),
+            'account_failed' => __('The WordPress account could not be created.', 'foreningsplugin'),
+            'minor_account' => __('No account is created automatically for members under 18.', 'foreningsplugin'),
         ];
 
         if ($notice === 'import_done') {
@@ -710,6 +798,10 @@ final class MembersPage
             'approval_withdrawn',
             'participant_saved',
             'contact_saved',
+            'account_created',
+            'account_linked',
+            'account_unlinked',
+            'account_review',
         ];
         $class = in_array($notice, $success, true) ? 'notice-success' : 'notice-error';
         echo '<div class="notice ' . esc_attr($class) . '"><p>' . esc_html($messages[$notice]) . '</p>';

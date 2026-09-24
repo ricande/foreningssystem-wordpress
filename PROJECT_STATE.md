@@ -66,5 +66,6 @@ Implemented areas:
 - board admin UX v1: current board, upcoming changes, history, replacement, multi-holder roles, and ending an assignment without deleting it
 - meetings admin UX v1: operational overview and a single meeting workspace for preparation, capture, and minutes
 - overview / dashboard UX v1: capability-aware association work overview for attention, counts, meetings, board, tasks, and recent documents
+- member account provisioning v1: an active individual member with a usable email can receive a linked WordPress subscriber login. Mina sidor and member self-service are not implemented
 
 Some product decisions remain provisional, including the migration policy and personal-identity encryption. Schema 16 is the current schema, not a claim that every earlier design note is locked.

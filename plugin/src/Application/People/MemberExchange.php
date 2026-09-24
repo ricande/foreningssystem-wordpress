@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Application\People;
 
+use Foreningssystem\Application\Account\MemberAccountProvisioner;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Membership\MembershipLedger;
@@ -34,6 +35,9 @@ final class MemberExchange
         'ended_on',
     ];
 
+    /** @var list<int> */
+    private array $provisionPeople = [];
+
     public function __construct(
         private readonly PersonRepository $people,
         private readonly MembershipRepository $memberships,
@@ -41,6 +45,8 @@ final class MemberExchange
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
         private readonly OrganizationRepository $organizations,
+        private readonly ?MemberAccountProvisioner $accounts = null,
+        private readonly ?AssociationDate $provisionOn = null,
     ) {
     }
 
@@ -133,6 +139,7 @@ final class MemberExchange
         $created = 0;
         $skipped = 0;
         $errors = [];
+        $this->provisionPeople = [];
 
         foreach ($rows as $line => $row) {
             try {
@@ -147,6 +154,8 @@ final class MemberExchange
                 $errors[] = 'Line ' . $line . ': ' . $error->getMessage();
             }
         }
+
+        $this->provisionRemembered();
 
         return new MemberImportResult($created, $skipped, $errors);
     }
@@ -257,6 +266,7 @@ final class MemberExchange
 
         $this->ledger->add([], $period);
         $this->memberships->add($period);
+        $this->rememberAccountPerson($personId);
 
         return 'created';
     }
@@ -336,6 +346,7 @@ final class MemberExchange
         $created = 0;
         $skipped = 0;
         $errors = [];
+        $this->provisionPeople = [];
         $records = ['organization' => [], 'membership' => [], 'participant' => [], 'period' => []];
         $line = 0;
 
@@ -373,6 +384,8 @@ final class MemberExchange
                 }
             }
         }
+
+        $this->provisionRemembered();
 
         return new MemberImportResult($created, $skipped, $errors);
     }
@@ -480,6 +493,10 @@ final class MemberExchange
 
             $this->memberships->addParticipant($participant);
 
+            if ($role->countsAsMember()) {
+                $this->rememberAccountPerson($personId);
+            }
+
             return 'created';
         }
 
@@ -505,7 +522,36 @@ final class MemberExchange
         $this->ledger->add([], $period);
         $this->memberships->add($period);
 
+        foreach ($this->memberships->participantsForMembership($membership->id()) as $participant) {
+            if ($participant->role()->countsAsMember()) {
+                $this->rememberAccountPerson($participant->personId());
+            }
+        }
+
         return 'created';
+    }
+
+    private function rememberAccountPerson(int $personId): void
+    {
+        if ($personId > 0) {
+            $this->provisionPeople[] = $personId;
+        }
+    }
+
+    private function provisionRemembered(): void
+    {
+        if (! $this->accounts instanceof MemberAccountProvisioner || ! $this->provisionOn instanceof AssociationDate) {
+            $this->provisionPeople = [];
+
+            return;
+        }
+
+        $people = array_values(array_unique($this->provisionPeople));
+        $this->provisionPeople = [];
+
+        foreach ($people as $personId) {
+            $this->accounts->provision($personId, $this->provisionOn);
+        }
     }
 
     /**

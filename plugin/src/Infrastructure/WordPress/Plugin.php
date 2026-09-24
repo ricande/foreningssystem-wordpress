@@ -37,6 +37,7 @@ final class Plugin
         WordpressPrivacy::register();
         PrivateStorageWarning::register();
         WordpressRetention::register();
+        WordpressMemberAccounts::register();
         add_action('template_redirect', [DocumentDownload::class, 'maybeSend']);
         add_action('admin_init', [self::class, 'migrateInAdmin']);
         add_action('admin_menu', [self::class, 'registerAdminMenu']);
@@ -55,6 +56,10 @@ final class Plugin
         add_action('admin_post_assoc_mark_deceased', [MembersPage::class, 'markDeceased']);
         add_action('admin_post_assoc_open_membership', [MembersPage::class, 'openExisting']);
         add_action('admin_post_assoc_update_person', [MembersPage::class, 'updatePerson']);
+        add_action('admin_post_assoc_create_member_account', [MembersPage::class, 'createMemberAccount']);
+        add_action('admin_post_assoc_link_member_account', [MembersPage::class, 'linkMemberAccount']);
+        add_action('admin_post_assoc_unlink_member_account', [MembersPage::class, 'unlinkMemberAccount']);
+        add_action('admin_post_assoc_find_member_account', [MembersPage::class, 'findMemberAccount']);
         add_action('admin_post_assoc_end_participation', [MembersPage::class, 'endParticipation']);
         add_action('admin_post_assoc_add_company_contact', [MembersPage::class, 'addCompanyContact']);
         add_action('admin_post_assoc_end_guardian', [MembersPage::class, 'endGuardian']);

@@ -9,6 +9,7 @@ use Foreningssystem\Application\People\MemberDirectory;
 use Foreningssystem\Application\People\MemberExchange;
 use Foreningssystem\Application\People\PeopleService;
 use Foreningssystem\Application\People\Transaction;
+use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Membership\MembershipLedger;
 
 final class WordpressPeople
@@ -43,7 +44,9 @@ final class WordpressPeople
                 }
             },
             self::transaction(),
-            new WpdbOrganizationRepository()
+            new WpdbOrganizationRepository(),
+            WordpressMemberAccounts::service(),
+            AssociationDate::fromIso(wp_date('Y-m-d'))
         );
     }
 

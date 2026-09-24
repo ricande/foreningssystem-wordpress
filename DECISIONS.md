@@ -39,6 +39,11 @@ Status terminology:
 | Birth date and a Swedish personal identity number are separate. The number is optional | LOCKED |
 | The plugin records guardian relationships and approvals. It does not decide that every minor legally requires consent | LOCKED |
 | Personal identity numbers are never public output | LOCKED |
+| An active individual member with a usable email normally receives a WordPress subscriber account. A known age under 18 is not provisioned automatically. A missing birth date is not treated as proof of minority; that is current v1 implementation behavior, not a legal conclusion | PROVISIONAL |
+| WordPress owns member passwords, password reset and authentication. The plugin does not create or reveal a temporary password | PROVISIONAL |
+| Ending a membership keeps the Person and any linked WordPress user. Member-only access still requires current active individual membership coverage | PROVISIONAL |
+| A matching email does not link a Person to a WordPress user. Company contacts and guardian-only people do not receive member accounts automatically | PROVISIONAL |
+| Guardian approval of an account for a minor is future member-portal design and is not locked | OPEN |
 
 "Where appropriate" for the Media Library means public or non-sensitive media, such as the association logo. Protected documents, minutes PDFs, and signed copies use plugin-managed private storage because a Media Library URL is not an authorization check. See ADR-0005 and `docs/PRIVATE_FILES.md`.
 

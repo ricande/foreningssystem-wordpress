@@ -45,4 +45,15 @@ final class MemberDocumentAccessTest extends TestCase
         self::assertFalse($access->allows(3, $today));
         self::assertFalse($access->allows(0, $today));
     }
+
+    public function test_the_same_email_without_a_person_link_does_not_grant_member_documents(): void
+    {
+        $people = new MemoryPersonRepository();
+        $memberships = new MemoryMembershipRepository();
+        $person = $people->add(new Person(null, 'Ada', 'Medlem', 'ada-member@example.test', PersonStatus::Known, null));
+        $memberships->grant((int) $person->id(), 'M-EMAIL', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $access = new MemberDocumentAccess($people, $memberships);
+
+        self::assertFalse($access->allows(9, AssociationDate::fromIso('2024-06-15')));
+    }
 }
