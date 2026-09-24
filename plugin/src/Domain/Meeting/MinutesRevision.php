@@ -19,6 +19,7 @@ final class MinutesRevision
         private readonly bool $handEdited,
         private readonly ?int $correctsRevisionId = null,
         private readonly ?int $supersededBy = null,
+        private readonly PublicationVisibility $visibility = PublicationVisibility::Board,
     ) {
         $this->body = trim($body);
         $this->payload = trim($payload);
@@ -41,6 +42,10 @@ final class MinutesRevision
 
         if ($this->supersededBy !== null && ($this->supersededBy < 1 || $this->state !== RevisionState::Finalized)) {
             throw new InvalidArgumentException('Only a finalized revision can be superseded.');
+        }
+
+        if ($this->visibility === PublicationVisibility::Public && ($this->state !== RevisionState::Finalized || $this->supersededBy !== null)) {
+            throw new InvalidArgumentException('Only the current finalized revision can be public.');
         }
     }
 
@@ -98,28 +103,38 @@ final class MinutesRevision
         return $this->supersededBy;
     }
 
+    public function visibility(): PublicationVisibility
+    {
+        return $this->visibility;
+    }
+
     public function withId(int $id): self
     {
-        return new self($id, $this->minutesId, $this->meetingId, $this->number, $this->state, $this->body, $this->payload, $this->handEdited, $this->correctsRevisionId, $this->supersededBy);
+        return new self($id, $this->minutesId, $this->meetingId, $this->number, $this->state, $this->body, $this->payload, $this->handEdited, $this->correctsRevisionId, $this->supersededBy, $this->visibility);
     }
 
     public function withBody(string $body): self
     {
-        return new self($this->id, $this->minutesId, $this->meetingId, $this->number, $this->state, $body, $this->payload, true, $this->correctsRevisionId, $this->supersededBy);
+        return new self($this->id, $this->minutesId, $this->meetingId, $this->number, $this->state, $body, $this->payload, true, $this->correctsRevisionId, $this->supersededBy, $this->visibility);
     }
 
     public function regenerated(string $body, string $payload): self
     {
-        return new self($this->id, $this->minutesId, $this->meetingId, $this->number, $this->state, $body, $payload, false, $this->correctsRevisionId, $this->supersededBy);
+        return new self($this->id, $this->minutesId, $this->meetingId, $this->number, $this->state, $body, $payload, false, $this->correctsRevisionId, $this->supersededBy, $this->visibility);
     }
 
     public function withState(RevisionState $state): self
     {
-        return new self($this->id, $this->minutesId, $this->meetingId, $this->number, $state, $this->body, $this->payload, $this->handEdited, $this->correctsRevisionId, $this->supersededBy);
+        return new self($this->id, $this->minutesId, $this->meetingId, $this->number, $state, $this->body, $this->payload, $this->handEdited, $this->correctsRevisionId, $this->supersededBy, $this->visibility);
+    }
+
+    public function withVisibility(PublicationVisibility $visibility): self
+    {
+        return new self($this->id, $this->minutesId, $this->meetingId, $this->number, $this->state, $this->body, $this->payload, $this->handEdited, $this->correctsRevisionId, $this->supersededBy, $visibility);
     }
 
     public function markedSuperseded(int $revisionId): self
     {
-        return new self($this->id, $this->minutesId, $this->meetingId, $this->number, $this->state, $this->body, $this->payload, $this->handEdited, $this->correctsRevisionId, $revisionId);
+        return new self($this->id, $this->minutesId, $this->meetingId, $this->number, $this->state, $this->body, $this->payload, $this->handEdited, $this->correctsRevisionId, $revisionId, PublicationVisibility::Board);
     }
 }

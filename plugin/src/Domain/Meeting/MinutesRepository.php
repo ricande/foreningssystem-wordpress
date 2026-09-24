@@ -21,4 +21,9 @@ interface MinutesRepository
     public function openForMeeting(int $meetingId): ?MinutesRevision;
 
     public function latestForMeeting(int $meetingId): ?MinutesRevision;
+
+    /**
+     * @return list<MinutesRevision>
+     */
+    public function publicRevisions(): array;
 }

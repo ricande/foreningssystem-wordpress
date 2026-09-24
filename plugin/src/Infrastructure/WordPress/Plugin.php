@@ -30,6 +30,7 @@ final class Plugin
             }
         });
 
+        add_action('init', [LatestMinutesBlock::class, 'register']);
         add_action('admin_init', [self::class, 'migrateInAdmin']);
         add_action('admin_menu', [self::class, 'registerAdminMenu']);
         add_action('admin_post_assoc_register_person', [MembersPage::class, 'registerPerson']);
@@ -64,6 +65,8 @@ final class Plugin
         add_action('admin_post_assoc_print_minutes', [MeetingDetailPage::class, 'printMinutes']);
         add_action('admin_post_assoc_upload_signed_copy', [MeetingDetailPage::class, 'uploadSignedCopy']);
         add_action('admin_post_assoc_download_signed_copy', [MeetingDetailPage::class, 'downloadSignedCopy']);
+        add_action('admin_post_assoc_publish_minutes', [MeetingDetailPage::class, 'publishMinutes']);
+        add_action('admin_post_assoc_unpublish_minutes', [MeetingDetailPage::class, 'unpublishMinutes']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();

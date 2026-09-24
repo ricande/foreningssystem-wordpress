@@ -6,6 +6,7 @@ namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Domain\Meeting\MinutesRepository;
 use Foreningssystem\Domain\Meeting\MinutesRevision;
+use Foreningssystem\Domain\Meeting\PublicationVisibility;
 use Foreningssystem\Domain\Meeting\RevisionState;
 
 final class WpdbMinutesRepository implements MinutesRepository
@@ -70,8 +71,9 @@ final class WpdbMinutesRepository implements MinutesRepository
             'body' => $revision->body(),
             'payload' => $revision->payload(),
             'hand_edited' => $revision->handEdited() ? 1 : 0,
+            'visibility' => $revision->visibility()->value,
         ];
-        $format = ['%d', '%d', '%d', '%s', '%s', '%s', '%d'];
+        $format = ['%d', '%d', '%d', '%s', '%s', '%s', '%d', '%s'];
 
         if ($revision->correctsRevisionId() !== null) {
             $data['corrects_revision_id'] = $revision->correctsRevisionId();
@@ -100,12 +102,12 @@ final class WpdbMinutesRepository implements MinutesRepository
         $table = $this->revisions();
         $corrects = $revision->correctsRevisionId();
         $superseded = $revision->supersededBy();
-        $sql = "UPDATE {$table} SET body = %s, payload = %s, hand_edited = %d, state = %s, corrects_revision_id = "
+        $sql = "UPDATE {$table} SET body = %s, payload = %s, hand_edited = %d, state = %s, visibility = %s, corrects_revision_id = "
             . ($corrects === null ? 'NULL' : '%d')
             . ', superseded_by = '
             . ($superseded === null ? 'NULL' : '%d')
             . ' WHERE id = %d';
-        $args = [$revision->body(), $revision->payload(), $revision->handEdited() ? 1 : 0, $revision->state()->value];
+        $args = [$revision->body(), $revision->payload(), $revision->handEdited() ? 1 : 0, $revision->state()->value, $revision->visibility()->value];
 
         if ($corrects !== null) {
             $args[] = $corrects;
@@ -158,11 +160,39 @@ final class WpdbMinutesRepository implements MinutesRepository
         return is_array($row) ? $this->map($row) : null;
     }
 
+    public function publicRevisions(): array
+    {
+        global $wpdb;
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            'SELECT * FROM ' . $this->revisions() . ' WHERE state = %s AND visibility = %s AND superseded_by IS NULL',
+            RevisionState::Finalized->value,
+            PublicationVisibility::Public->value
+        ), ARRAY_A);
+
+        if (! is_array($rows)) {
+            return [];
+        }
+
+        $revisions = [];
+
+        foreach ($rows as $row) {
+            if (is_array($row)) {
+                $revisions[] = $this->map($row);
+            }
+        }
+
+        return $revisions;
+    }
+
     /**
      * @param array<string, mixed> $row
      */
     private function map(array $row): MinutesRevision
     {
+        $visibility = PublicationVisibility::tryFrom((string) ($row['visibility'] ?? PublicationVisibility::Board->value))
+            ?? PublicationVisibility::Board;
+
         return new MinutesRevision(
             (int) $row['id'],
             (int) $row['minutes_id'],
@@ -173,7 +203,8 @@ final class WpdbMinutesRepository implements MinutesRepository
             (string) $row['payload'],
             (int) $row['hand_edited'] === 1,
             is_numeric($row['corrects_revision_id']) && (int) $row['corrects_revision_id'] > 0 ? (int) $row['corrects_revision_id'] : null,
-            is_numeric($row['superseded_by']) && (int) $row['superseded_by'] > 0 ? (int) $row['superseded_by'] : null
+            is_numeric($row['superseded_by']) && (int) $row['superseded_by'] > 0 ? (int) $row['superseded_by'] : null,
+            $visibility
         );
     }
 }

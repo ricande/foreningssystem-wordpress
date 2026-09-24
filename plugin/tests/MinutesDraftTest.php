@@ -28,6 +28,7 @@ use Foreningssystem\Domain\Meeting\MeetingType;
 use Foreningssystem\Domain\Meeting\MinutesRepository;
 use Foreningssystem\Domain\Meeting\MinutesRevision;
 use Foreningssystem\Domain\Meeting\Participant;
+use Foreningssystem\Domain\Meeting\PublicationVisibility;
 use Foreningssystem\Domain\Meeting\Presence;
 use Foreningssystem\Domain\Meeting\RevisionState;
 use Foreningssystem\Domain\Membership\AssociationDate;
@@ -428,5 +429,18 @@ final class MemoryMinutesRepository implements MinutesRepository
         }
 
         return $found;
+    }
+
+    public function publicRevisions(): array
+    {
+        $rows = [];
+
+        foreach ($this->revisions as $revision) {
+            if ($revision->visibility() === PublicationVisibility::Public && $revision->supersededBy() === null) {
+                $rows[] = $revision;
+            }
+        }
+
+        return $rows;
     }
 }

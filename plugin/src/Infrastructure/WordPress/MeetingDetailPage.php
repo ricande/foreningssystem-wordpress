@@ -313,6 +313,36 @@ final class MeetingDetailPage
         }
     }
 
+    public static function publishMinutes(): void
+    {
+        self::guardPublish('assoc_publish_minutes');
+        $meetingId = self::integer('meeting_id');
+
+        try {
+            WordpressMeetings::publication()->publish(self::integer('revision_id'));
+            self::redirect($meetingId, 'minutes_published');
+        } catch (MeetingRuleException) {
+            self::redirect($meetingId, 'minutes_blocked');
+        } catch (\RuntimeException) {
+            self::redirect($meetingId, 'invalid');
+        }
+    }
+
+    public static function unpublishMinutes(): void
+    {
+        self::guardPublish('assoc_unpublish_minutes');
+        $meetingId = self::integer('meeting_id');
+
+        try {
+            WordpressMeetings::publication()->unpublish(self::integer('revision_id'));
+            self::redirect($meetingId, 'minutes_unpublished');
+        } catch (MeetingRuleException) {
+            self::redirect($meetingId, 'minutes_blocked');
+        } catch (\RuntimeException) {
+            self::redirect($meetingId, 'invalid');
+        }
+    }
+
     public static function openMinutesCorrection(): void
     {
         self::guardFinalize('assoc_open_minutes_correction');
@@ -632,6 +662,7 @@ final class MeetingDetailPage
 
         if ($draft->state() === \Foreningssystem\Domain\Meeting\RevisionState::Finalized) {
             echo '<p>' . esc_html__('Revisionen är låst. Texten ändras inte om mötesraderna ändras.', 'foreningsplugin') . '</p>';
+            self::renderPublication($meetingId, $draft);
         }
 
         if ($drafts->isStale($meetingId)) {
@@ -695,6 +726,31 @@ final class MeetingDetailPage
         }
 
         self::renderSignedCopy($meetingId, $draft, $canFinalize && current_user_can(Capabilities::MANAGE_DOCUMENTS));
+    }
+
+    private static function renderPublication(int $meetingId, \Foreningssystem\Domain\Meeting\MinutesRevision $draft): void
+    {
+        if ($draft->supersededBy() !== null || $draft->id() === null) {
+            return;
+        }
+
+        $public = $draft->visibility() === \Foreningssystem\Domain\Meeting\PublicationVisibility::Public;
+        echo '<h3>' . esc_html__('Publicering', 'foreningsplugin') . '</h3>';
+        echo '<p>' . esc_html($public
+            ? __('Revisionen visas på webbplatsen. Texten är oförändrad, och den signerade skanningen stannar internt.', 'foreningsplugin')
+            : __('Revisionen är inte publicerad. Publicering visar den låsta texten och lämnar den signerade skanningen intern.', 'foreningsplugin')
+        ) . '</p>';
+
+        if (! current_user_can(Capabilities::PUBLISH_MINUTES)) {
+            return;
+        }
+
+        self::postForm(
+            $public ? 'assoc_unpublish_minutes' : 'assoc_publish_minutes',
+            $meetingId,
+            ['revision_id' => (string) $draft->id()],
+            $public ? __('Avpublicera', 'foreningsplugin') : __('Publicera', 'foreningsplugin')
+        );
     }
 
     private static function renderSignedCopy(int $meetingId, \Foreningssystem\Domain\Meeting\MinutesRevision $draft, bool $canUpload): void
@@ -796,6 +852,15 @@ final class MeetingDetailPage
         check_admin_referer($nonce);
     }
 
+    private static function guardPublish(string $nonce): void
+    {
+        if (! current_user_can(Capabilities::PUBLISH_MINUTES)) {
+            wp_die(esc_html__('Du har inte behörighet att publicera protokollet.', 'foreningsplugin'), '', ['response' => 403]);
+        }
+
+        check_admin_referer($nonce);
+    }
+
     private static function guardFinalize(string $nonce): void
     {
         if (! current_user_can(Capabilities::FINALIZE_MINUTES)) {
@@ -875,6 +940,8 @@ final class MeetingDetailPage
             'minutes_returned' => __('Revisionen är tillbaka som utkast.', 'foreningsplugin'),
             'minutes_finalized' => __('Revisionen är låst. Texten ändras inte längre.', 'foreningsplugin'),
             'minutes_correction' => __('Rättelsen är ett nytt utkast med den låsta texten.', 'foreningsplugin'),
+            'minutes_published' => __('Revisionen visas på webbplatsen. Texten är oförändrad.', 'foreningsplugin'),
+            'minutes_unpublished' => __('Revisionen är avpublicerad. Texten är oförändrad.', 'foreningsplugin'),
             'minutes_blocked' => __('Den här ändringen passar inte revisionens läge.', 'foreningsplugin'),
             'signed_uploaded' => __('Den signerade kopian är sparad. Protokolltexten är oförändrad.', 'foreningsplugin'),
             'signed_replaced' => __('Den signerade kopian är ersatt. Protokolltexten är oförändrad.', 'foreningsplugin'),
@@ -888,7 +955,7 @@ final class MeetingDetailPage
             return;
         }
 
-        $class = in_array($notice, ['participant_added', 'participant_removed', 'agenda_added', 'agenda_moved', 'agenda_removed', 'note_added', 'note_removed', 'decision_added', 'follow_up', 'decision_removed', 'action_added', 'action_status', 'action_removed', 'draft_created', 'draft_saved', 'draft_regenerated', 'minutes_submitted', 'minutes_returned', 'minutes_finalized', 'minutes_correction', 'signed_uploaded', 'signed_replaced'], true)
+        $class = in_array($notice, ['participant_added', 'participant_removed', 'agenda_added', 'agenda_moved', 'agenda_removed', 'note_added', 'note_removed', 'decision_added', 'follow_up', 'decision_removed', 'action_added', 'action_status', 'action_removed', 'draft_created', 'draft_saved', 'draft_regenerated', 'minutes_submitted', 'minutes_returned', 'minutes_finalized', 'minutes_correction', 'minutes_published', 'minutes_unpublished', 'signed_uploaded', 'signed_replaced'], true)
             ? 'notice-success'
             : 'notice-error';
         echo '<div class="notice ' . esc_attr($class) . '"><p>' . esc_html($messages[$notice]) . '</p></div>';

@@ -8,6 +8,7 @@ use Foreningssystem\Application\Meeting\MeetingRecord;
 use Foreningssystem\Application\Meeting\MinutesComposer;
 use Foreningssystem\Application\Meeting\MinutesDrafts;
 use Foreningssystem\Application\Meeting\MinutesPdf;
+use Foreningssystem\Application\Meeting\MinutesPublication;
 use Foreningssystem\Application\Meeting\MinutesPdfDocument;
 use Foreningssystem\Application\Meeting\SignedCopies;
 use Foreningssystem\Domain\Meeting\MinutesLifecycle;
@@ -181,6 +182,39 @@ final class WordpressMeetings
                 public function allows(string $capability): bool
                 {
                     return current_user_can($capability);
+                }
+            }
+        );
+    }
+
+    public static function publication(): MinutesPublication
+    {
+        return new MinutesPublication(
+            new WpdbMeetingRepository(),
+            new WpdbMinutesRepository(),
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return current_user_can($capability);
+                }
+            },
+            new class implements Transaction {
+                public function run(callable $callback): mixed
+                {
+                    global $wpdb;
+
+                    $wpdb->query('START TRANSACTION');
+
+                    try {
+                        $result = $callback();
+                        $wpdb->query('COMMIT');
+
+                        return $result;
+                    } catch (\Throwable $error) {
+                        $wpdb->query('ROLLBACK');
+
+                        throw $error;
+                    }
                 }
             }
         );

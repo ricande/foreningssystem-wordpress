@@ -9,6 +9,7 @@ use Foreningssystem\Infrastructure\Persistence\BaselineMigration;
 use Foreningssystem\Infrastructure\Persistence\BoardSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MeetingRecordSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MinutesPdfSchemaMigration;
+use Foreningssystem\Infrastructure\Persistence\MinutesPublicationSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MinutesSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\SignedCopySchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MeetingRosterSchemaMigration;
@@ -36,6 +37,7 @@ final class WordpressMigrations
                 new MinutesSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
                 new MinutesPdfSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
                 new SignedCopySchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
+                new MinutesPublicationSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
             ]
         );
     }
