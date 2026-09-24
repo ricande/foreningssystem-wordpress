@@ -20,6 +20,7 @@ final class DocumentArchive
         private readonly DocumentFileStore $files,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
+        private readonly ActiveMember $members,
     ) {
     }
 
@@ -61,6 +62,26 @@ final class DocumentArchive
 
         foreach ($this->documents->all() as $document) {
             if ($document->visibility() === DocumentVisibility::Public && $document->id() !== null) {
+                $rows[] = $this->list($document);
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return list<ListedDocument>|null
+     */
+    public function memberList(): ?array
+    {
+        if (! $this->members->coversCurrentUser()) {
+            return null;
+        }
+
+        $rows = [];
+
+        foreach ($this->documents->all() as $document) {
+            if ($document->visibility() === DocumentVisibility::Member && $document->id() !== null) {
                 $rows[] = $this->list($document);
             }
         }
@@ -112,6 +133,14 @@ final class DocumentArchive
 
         if ($document->visibility() === DocumentVisibility::Public) {
             return $document;
+        }
+
+        if ($document->visibility() === DocumentVisibility::Member) {
+            if ($this->members->coversCurrentUser()) {
+                return $document;
+            }
+
+            throw new NotAllowed('active_membership');
         }
 
         if (! $this->authorizer->allows(Capabilities::VIEW_BOARD_DOCUMENTS) && ! $this->authorizer->allows(Capabilities::MANAGE_DOCUMENTS)) {

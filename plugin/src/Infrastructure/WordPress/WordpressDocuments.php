@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Document\ActiveMember;
 use Foreningssystem\Application\Document\DocumentArchive;
+use Foreningssystem\Application\Document\MemberDocumentAccess;
 use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\Transaction;
 
@@ -38,6 +40,15 @@ final class WordpressDocuments
 
                         throw $error;
                     }
+                }
+            },
+            new class implements ActiveMember {
+                public function coversCurrentUser(): bool
+                {
+                    return (new MemberDocumentAccess(
+                        new WpdbPersonRepository(),
+                        new WpdbMembershipRepository()
+                    ))->allows(get_current_user_id());
                 }
             }
         );

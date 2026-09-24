@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Tests;
 
+use Foreningssystem\Application\Document\ActiveMember;
 use Foreningssystem\Application\Document\DocumentArchive;
 use Foreningssystem\Application\Document\DocumentFileStore;
 use Foreningssystem\Application\People\Authorizer;
@@ -71,6 +72,39 @@ final class DocumentArchiveTest extends TestCase
         $archive->add('Anteckning', 'bara text', DocumentVisibility::Public);
     }
 
+    public function test_a_member_document_requires_an_active_membership_and_stays_off_the_public_list(): void
+    {
+        $documents = new MemoryDocumentRepository();
+        $files = new MemoryDocumentFileStore();
+        $pdf = "%PDF-1.4\n1 0 obj\nendobj\n%%EOF";
+        $officer = $this->archive([Capabilities::MANAGE_DOCUMENTS, Capabilities::VIEW_BOARD_DOCUMENTS], $documents, $files);
+        $memberId = $officer->add('Medlemsbrev', $pdf, DocumentVisibility::Member);
+        $boardId = $officer->add('Intern budget', $pdf . ' ', DocumentVisibility::Board);
+        $member = $this->archive([], $documents, $files, true);
+        $outsider = $this->archive([Capabilities::MANAGE_DOCUMENTS, Capabilities::VIEW_BOARD_DOCUMENTS], $documents, $files);
+
+        self::assertSame([], $officer->publicList());
+        self::assertNull($outsider->memberList());
+        self::assertSame(['Medlemsbrev'], array_map(static fn ($document): string => $document->title(), $member->memberList() ?? []));
+        self::assertSame($pdf, $member->read($memberId));
+        self::assertSame($pdf . ' ', $outsider->read($boardId));
+        self::assertStringNotContainsString('document-', implode(' ', array_map(static fn ($document): string => $document->title(), $member->memberList() ?? [])));
+
+        $denied = false;
+
+        try {
+            $outsider->read($memberId);
+        } catch (NotAllowed) {
+            $denied = true;
+        }
+
+        self::assertTrue($denied);
+        $officer->setVisibility($memberId, DocumentVisibility::Public);
+        self::assertSame(['Medlemsbrev'], array_map(static fn ($document): string => $document->title(), $officer->publicList()));
+        self::assertSame($pdf, $officer->read($memberId));
+        self::assertSame(2, $files->writes);
+    }
+
     public function test_schema_migration_stores_document_visibility(): void
     {
         $migration = new DocumentSchemaMigration('wp_', '');
@@ -85,7 +119,7 @@ final class DocumentArchiveTest extends TestCase
     /**
      * @param list<string> $capabilities
      */
-    private function archive(array $capabilities, DocumentRepository $documents, DocumentFileStore $files): DocumentArchive
+    private function archive(array $capabilities, DocumentRepository $documents, DocumentFileStore $files, bool $member = false): DocumentArchive
     {
         return new DocumentArchive(
             $documents,
@@ -105,6 +139,16 @@ final class DocumentArchiveTest extends TestCase
                 public function run(callable $callback): mixed
                 {
                     return $callback();
+                }
+            },
+            new class ($member) implements ActiveMember {
+                public function __construct(private readonly bool $member)
+                {
+                }
+
+                public function coversCurrentUser(): bool
+                {
+                    return $this->member;
                 }
             }
         );

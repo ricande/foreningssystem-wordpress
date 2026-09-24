@@ -7,5 +7,6 @@ namespace Foreningssystem\Domain\Document;
 enum DocumentVisibility: string
 {
     case Board = 'board';
+    case Member = 'member';
     case Public = 'public';
 }

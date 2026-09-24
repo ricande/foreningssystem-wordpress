@@ -47,7 +47,7 @@ final class DocumentsPage
         $canManage = current_user_can(Capabilities::MANAGE_DOCUMENTS);
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Dokument', 'foreningsplugin') . '</h1>';
-        echo '<p>' . esc_html__('Offentliga dokument visas på webbplatsen. Hämtningen går via en kontroll, inte via filens adress. Interna dokument syns bara för styrelsen.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('Offentliga dokument visas på webbplatsen. Medlemsdokument visas för en inloggad person med aktivt medlemskap. Interna dokument syns för styrelsen. Hämtningen går via en kontroll, inte via filens adress.', 'foreningsplugin') . '</p>';
         self::notice();
 
         if ($canManage) {
@@ -58,6 +58,7 @@ final class DocumentsPage
             echo '<p><label>' . esc_html__('Titel', 'foreningsplugin') . ' <input type="text" name="title" required maxlength="190"></label></p>';
             echo '<p><label>' . esc_html__('Synlighet', 'foreningsplugin') . ' <select name="visibility">';
             echo '<option value="board">' . esc_html__('Intern', 'foreningsplugin') . '</option>';
+            echo '<option value="member">' . esc_html__('Medlem', 'foreningsplugin') . '</option>';
             echo '<option value="public">' . esc_html__('Offentlig', 'foreningsplugin') . '</option>';
             echo '</select></label></p>';
             echo '<p><label>' . esc_html__('PDF, JPEG eller PNG', 'foreningsplugin') . ' <input type="file" name="document_file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required></label></p>';
@@ -75,17 +76,22 @@ final class DocumentsPage
         foreach (WordpressDocuments::archive()->officerList() as $document) {
             echo '<tr>';
             echo '<td>' . esc_html($document->title()) . '</td>';
-            echo '<td>' . esc_html($document->visibility() === DocumentVisibility::Public ? __('Offentlig', 'foreningsplugin') : __('Intern', 'foreningsplugin')) . '</td>';
+            echo '<td>' . esc_html(self::label($document->visibility())) . '</td>';
             echo '<td><a href="' . esc_url(PublicDocumentsBlock::downloadUrl($document)) . '">' . esc_html__('Hämta', 'foreningsplugin') . '</a>';
 
             if ($canManage) {
-                $next = $document->visibility() === DocumentVisibility::Public ? DocumentVisibility::Board : DocumentVisibility::Public;
                 echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline-block;margin-left:0.5em">';
                 echo '<input type="hidden" name="action" value="assoc_set_document_visibility">';
                 echo '<input type="hidden" name="document_id" value="' . esc_attr((string) $document->id()) . '">';
-                echo '<input type="hidden" name="visibility" value="' . esc_attr($next->value) . '">';
                 wp_nonce_field('assoc_set_document_visibility');
-                submit_button($next === DocumentVisibility::Public ? __('Gör offentlig', 'foreningsplugin') : __('Gör intern', 'foreningsplugin'), 'secondary', 'submit', false);
+                echo '<select name="visibility">';
+
+                foreach (DocumentVisibility::cases() as $visibility) {
+                    echo '<option value="' . esc_attr($visibility->value) . '"' . selected($visibility->value, $document->visibility()->value, false) . '>' . esc_html(self::label($visibility)) . '</option>';
+                }
+
+                echo '</select> ';
+                submit_button(__('Spara synlighet', 'foreningsplugin'), 'secondary', 'submit', false);
                 echo '</form>';
             }
 
@@ -102,6 +108,15 @@ final class DocumentsPage
         }
 
         check_admin_referer($nonce);
+    }
+
+    private static function label(DocumentVisibility $visibility): string
+    {
+        return match ($visibility) {
+            DocumentVisibility::Public => __('Offentlig', 'foreningsplugin'),
+            DocumentVisibility::Member => __('Medlem', 'foreningsplugin'),
+            DocumentVisibility::Board => __('Intern', 'foreningsplugin'),
+        };
     }
 
     private static function visibility(string $key): DocumentVisibility
