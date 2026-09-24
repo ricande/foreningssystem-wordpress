@@ -88,16 +88,31 @@ final class MembersPage
         self::guardEdit('assoc_add_family_participant');
 
         try {
-            WordpressPeople::service()->addPersonToMembership(
-                self::integer('membership_id'),
-                self::text('first_name'),
-                self::text('last_name'),
-                self::text('email'),
-                self::text('birth_date') === '' ? null : AssociationDate::fromIso(self::text('birth_date')),
-                AssociationDate::fromIso(wp_date('Y-m-d')),
-                \Foreningssystem\Domain\Membership\ParticipantRole::Member,
-                false
-            );
+            $startedOn = AssociationDate::fromIso(self::text('started_on'));
+            $personId = self::integer('person_id');
+
+            if ($personId > 0) {
+                WordpressPeople::service()->addParticipant(
+                    self::integer('membership_id'),
+                    $personId,
+                    \Foreningssystem\Domain\Membership\ParticipantRole::Member,
+                    false,
+                    $startedOn
+                );
+            } else {
+                WordpressPeople::service()->addPersonToMembership(
+                    self::integer('membership_id'),
+                    self::text('first_name'),
+                    self::text('last_name'),
+                    self::text('email'),
+                    self::text('birth_date') === '' ? null : AssociationDate::fromIso(self::text('birth_date')),
+                    $startedOn,
+                    \Foreningssystem\Domain\Membership\ParticipantRole::Member,
+                    false,
+                    AssociationDate::fromIso(wp_date('Y-m-d'))
+                );
+            }
+
             self::redirect('participant_saved');
         } catch (MembershipRuleException) {
             self::redirect('overlap');
@@ -366,6 +381,7 @@ final class MembersPage
             wp_nonce_field('assoc_register_company');
             self::field('organization_name', __('Organization name', 'foreningsplugin'), 'text', true);
             self::field('organization_number', __('Organization number', 'foreningsplugin'), 'text', false);
+            echo '<p>' . esc_html__('The organization number is checked for format and checksum only. It is not checked against a company register.', 'foreningsplugin') . '</p>';
             self::field('email', __('Email', 'foreningsplugin'), 'email', false);
             self::field('postal_address', __('Postal address', 'foreningsplugin'), 'text', false);
             self::field('membership_number', __('Membership number', 'foreningsplugin'), 'text', true);
@@ -376,9 +392,28 @@ final class MembersPage
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_add_family_participant">';
             wp_nonce_field('assoc_add_family_participant');
+            echo '<p>' . esc_html__('Choose an existing person, or leave that choice empty and enter a new person. The plugin does not merge people automatically.', 'foreningsplugin') . '</p>';
+            echo '<p><label>' . esc_html__('Existing person', 'foreningsplugin') . ' <select name="person_id">';
+            echo '<option value="0">' . esc_html__('New person', 'foreningsplugin') . '</option>';
+
+            foreach ($records as $record) {
+                $existing = $record->person();
+                $existingId = (int) $existing->id();
+                $label = $existing->firstName() . ' ' . $existing->lastName();
+                $number = $record->membershipNumber();
+
+                if ($number !== '') {
+                    $label .= ' (' . $number . ')';
+                }
+
+                echo '<option value="' . esc_attr((string) $existingId) . '">' . esc_html($label) . '</option>';
+            }
+
+            echo '</select></label></p>';
             self::field('membership_id', __('Membership id', 'foreningsplugin'), 'number', true);
-            self::field('first_name', __('First name', 'foreningsplugin'), 'text', true);
-            self::field('last_name', __('Last name', 'foreningsplugin'), 'text', true);
+            self::field('started_on', __('Start date', 'foreningsplugin'), 'date', true);
+            self::field('first_name', __('First name', 'foreningsplugin'), 'text', false);
+            self::field('last_name', __('Last name', 'foreningsplugin'), 'text', false);
             self::field('email', __('Email', 'foreningsplugin'), 'email', false);
             self::field('birth_date', __('Birth date', 'foreningsplugin'), 'date', false);
             submit_button(__('Add participant', 'foreningsplugin'));
@@ -454,6 +489,7 @@ final class MembersPage
                     echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
                     wp_nonce_field('assoc_store_identity');
                     echo '<input type="text" name="personal_identity_number" placeholder="' . esc_attr__('Personal identity number', 'foreningsplugin') . '" autocomplete="off"> ';
+                    echo '<span class="description">' . esc_html__('Checked for format and checksum only, including coordination numbers. Not checked against an external register.', 'foreningsplugin') . '</span> ';
                     echo '<input type="text" name="purpose" placeholder="' . esc_attr__('Purpose', 'foreningsplugin') . '" required> ';
                     echo '<input type="text" name="basis_note" placeholder="' . esc_attr__('Basis note', 'foreningsplugin') . '"> ';
                     echo '<input type="date" name="collected_on" required> ';

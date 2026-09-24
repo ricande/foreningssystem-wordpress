@@ -7,12 +7,12 @@ docker compose run --rm wpcli assoc migrate >/dev/null
 
 version="$(docker compose run --rm wpcli option get assoc_schema_version | tr -d '[:space:]')"
 
-if [ "$version" != "15" ]; then
-  echo "Expected schema version 15, got '${version}'." >&2
+if [ "$version" != "16" ]; then
+  echo "Expected schema version 16, got '${version}'." >&2
   exit 1
 fi
 
-echo "Lab schema version is 15."
+echo "Lab schema version is 16."
 
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-access.php
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-people.php
@@ -30,6 +30,7 @@ docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/forenin
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-board-meeting.php
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-documents.php
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-member-count.php
+docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-membership-history.php
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-privacy.php
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-privacy-erase.php
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-retention.php

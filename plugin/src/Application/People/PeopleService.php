@@ -94,13 +94,14 @@ final class PeopleService
         string $lastName,
         string $email,
         ?AssociationDate $birthDate,
-        AssociationDate $today,
+        AssociationDate $startedOn,
         ParticipantRole $role,
         bool $primary,
+        ?AssociationDate $today = null,
     ): int {
         $this->require(Capabilities::EDIT_MEMBERS);
 
-        return $this->transaction->run(function () use ($membershipId, $firstName, $lastName, $email, $birthDate, $today, $role, $primary): int {
+        return $this->transaction->run(function () use ($membershipId, $firstName, $lastName, $email, $birthDate, $startedOn, $role, $primary, $today): int {
             $membership = $this->requireAccount($membershipId);
 
             if ($membership->kind() === MembershipKind::Company && $role->countsAsMember()) {
@@ -114,14 +115,12 @@ final class PeopleService
                 trim($email),
                 PersonStatus::Known,
                 null,
-                $this->birthDate($birthDate, $today)
+                $this->birthDate($birthDate, $today ?? $startedOn)
             ));
             $personId = (int) $person->id();
-            $this->memberships->addParticipant(new MembershipParticipant(null, $membershipId, $personId, $role, $primary, null));
-
-            if ($role->countsAsMember()) {
-                $this->assertPersonCoverage($personId, $this->openPeriods($membershipId), $today);
-            }
+            $participant = new MembershipParticipant(null, $membershipId, $personId, $role, $primary, $startedOn, null);
+            $this->assertNewParticipant($participant, $this->openPeriods($membershipId));
+            $this->memberships->addParticipant($participant);
 
             return $personId;
         });
@@ -147,24 +146,32 @@ final class PeopleService
         }
 
         $this->transaction->run(function () use ($membership, $personId, $role, $primary, $on): void {
-            foreach ($this->memberships->participantsForMembership((int) $membership->id()) as $existing) {
-                if ($existing->personId() === $personId) {
-                    throw new MembershipRuleException('The person already participates in this membership.');
+            $participant = new MembershipParticipant(null, (int) $membership->id(), $personId, $role, $primary, $on, null);
+            $this->assertNewParticipant($participant, $this->openPeriods((int) $membership->id()));
+            $this->memberships->addParticipant($participant);
+        });
+    }
+
+    public function endParticipation(int $membershipId, int $personId, AssociationDate $on): void
+    {
+        $this->require(Capabilities::EDIT_MEMBERS);
+        $this->requireAccount($membershipId);
+        $this->requirePerson($personId);
+
+        $this->transaction->run(function () use ($membershipId, $personId, $on): void {
+            $open = null;
+
+            foreach ($this->memberships->participantsForMembership($membershipId) as $participant) {
+                if ($participant->personId() === $personId && ! $participant->endedOn() instanceof AssociationDate) {
+                    $open = $participant;
                 }
             }
 
-            if ($role->countsAsMember()) {
-                $this->assertPersonCoverage($personId, $this->openPeriods((int) $membership->id()), $on);
+            if (! $open instanceof MembershipParticipant) {
+                throw new MembershipRuleException('The person has no open participation in this membership.');
             }
 
-            $this->memberships->addParticipant(new MembershipParticipant(
-                null,
-                (int) $membership->id(),
-                $personId,
-                $role,
-                $primary,
-                null
-            ));
+            $this->memberships->saveParticipant($open->ended($on));
         });
     }
 
@@ -189,7 +196,7 @@ final class PeopleService
             $this->ledger->add($this->memberships->periodsForMembership((int) $membership->id()), $period);
 
             foreach ($members as $participant) {
-                $this->assertPersonCoverage($participant->personId(), [$period], $startedOn);
+                $this->assertPersonCoverage($participant, [$period]);
             }
 
             $saved = $this->memberships->add($period);
@@ -318,6 +325,10 @@ final class PeopleService
                         continue;
                     }
 
+                    if (! MemberCoverage::participationOverlapsPeriod($participant, $period)) {
+                        continue;
+                    }
+
                     if (! $latest instanceof MembershipPeriod || $period->startedOn()->isAfter($latest->startedOn())) {
                         $latest = $period;
                         $account = $accounts[$period->membershipId()] ?? null;
@@ -356,12 +367,14 @@ final class PeopleService
             throw new \RuntimeException('The membership was not saved.');
         }
 
-        $this->memberships->addParticipant(new MembershipParticipant(null, $membershipId, $personId, $role, $primary, null));
+        $participant = new MembershipParticipant(null, $membershipId, $personId, $role, $primary, $startedOn, null);
         $period = new MembershipPeriod(null, $membershipId, MembershipStatus::Active, $startedOn, null, $membershipType);
 
         if ($role->countsAsMember()) {
-            $this->assertPersonCoverage($personId, [$period], $startedOn);
+            $this->assertPersonCoverage($participant, [$period]);
         }
+
+        $this->memberships->addParticipant($participant);
 
         $this->ledger->add([], $period);
         $this->memberships->add($period);
@@ -388,18 +401,36 @@ final class PeopleService
     /**
      * @param list<MembershipPeriod> $candidatePeriods
      */
-    private function assertPersonCoverage(int $personId, array $candidatePeriods, AssociationDate $on): void
+    private function assertNewParticipant(MembershipParticipant $incoming, array $candidatePeriods): void
     {
-        unset($on);
+        foreach ($this->memberships->participantsForMembership($incoming->membershipId()) as $existing) {
+            if ($existing->personId() === $incoming->personId() && $existing->overlaps($incoming)) {
+                throw new MembershipRuleException('The person already participates in this membership.');
+            }
+        }
 
+        if ($incoming->role()->countsAsMember()) {
+            $this->assertPersonCoverage($incoming, $candidatePeriods);
+        }
+    }
+
+    /**
+     * @param list<MembershipPeriod> $candidatePeriods
+     */
+    private function assertPersonCoverage(MembershipParticipant $incoming, array $candidatePeriods): void
+    {
         foreach ($this->memberships->allParticipants() as $participant) {
-            if ($participant->personId() !== $personId || ! $participant->role()->countsAsMember() || $participant->endedOn() instanceof AssociationDate) {
+            if (
+                $participant->personId() !== $incoming->personId()
+                || ! $participant->role()->countsAsMember()
+                || $participant->membershipId() === $incoming->membershipId()
+            ) {
                 continue;
             }
 
             foreach ($this->memberships->periodsForMembership($participant->membershipId()) as $existing) {
                 foreach ($candidatePeriods as $candidate) {
-                    if ($existing->membershipId() !== $candidate->membershipId() && $existing->overlaps($candidate)) {
+                    if (MemberCoverage::coveragesOverlap($incoming, $candidate, $participant, $existing)) {
                         throw new MembershipRuleException('Membership periods cannot overlap.');
                     }
                 }

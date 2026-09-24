@@ -73,6 +73,59 @@ final class PrivacyExportTest extends TestCase
         self::assertSame([], $export->collect('', null, 7)->people());
     }
 
+    public function test_guardian_export_keeps_the_relationship_and_leaves_out_the_other_person(): void
+    {
+        $people = new MemoryPersonRepository();
+        $child = $people->add(new Person(null, 'Lisa', 'Andersson', 'lisa@example.test', PersonStatus::Known, null));
+        $guardian = $people->add(new Person(null, 'Anna', 'Andersson', 'anna@example.test', PersonStatus::Known, null));
+        $guardians = new MemoryGuardianRepository();
+        $guardians->addRelationship(new \Foreningssystem\Domain\Guardian\GuardianRelationship(
+            null,
+            (int) $child->id(),
+            (int) $guardian->id(),
+            'parent',
+            null,
+            null
+        ));
+        $identities = new MemoryPersonalIdentityRepository();
+        $identities->save(new \Foreningssystem\Domain\Identity\PersonalIdentityRecord(
+            null,
+            (int) $child->id(),
+            \Foreningssystem\Domain\Identity\PersonalIdentityNumber::parse('20120417-0011', \Foreningssystem\Domain\Membership\AssociationDate::fromIso('2026-09-24')),
+            'Association administration',
+            'Association policy',
+            \Foreningssystem\Domain\Membership\AssociationDate::fromIso('2026-09-24'),
+            4
+        ));
+        $export = new PrivacyExport(
+            $people,
+            new MemoryMembershipRepository(),
+            new MemoryBoardAssignmentRepository(),
+            new MemoryBoardRoleRepository(),
+            new MemoryParticipantRepository(),
+            new MemoryMeetingRepository(),
+            new MemoryAuditLog(),
+            $identities,
+            $guardians
+        );
+
+        $childExport = $export->collect('lisa@example.test', null, 7)->people()[0];
+        $guardianExport = $export->collect('anna@example.test', null, 7)->people()[0];
+        $childNotes = implode("\n", $childExport->guardianNotes());
+        $guardianNotes = implode("\n", $guardianExport->guardianNotes());
+
+        self::assertSame('20120417-0011', $childExport->personalIdentityNumber());
+        self::assertNull($guardianExport->personalIdentityNumber());
+        self::assertStringContainsString('Guardian relationship: parent', $childNotes);
+        self::assertStringNotContainsString('Anna', $childNotes);
+        self::assertStringNotContainsString('anna@example.test', $childNotes);
+        self::assertStringContainsString('Recorded guardian relationship exists. Relationship: parent', $guardianNotes);
+        self::assertStringNotContainsString('Lisa', $guardianNotes);
+        self::assertStringNotContainsString('lisa@example.test', $guardianNotes);
+        self::assertStringNotContainsString('20120417-0011', $guardianNotes);
+        self::assertStringNotContainsString('20120417-0011', $childNotes);
+    }
+
     private function text(PersonalDataReport $report): string
     {
         $chunks = [];

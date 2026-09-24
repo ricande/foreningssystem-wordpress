@@ -382,6 +382,8 @@ final class MemoryMembershipRepository implements MembershipRepository
 
     private int $nextPeriod = 1;
 
+    public string $failNext = '';
+
     public function grant(
         int $personId,
         string $number,
@@ -415,6 +417,7 @@ final class MemoryMembershipRepository implements MembershipRepository
                 $personId,
                 $role,
                 true,
+                $startedOn,
                 null
             ));
         }
@@ -424,6 +427,12 @@ final class MemoryMembershipRepository implements MembershipRepository
 
     public function addMembership(\Foreningssystem\Domain\Membership\Membership $membership): \Foreningssystem\Domain\Membership\Membership
     {
+        if ($this->failNext === 'membership') {
+            $this->failNext = '';
+
+            throw new \RuntimeException('membership insert failed');
+        }
+
         foreach ($this->accounts as $account) {
             if ($account->number() === $membership->number()) {
                 throw new \Foreningssystem\Domain\Membership\MembershipRuleException('Membership number is already used.');
@@ -498,6 +507,12 @@ final class MemoryMembershipRepository implements MembershipRepository
 
     public function add(MembershipPeriod $period): MembershipPeriod
     {
+        if ($this->failNext === 'period') {
+            $this->failNext = '';
+
+            throw new \RuntimeException('period insert failed');
+        }
+
         $saved = $period->withId($this->nextPeriod);
         $this->periods[$this->nextPeriod] = $saved;
         $this->nextPeriod++;

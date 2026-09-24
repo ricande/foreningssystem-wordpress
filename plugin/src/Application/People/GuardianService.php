@@ -33,14 +33,15 @@ final class GuardianService
         $this->require(Capabilities::EDIT_MEMBERS);
         $this->requirePerson($childPersonId);
         $this->requirePerson($guardianPersonId);
-        $saved = $this->guardians->addRelationship(new GuardianRelationship(
-            null,
-            $childPersonId,
-            $guardianPersonId,
-            trim($relationship),
-            $startedOn,
-            null
-        ));
+        $candidate = new GuardianRelationship(null, $childPersonId, $guardianPersonId, trim($relationship), $startedOn, null);
+
+        foreach ($this->guardians->relationshipsForChild($childPersonId) as $existing) {
+            if ($candidate->overlaps($existing)) {
+                throw new InvalidArgumentException('This guardian relationship already covers that time.');
+            }
+        }
+
+        $saved = $this->guardians->addRelationship($candidate);
 
         return (int) $saved->id();
     }
@@ -60,7 +61,7 @@ final class GuardianService
         $this->requirePerson($childPersonId);
         $this->requirePerson($guardianPersonId);
 
-        if ($this->relationship($childPersonId, $guardianPersonId) === null) {
+        if ($this->relationship($childPersonId, $guardianPersonId, AssociationDate::fromIso($approvedAt->format('Y-m-d'))) === null) {
             throw new InvalidArgumentException('Guardian approval needs an explicit guardian relationship.');
         }
 
@@ -96,10 +97,10 @@ final class GuardianService
         $this->audit->record('guardian_approval', $approvalId, 'guardian_approval_withdrawn', $actorUserId);
     }
 
-    private function relationship(int $childPersonId, int $guardianPersonId): ?GuardianRelationship
+    private function relationship(int $childPersonId, int $guardianPersonId, AssociationDate $on): ?GuardianRelationship
     {
         foreach ($this->guardians->relationshipsForChild($childPersonId) as $relationship) {
-            if ($relationship->guardianPersonId() === $guardianPersonId && ! $relationship->endedOn() instanceof AssociationDate) {
+            if ($relationship->guardianPersonId() === $guardianPersonId && $relationship->covers($on)) {
                 return $relationship;
             }
         }

@@ -79,6 +79,7 @@ final class CompanyMemberships
                     $contactPersonId,
                     ParticipantRole::Contact,
                     true,
+                    $startedOn,
                     null
                 ));
             }

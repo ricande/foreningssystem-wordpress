@@ -9,6 +9,6 @@ The number must be readable by an authorized user, so hashing is not a solution.
 
 ## Decision
 
-This batch does not encrypt the number. It is stored in its own table, behind the capabilities in ADR-0018, and it is omitted from public output, ordinary CSV and audit text.
+The number is not encrypted. It is stored in its own table, behind the capabilities in ADR-0018, and it is omitted from public output, ordinary CSV and audit text. The remediation batch did not add encryption.
 
 Encryption at rest stays an owner decision. A later design needs a plugin-specific key outside the database backup, a documented restore and rotation procedure, and a defined outcome when the key is lost. Multisite would need one key per site or an explicit shared-key decision. `AUTH_KEY` is not that key.

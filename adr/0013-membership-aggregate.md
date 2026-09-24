@@ -11,7 +11,9 @@ The owner decided that a membership number belongs to the membership. A returnin
 
 `Person`, `Membership` and `MembershipPeriod` are separate. `assoc_membership.membership_number` is unique. Periods reference the membership and do not carry the number.
 
-Built-in kinds are the slugs `ordinary`, `youth`, `family` and `company`. Labels are translated in WordPress. Unknown future slugs can be stored without a schema change. An admin screen for custom kinds is not part of this batch.
+Built-in kinds for this version are the slugs `ordinary`, `youth`, `family` and `company`. Labels are translated in WordPress. An unknown stored slug is invalid and will not load. Adding another kind later needs a domain change. Custom kinds remain an open owner question and are not implemented.
+
+`Membership.kind` is the current classification. `MembershipPeriod.historical_class` is the classification recorded for that period. A date uses the period's historical class. A new period copies the current kind into its historical class. The two may differ when an older free-text class was mapped to `ordinary`, or when an earlier period keeps `youth` and the current kind is later `ordinary`. There is no automatic change from youth to ordinary when someone turns 18.
 
 ## Consequences
 

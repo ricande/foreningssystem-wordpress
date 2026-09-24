@@ -34,7 +34,7 @@ final class MemberCountBlock
 
         return '<p class="foreningsplugin-member-count">' . esc_html(sprintf(
             /* translators: %d: number of active members */
-            __('Active members: %d', 'foreningsplugin'),
+            __('Active individual members: %d', 'foreningsplugin'),
             $count
         )) . '</p>';
     }

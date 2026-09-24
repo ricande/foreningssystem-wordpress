@@ -166,6 +166,35 @@ final class BoardServiceTest extends TestCase
         self::assertSame(1, $multiple['election_committee']);
     }
 
+    public function test_board_assignment_must_fall_inside_the_participation_interval(): void
+    {
+        [$service, $people, $memberships, $roles] = $this->world(true);
+        $personId = $this->person($people, 'Lisa', 'Andersson', 'lisa-board@example.test');
+        $period = $this->membership($memberships, $personId, 'F-BOARD', MembershipStatus::Active, '2024-01-01', null);
+        $membershipId = $period->membershipId();
+        $existing = $memberships->participantsForMembership($membershipId)[0];
+        $memberships->saveParticipant($existing->ended(AssociationDate::fromIso('2024-12-31')));
+        $memberships->addParticipant(new \Foreningssystem\Domain\Membership\MembershipParticipant(
+            null,
+            $membershipId,
+            $personId,
+            \Foreningssystem\Domain\Membership\ParticipantRole::Member,
+            false,
+            AssociationDate::fromIso('2026-09-24'),
+            null
+        ));
+        $roleId = (int) $roles->add(new BoardRole(null, 'chair', 'Ordförande', false, 10))->id();
+
+        try {
+            $service->place($personId, $roleId, AssociationDate::fromIso('2025-06-01'), AssociationDate::fromIso('2025-12-31'), '', '');
+            self::fail('An assignment before the participation starts should be rejected.');
+        } catch (BoardRuleException) {
+            self::assertTrue(true);
+        }
+
+        self::assertSame('saved', $service->place($personId, $roleId, AssociationDate::fromIso('2026-09-24'), null, '', ''));
+    }
+
     /**
      * @return array{0: BoardService, 1: MemoryPersonRepository, 2: MemoryMembershipRepository, 3: MemoryBoardRoleRepository, 4: MemoryBoardAssignmentRepository}
      */

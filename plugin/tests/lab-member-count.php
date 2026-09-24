@@ -40,7 +40,7 @@ $shown = MemberCountBlock::render();
 
 if (
     $during !== $before + 1
-    || ! str_contains($shown, 'Aktiva medlemmar: ' . $during)
+    || ! str_contains($shown, 'Aktiva enskilda medlemmar: ' . $during)
     || str_contains($shown, 'Räkne')
     || str_contains($shown, 'lab-count@example.test')
     || str_contains($shown, 'LAB-COUNT-1')
@@ -65,7 +65,7 @@ $service->endMembership($membershipId, AssociationDate::fromIso('2024-06-01'));
 wp_set_current_user(0);
 $after = MemberCountBlock::render();
 
-if (! str_contains($after, 'Aktiva medlemmar: ' . $before) || str_contains($after, 'Räkne')) {
+if (! str_contains($after, 'Aktiva enskilda medlemmar: ' . $before) || str_contains($after, 'Räkne')) {
     $fail('Ending the membership left the person in the public count.');
 }
 

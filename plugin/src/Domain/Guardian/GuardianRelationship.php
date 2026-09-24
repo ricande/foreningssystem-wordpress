@@ -73,4 +73,33 @@ final class GuardianRelationship
     {
         return new self($this->id, $this->childPersonId, $this->guardianPersonId, $this->relationship, $this->startedOn, $on);
     }
+
+    public function covers(AssociationDate $on): bool
+    {
+        if ($this->startedOn instanceof AssociationDate && $on->isBefore($this->startedOn)) {
+            return false;
+        }
+
+        return ! ($this->endedOn instanceof AssociationDate && $on->isAfter($this->endedOn));
+    }
+
+    public function overlaps(self $other): bool
+    {
+        if ($this->childPersonId !== $other->childPersonId || $this->guardianPersonId !== $other->guardianPersonId) {
+            return false;
+        }
+
+        if ($this->id !== null && $this->id === $other->id) {
+            return false;
+        }
+
+        $startsBeforeOtherEnds = ! $other->endedOn instanceof AssociationDate
+            || ! $this->startedOn instanceof AssociationDate
+            || ! $this->startedOn->isAfter($other->endedOn);
+        $otherStartsBeforeThisEnds = ! $this->endedOn instanceof AssociationDate
+            || ! $other->startedOn instanceof AssociationDate
+            || ! $other->startedOn->isAfter($this->endedOn);
+
+        return $startsBeforeOtherEnds && $otherStartsBeforeThisEnds;
+    }
 }

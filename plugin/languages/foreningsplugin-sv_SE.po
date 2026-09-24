@@ -1144,7 +1144,7 @@ msgid "Birth date"
 msgstr "Födelsedatum"
 
 msgid "Active individual members: %d"
-msgstr "Aktiva personer: %d"
+msgstr "Aktiva enskilda medlemmar: %d"
 
 msgid "Active memberships: %d"
 msgstr "Aktiva medlemskap: %d"
@@ -1226,4 +1226,19 @@ msgstr "Du har inte behörighet att ändra personnummer."
 
 msgid "Shows how many people are members of a membership that is active today. Company memberships and contact-only people are not included."
 msgstr "Visar hur många personer som är medlemmar i ett medlemskap som är aktivt idag. Företagsmedlemskap och rena kontaktpersoner räknas inte."
+
+msgid "The organization number is checked for format and checksum only. It is not checked against a company register."
+msgstr "Organisationsnumret kontrolleras bara till form och kontrollsiffra. Det slås inte upp i ett företagsregister."
+
+msgid "Choose an existing person, or leave that choice empty and enter a new person. The plugin does not merge people automatically."
+msgstr "Välj en befintlig person, eller lämna valet tomt och ange en ny person. Pluginet slår inte ihop personer automatiskt."
+
+msgid "Existing person"
+msgstr "Befintlig person"
+
+msgid "New person"
+msgstr "Ny person"
+
+msgid "Checked for format and checksum only, including coordination numbers. Not checked against an external register."
+msgstr "Kontrolleras bara till form och kontrollsiffra, inklusive samordningsnummer. Slås inte upp i ett externt register."
 

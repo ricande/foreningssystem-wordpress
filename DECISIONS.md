@@ -25,8 +25,6 @@ Status terminology:
 | A scanned signed hard copy can be attached to the finalized minutes | LOCKED |
 | Manual physical signatures are sufficient for MVP; e-signing is not required | LOCKED |
 | WordPress Media Library should be used for files where appropriate | LOCKED |
-
-"Where appropriate" means public or non-sensitive media, such as the association logo. Protected documents, minutes PDFs, and signed copies use plugin-managed private storage because a Media Library URL is not an authorization check. See ADR-0005 and `docs/PRIVATE_FILES.md`.
 | Capabilities, not only broad WordPress roles, control association actions | LOCKED |
 | Swedish and English internationalization from the beginning | LOCKED |
 | License is GPL-2.0-or-later | LOCKED |
@@ -41,6 +39,8 @@ Status terminology:
 | Birth date and a Swedish personal identity number are separate. The number is optional | LOCKED |
 | The plugin records guardian relationships and approvals. It does not decide that every minor legally requires consent | LOCKED |
 | Personal identity numbers are never public output | LOCKED |
+
+"Where appropriate" for the Media Library means public or non-sensitive media, such as the association logo. Protected documents, minutes PDFs, and signed copies use plugin-managed private storage because a Media Library URL is not an authorization check. See ADR-0005 and `docs/PRIVATE_FILES.md`.
 
 ## Explicit non-goals for MVP
 

@@ -25,6 +25,10 @@ final class GuardianApproval
         if ($this->childPersonId < 1 || $this->guardianPersonId < 1 || trim($this->purpose) === '' || trim($this->method) === '') {
             throw new InvalidArgumentException('A guardian approval needs the people, a purpose, and a method.');
         }
+
+        if ($this->withdrawnAt instanceof DateTimeImmutable && $this->withdrawnAt < $this->approvedAt) {
+            throw new InvalidArgumentException('A guardian approval cannot be withdrawn before it was recorded.');
+        }
     }
 
     public function id(): ?int

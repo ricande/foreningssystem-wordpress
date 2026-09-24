@@ -171,6 +171,7 @@ final class MembershipModelTest extends TestCase
     public function test_schema_15_keeps_each_legacy_number_as_its_own_membership(): void
     {
         self::assertSame(15, (new MembershipAggregateSchemaMigration('wp_', ''))->version());
+        self::assertSame(16, (new \Foreningssystem\Infrastructure\Persistence\ParticipantIntervalSchemaMigration('wp_', ''))->version());
         self::assertSame('ordinary', MembershipAggregateSchemaMigration::kindFromLegacy('ordinarie'));
         self::assertSame('youth', MembershipAggregateSchemaMigration::kindFromLegacy('ungdom'));
         self::assertSame('ordinary', MembershipAggregateSchemaMigration::kindFromLegacy('okänd typ'));

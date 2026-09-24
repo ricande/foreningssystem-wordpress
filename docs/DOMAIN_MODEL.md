@@ -38,6 +38,7 @@ A person, a membership and a membership period are different things. The members
 ## Invariants
 
 - A Person may have zero or more memberships. Periods on the same membership must not overlap. A person who counts as a member also cannot have overlapping coverage on two memberships.
+- A participation has an inclusive start and an optional inclusive end. The person is a member on a date only when both the participation and a covering period include that date. Leaving and rejoining the same membership adds another participation row. The earlier row stays.
 - Ending a membership period sets an end date and a terminal status. It does not delete the Person, the membership, or past assignments.
 - Only a participant with role `member` counts as a member for the active-member count and for board eligibility. Role `contact` does not. A company contact is a contact.
 - A Board assignment has a start date and either an open end or an end date. "Who held this role on date D?" is answered from those dates, not from protocol text.
@@ -59,6 +60,12 @@ Recommended status values:
 - `deceased` is a Person status, not a membership status. The membership that ended because the person died uses `ended`.
 
 `dormant` means the person remains a member under the association's own rules but is not counted as active. The product does not invent the legal meaning of dormant.
+
+`pending` and `dormant` do not cover a date, and they cannot carry an end date. `ended` requires an end date. `active` may be open or may carry an inclusive end date. Both `active` and `ended` cover a date inside the inclusive range. An open assignment is covered only by an open `active` period and an open participation.
+
+`Membership.kind` is the current classification. The period's `historical_class` is the classification for that interval. A new period copies the current kind. There is no automatic youth-to-ordinary change.
+
+The public member count is the number of active individual members, not the number of memberships. The overview shows both figures with those names.
 
 ## Board history
 

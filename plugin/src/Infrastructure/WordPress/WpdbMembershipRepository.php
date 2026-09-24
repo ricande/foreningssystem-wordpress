@@ -78,8 +78,9 @@ final class WpdbMembershipRepository implements MembershipRepository
             'person_id' => $participant->personId(),
             'role' => $participant->role()->value,
             'is_primary' => $participant->isPrimary() ? 1 : 0,
+            'started_on' => $participant->startedOn()->iso(),
         ];
-        $format = ['%d', '%d', '%s', '%d'];
+        $format = ['%d', '%d', '%s', '%d', '%s'];
 
         if ($participant->endedOn() !== null) {
             $data['ended_on'] = $participant->endedOn()->iso();
@@ -110,10 +111,11 @@ final class WpdbMembershipRepository implements MembershipRepository
             [
                 'role' => $participant->role()->value,
                 'is_primary' => $participant->isPrimary() ? 1 : 0,
+                'started_on' => $participant->startedOn()->iso(),
                 'ended_on' => $participant->endedOn()?->iso(),
             ],
             ['id' => $id],
-            ['%s', '%d', '%s'],
+            ['%s', '%d', '%s', '%s'],
             ['%d']
         );
 
@@ -270,6 +272,7 @@ final class WpdbMembershipRepository implements MembershipRepository
             (int) $row['person_id'],
             ParticipantRole::from((string) $row['role']),
             (int) $row['is_primary'] === 1,
+            AssociationDate::fromIso((string) $row['started_on']),
             $this->date($row['ended_on'] ?? null)
         );
     }

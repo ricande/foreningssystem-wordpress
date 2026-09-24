@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Tests;
 
 use Foreningssystem\Domain\Membership\AssociationDate;
+use InvalidArgumentException;
 use Foreningssystem\Domain\Membership\MembershipLedger;
 use Foreningssystem\Domain\Membership\MembershipPeriod;
 use Foreningssystem\Domain\Membership\MembershipRuleException;
@@ -84,6 +85,27 @@ final class MembershipLedgerTest extends TestCase
         self::assertTrue($this->period(5, '2024-01-01', '2024-06-15', MembershipStatus::Ended)->isActiveOn($today));
         self::assertFalse($this->period(6, '2024-01-01', null, MembershipStatus::Dormant)->isActiveOn($today));
         self::assertFalse($this->period(7, '2024-01-01', null, MembershipStatus::Pending)->isActiveOn($today));
+        self::assertTrue($this->period(8, '2024-01-01', '2024-06-15', MembershipStatus::Active)->isActiveOn($today));
+    }
+
+    public function test_contradictory_period_status_and_dates_are_rejected(): void
+    {
+        try {
+            $this->period(1, '2024-01-01', null, MembershipStatus::Ended);
+            self::fail('An ended period needs an end date.');
+        } catch (InvalidArgumentException) {
+            self::assertTrue(true);
+        }
+
+        try {
+            $this->period(2, '2024-01-01', '2024-06-01', MembershipStatus::Pending);
+            self::fail('A pending period cannot have an end date.');
+        } catch (InvalidArgumentException) {
+            self::assertTrue(true);
+        }
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->period(3, '2024-01-01', '2024-06-01', MembershipStatus::Dormant);
     }
 
     private function period(?int $id, string $start, ?string $end, MembershipStatus $status): MembershipPeriod

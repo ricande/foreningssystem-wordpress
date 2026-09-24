@@ -10,7 +10,7 @@ The association has one setting, in years, for how long personal data and audit 
 - Audit events are removed 5 years after the event, unless the association changes the setting.
 - Finalized minutes and signed originals are not deleted by this timer. The signed copy is the archival original. Anonymizing the person record does not rewrite a signed scan or a finalized minutes snapshot. The privacy eraser reports that those records were kept.
 - A personal identity number is removed when that person's contact data is anonymized, and it can also be removed earlier. Membership, board, minutes and decision history stay. A separate retention period for the number is still an open owner decision. Guardian relationships and approval records are not deleted by that removal.
-- A privacy export includes the subject's own personal identity number when one is stored. It does not include another person's number. A guardian export may name the child and the approval purpose. It does not include the child's identity number. A child export may name the guardian. It does not include the guardian's identity number or email.
+- A privacy export includes the subject's own personal identity number when one is stored. It does not include another person's number. A guardian export says that a guardian relationship exists and repeats the relationship label, purpose, method and date. It does not add the child's name, email or identity number. A child export repeats the relationship label and the approval metadata. It does not add the guardian's name, email or identity number. The label is text the association stored on the relationship. The plugin does not expand it into the other person's record.
 
 ## Operations that must stay distinct
 
@@ -36,7 +36,7 @@ The interface copy uses those words. It does not use "delete member" as a single
 | Documents and signed scans | Archive files that may contain personal data | Include a document only when it is specifically about the requester and the exporter is allowed to read it | Removing a private file is a manual association action, not an automatic eraser success | Signed copies are kept as originals. Other documents follow their own validity dates |
 | Audit event | Show who performed a critical action | Export events about the requester, without other people's payloads | Do not store field values in the event | The retention setting, default 5 years after the event, then remove |
 
-National identity numbers are out of the schema.
+A personal identity number lives in `assoc_personal_identity`, not on the person row. It is not encrypted. See ADR-0021.
 
 ## WordPress exporter and eraser
 

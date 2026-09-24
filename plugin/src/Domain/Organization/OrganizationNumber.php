@@ -16,7 +16,7 @@ final class OrganizationNumber
     {
         $digits = preg_replace('/\D/', '', $raw) ?? '';
 
-        if (strlen($digits) !== 10 || ! self::checksum($digits)) {
+        if (strlen($digits) !== 10 || (int) $digits[2] < 2 || ! self::checksum($digits)) {
             throw new InvalidArgumentException('The organization number is not valid.');
         }
 

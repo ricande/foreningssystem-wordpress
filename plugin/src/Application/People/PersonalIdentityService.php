@@ -33,15 +33,24 @@ final class PersonalIdentityService
     ): void {
         $this->require(Capabilities::EDIT_PERSONAL_IDENTITY_NUMBERS);
 
-        if ($this->people->find($personId) === null) {
+        $person = $this->people->find($personId);
+
+        if ($person === null) {
             throw new \RuntimeException('Person was not found.');
+        }
+
+        $number = PersonalIdentityNumber::parse($rawNumber, $today);
+        $birthDate = $person->birthDate();
+
+        if ($birthDate instanceof AssociationDate && $birthDate->iso() !== $number->civilBirthDate()->iso()) {
+            throw new \InvalidArgumentException('The personal identity number does not match the birth date.');
         }
 
         $existing = $this->identities->findForPerson($personId);
         $record = new PersonalIdentityRecord(
             $existing?->id(),
             $personId,
-            PersonalIdentityNumber::parse($rawNumber, $today),
+            $number,
             trim($purpose),
             trim($basisNote),
             $collectedOn,

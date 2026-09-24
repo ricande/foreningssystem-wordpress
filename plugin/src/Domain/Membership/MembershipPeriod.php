@@ -6,6 +6,9 @@ namespace Foreningssystem\Domain\Membership;
 
 use InvalidArgumentException;
 
+/**
+ * Pending and dormant periods never cover a date. Active covers from the start through an inclusive end date, or stays open when the end is empty. Ended requires an end date and covers the same inclusive range. Active may carry an end date; that combination still covers through the end date.
+ */
 final class MembershipPeriod
 {
     public function __construct(
@@ -22,6 +25,17 @@ final class MembershipPeriod
 
         if ($this->endedOn instanceof AssociationDate && $this->endedOn->isBefore($this->startedOn)) {
             throw new InvalidArgumentException('A membership cannot end before it starts.');
+        }
+
+        if ($this->status === MembershipStatus::Ended && ! $this->endedOn instanceof AssociationDate) {
+            throw new InvalidArgumentException('An ended membership period needs an end date.');
+        }
+
+        if (
+            ($this->status === MembershipStatus::Pending || $this->status === MembershipStatus::Dormant)
+            && $this->endedOn instanceof AssociationDate
+        ) {
+            throw new InvalidArgumentException('A pending or dormant period cannot have an end date.');
         }
     }
 

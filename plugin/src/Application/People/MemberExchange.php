@@ -76,7 +76,9 @@ final class MemberExchange
             }
 
             foreach ($this->memberships->periodsForMembership($participant->membershipId()) as $period) {
-                $lines[] = [$person, $account, $period];
+                if (\Foreningssystem\Domain\Membership\MemberCoverage::participationOverlapsPeriod($participant, $period)) {
+                    $lines[] = [$person, $account, $period];
+                }
             }
         }
 
@@ -232,14 +234,15 @@ final class MemberExchange
             throw new \RuntimeException('The membership was not saved.');
         }
 
-        $this->memberships->addParticipant(new \Foreningssystem\Domain\Membership\MembershipParticipant(
+        $incoming = new \Foreningssystem\Domain\Membership\MembershipParticipant(
             null,
             $membershipId,
             $personId,
             \Foreningssystem\Domain\Membership\ParticipantRole::Member,
             true,
+            $startedOn,
             null
-        ));
+        );
         $period = new MembershipPeriod(null, $membershipId, $membershipStatus, $startedOn, $endedOn, $row['membership_type']);
 
         foreach ($this->memberships->allParticipants() as $participant) {
@@ -248,11 +251,13 @@ final class MemberExchange
             }
 
             foreach ($this->memberships->periodsForMembership($participant->membershipId()) as $existing) {
-                if ($existing->overlaps($period)) {
+                if (\Foreningssystem\Domain\Membership\MemberCoverage::coveragesOverlap($incoming, $period, $participant, $existing)) {
                     throw new MembershipRuleException('Membership periods cannot overlap.');
                 }
             }
         }
+
+        $this->memberships->addParticipant($incoming);
 
         $this->ledger->add([], $period);
         $this->memberships->add($period);
@@ -317,6 +322,8 @@ final class MemberExchange
                     $person->birthDate()?->iso() ?? '',
                     $participant->role()->value,
                     $participant->isPrimary() ? '1' : '0',
+                    $participant->startedOn()->iso(),
+                    $participant->endedOn()?->iso() ?? '',
                 ]);
             }
         }
@@ -360,7 +367,7 @@ final class MemberExchange
             $records[$type][] = ['line' => $line, 'cells' => $cells];
         }
 
-        foreach (['organization', 'membership', 'participant', 'period'] as $type) {
+        foreach (['organization', 'membership', 'period', 'participant'] as $type) {
             foreach ($records[$type] as $record) {
                 try {
                     $outcome = $this->transaction->run(fn (): string => $this->importStructureRow($type, $record['cells']));
@@ -432,13 +439,8 @@ final class MemberExchange
             }
 
             $personId = (int) $person->id();
-
-            foreach ($this->memberships->participantsForMembership($membership->id()) as $existing) {
-                if ($existing->personId() === $personId) {
-                    return 'skipped';
-                }
-            }
-
+            $startedOn = $value(8) !== '' ? AssociationDate::fromIso($value(8)) : $this->earliestPeriodStart($membership->id());
+            $endedOn = $value(9) === '' ? null : AssociationDate::fromIso($value(9));
             $role = \Foreningssystem\Domain\Membership\ParticipantRole::tryFrom($value(6));
 
             if (! $role instanceof \Foreningssystem\Domain\Membership\ParticipantRole) {
@@ -449,14 +451,23 @@ final class MemberExchange
                 throw new MembershipRuleException('A company contact is not an individual member.');
             }
 
-            $this->memberships->addParticipant(new \Foreningssystem\Domain\Membership\MembershipParticipant(
+            $participant = new \Foreningssystem\Domain\Membership\MembershipParticipant(
                 null,
                 $membership->id(),
                 $personId,
                 $role,
                 $value(7) === '1',
-                null
-            ));
+                $startedOn,
+                $endedOn
+            );
+
+            foreach ($this->memberships->participantsForMembership($membership->id()) as $existing) {
+                if ($existing->personId() === $personId && $existing->overlaps($participant)) {
+                    return 'skipped';
+                }
+            }
+
+            $this->memberships->addParticipant($participant);
 
             return 'created';
         }
@@ -484,6 +495,23 @@ final class MemberExchange
         $this->memberships->add($period);
 
         return 'created';
+    }
+
+    private function earliestPeriodStart(int $membershipId): AssociationDate
+    {
+        $earliest = null;
+
+        foreach ($this->memberships->periodsForMembership($membershipId) as $period) {
+            if (! $earliest instanceof AssociationDate || $period->startedOn()->isBefore($earliest)) {
+                $earliest = $period->startedOn();
+            }
+        }
+
+        if (! $earliest instanceof AssociationDate) {
+            throw new InvalidArgumentException('A participant needs a start date.');
+        }
+
+        return $earliest;
     }
 
     private function personFor(string $email): ?Person

@@ -121,11 +121,11 @@ final class PrivacyExport
             foreach ($this->memberships->periodsForMembership($participant->membershipId()) as $period) {
                 $id = $period->id();
 
-                if ($id === null) {
+                if ($id === null || isset($rows[$id]) || ! \Foreningssystem\Domain\Membership\MemberCoverage::participationOverlapsPeriod($participant, $period)) {
                     continue;
                 }
 
-                $rows[] = new ExportedMembership(
+                $rows[$id] = new ExportedMembership(
                     $id,
                     $account->number(),
                     $period->historicalClass() !== '' ? $period->historicalClass() : $account->kind()->value,
@@ -136,7 +136,7 @@ final class PrivacyExport
             }
         }
 
-        return $rows;
+        return array_values($rows);
     }
 
     private function identityFor(int $personId, int $actorUserId): ?string
@@ -162,15 +162,11 @@ final class PrivacyExport
         $notes = [];
 
         foreach ($this->guardians->relationshipsForChild($personId) as $relationship) {
-            $guardian = $this->people->find($relationship->guardianPersonId());
-            $name = $guardian === null ? '' : $guardian->firstName() . ' ' . $guardian->lastName();
-            $notes[] = 'Guardian relationship: ' . $relationship->relationship() . ($name === '' ? '' : ' (' . $name . ')');
+            $notes[] = 'Guardian relationship: ' . $relationship->relationship();
         }
 
         foreach ($this->guardians->relationshipsForGuardian($personId) as $relationship) {
-            $child = $this->people->find($relationship->childPersonId());
-            $name = $child === null ? '' : $child->firstName() . ' ' . $child->lastName();
-            $notes[] = 'Recorded as guardian: ' . $relationship->relationship() . ($name === '' ? '' : ' (' . $name . ')');
+            $notes[] = 'Recorded guardian relationship exists. Relationship: ' . $relationship->relationship();
         }
 
         foreach ($this->guardians->approvalsForChild($personId) as $approval) {

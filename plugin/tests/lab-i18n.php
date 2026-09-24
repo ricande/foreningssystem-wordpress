@@ -3,19 +3,19 @@
 use Foreningssystem\Infrastructure\WordPress\MeetingDetailPage;
 
 $englishProfile = 'Profile';
-$englishMembers = 'Active members: %d';
+$englishMembers = 'Active individual members: %d';
 $englishYear = 'Current membership year: %1$s–%2$s';
 
 switch_to_locale('en_US');
 $profile = __('Profile', 'foreningsplugin');
-$members = __('Active members: %d', 'foreningsplugin');
+$members = __('Active individual members: %d', 'foreningsplugin');
 $year = __('Current membership year: %1$s–%2$s', 'foreningsplugin');
 $englishLanguage = MeetingDetailPage::htmlLanguage();
 restore_previous_locale();
 
 switch_to_locale('sv_SE');
 $swedishProfile = __('Profile', 'foreningsplugin');
-$swedishMembers = __('Active members: %d', 'foreningsplugin');
+$swedishMembers = __('Active individual members: %d', 'foreningsplugin');
 $swedishYear = __('Current membership year: %1$s–%2$s', 'foreningsplugin');
 $swedishPage = __('Page %1$d / %2$d', 'foreningsplugin');
 $swedishLanguage = MeetingDetailPage::htmlLanguage();
@@ -27,7 +27,7 @@ if (
     || $year !== $englishYear
     || $englishLanguage !== 'en-US'
     || $swedishProfile !== 'Profil'
-    || $swedishMembers !== 'Aktiva medlemmar: %d'
+    || $swedishMembers !== 'Aktiva enskilda medlemmar: %d'
     || $swedishYear !== 'Pågående verksamhetsår: %1$s–%2$s'
     || $swedishPage !== 'Sida %1$d / %2$d'
     || $swedishLanguage !== 'sv-SE'

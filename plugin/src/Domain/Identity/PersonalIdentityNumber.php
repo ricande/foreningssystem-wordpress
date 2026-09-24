@@ -46,6 +46,17 @@ final class PersonalIdentityNumber
         return substr($this->canonical, 0, 4) . '••••-' . substr($this->canonical, 9, 4);
     }
 
+    public function civilBirthDate(): AssociationDate
+    {
+        $day = (int) substr($this->canonical, 6, 2);
+
+        if ($day > 60) {
+            $day -= 60;
+        }
+
+        return AssociationDate::fromIso(sprintf('%s-%s-%02d', substr($this->canonical, 0, 4), substr($this->canonical, 4, 2), $day));
+    }
+
     private static function century(string $six, string $separator, AssociationDate $today): string
     {
         $year = (int) substr($six, 0, 2);

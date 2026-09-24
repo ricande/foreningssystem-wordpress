@@ -16,7 +16,8 @@ These must be answered deliberately. Do not silently turn assumptions into imple
 
 ## Still open for this membership model
 
-- Whether associations can add their own membership kinds beyond the built-in slugs.
+- Whether associations can add their own membership kinds beyond the built-in slugs. Until that is decided, an unknown slug is invalid. See ADR-0013.
+- Whether coordination numbers should stay accepted. The current checksum accepts them and says so in the screen. It is not a locked narrowing to personal identity numbers only.
 - Whether a membership kind may change over time, and where that history would live. The current period stores a historical class string. The membership stores the current kind.
 - Whether every family participant should always count as an individual member. The current rule counts only the `member` role.
 - Whether a youth membership must have at least one guardian. The product does not require one.
