@@ -158,6 +158,51 @@ final class DocumentArchiveTest extends TestCase
         new AssociationDocument(null, 'Stadgar', DocumentVisibility::Public, 'application/pdf', '../document-' . $valid . '.pdf');
     }
 
+    public function test_a_failed_database_save_discards_the_new_file_and_keeps_a_file_that_is_already_referenced(): void
+    {
+        $documents = new MemoryDocumentRepository();
+        $files = new MemoryDocumentFileStore();
+        $pdf = "%PDF-1.4\n1 0 obj\nendobj\n%%EOF";
+        $keeper = $this->archive([Capabilities::MANAGE_DOCUMENTS], $documents, $files);
+        $keeper->add('Stadgar', $pdf, DocumentVisibility::Board);
+        $failing = new DocumentArchive(
+            $documents,
+            $files,
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return true;
+                }
+            },
+            new class implements Transaction {
+                public function run(callable $callback): mixed
+                {
+                    throw new \RuntimeException('The database rejected the document.');
+                }
+            },
+            new class implements ActiveMember {
+                public function coversCurrentUser(): bool
+                {
+                    return false;
+                }
+            }
+        );
+
+        try {
+            $failing->add('Nytt', "%PDF-1.4\n2 0 obj\nendobj\n%%EOF", DocumentVisibility::Board);
+            self::fail('A failed save should not leave a document.');
+        } catch (\RuntimeException) {
+            self::assertSame($pdf, $keeper->read(1));
+        }
+
+        try {
+            $failing->add('Samma', $pdf, DocumentVisibility::Board);
+            self::fail('A failed save of an existing file should not remove it.');
+        } catch (\RuntimeException) {
+            self::assertSame($pdf, $keeper->read(1));
+        }
+    }
+
     public function test_schema_migration_stores_document_visibility(): void
     {
         $migration = new DocumentSchemaMigration('wp_', '');
@@ -257,6 +302,11 @@ final class MemoryDocumentFileStore implements DocumentFileStore
     {
         $this->files[$name] = $bytes;
         $this->writes++;
+    }
+
+    public function discard(string $name): void
+    {
+        unset($this->files[$name]);
     }
 
     public function read(string $name): string

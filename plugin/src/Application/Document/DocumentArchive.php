@@ -31,9 +31,15 @@ final class DocumentArchive
         $name = 'document-' . hash('sha256', $bytes) . '.' . DocumentFileType::extension($mediaType);
         $this->files->put($name, $bytes);
 
-        $saved = $this->transaction->run(function () use ($title, $visibility, $mediaType, $name): AssociationDocument {
-            return $this->documents->add(new AssociationDocument(null, $title, $visibility, $mediaType, $name));
-        });
+        try {
+            $saved = $this->transaction->run(function () use ($title, $visibility, $mediaType, $name): AssociationDocument {
+                return $this->documents->add(new AssociationDocument(null, $title, $visibility, $mediaType, $name));
+            });
+        } catch (\Throwable $error) {
+            $this->discardOrphan($name);
+
+            throw $error;
+        }
         $id = $saved->id();
 
         if ($id === null) {
@@ -174,6 +180,17 @@ final class DocumentArchive
         }
 
         return $document;
+    }
+
+    private function discardOrphan(string $name): void
+    {
+        foreach ($this->documents->all() as $document) {
+            if ($document->storageName() === $name) {
+                return;
+            }
+        }
+
+        $this->files->discard($name);
     }
 
     private function requireManage(): void

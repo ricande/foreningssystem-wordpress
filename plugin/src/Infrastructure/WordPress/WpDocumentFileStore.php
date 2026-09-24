@@ -32,6 +32,16 @@ final class WpDocumentFileStore implements DocumentFileStore
         return $bytes;
     }
 
+    public function discard(string $name): void
+    {
+        $this->assertName($name);
+        $path = PrivateUploadDirectory::path() . '/' . $name;
+
+        if (is_file($path)) {
+            unlink($path);
+        }
+    }
+
     private function assertName(string $name): void
     {
         if (! PrivateStorageLocation::isDocumentName($name)) {

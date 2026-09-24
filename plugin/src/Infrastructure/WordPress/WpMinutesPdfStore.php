@@ -43,6 +43,16 @@ final class WpMinutesPdfStore implements MinutesPdfStore
         ));
 
         if ($updated === false) {
+            $stored = $this->stored($revisionId);
+
+            if ($stored === null || $stored['name'] !== $name) {
+                $path = $this->directory() . '/' . $name;
+
+                if (is_file($path) && PrivateStorageLocation::isRevisionPdfName($name, $revisionId)) {
+                    unlink($path);
+                }
+            }
+
             throw new \RuntimeException('The PDF reference could not be saved.');
         }
     }

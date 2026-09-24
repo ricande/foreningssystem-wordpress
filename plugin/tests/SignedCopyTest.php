@@ -253,6 +253,11 @@ final class MemorySignedFileStore implements SignedFileStore
 
         return $this->files[$name];
     }
+
+    public function discard(string $name): void
+    {
+        unset($this->files[$name]);
+    }
 }
 
 final class MemoryAuditLog implements AuditLog

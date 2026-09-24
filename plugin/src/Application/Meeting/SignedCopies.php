@@ -43,7 +43,8 @@ final class SignedCopies
         $name = 'signed-' . $revision->id() . '-' . hash('sha256', $bytes) . '.' . SignedCopyType::extension($mediaType);
         $this->files->put($name, $bytes);
 
-        return $this->transaction->run(function () use ($revision, $mediaType, $name, $actorUserId): string {
+        try {
+            return $this->transaction->run(function () use ($revision, $mediaType, $name, $actorUserId): string {
             $current = $this->copies->currentForRevision((int) $revision->id());
             $saved = $this->copies->add((int) $revision->id(), $mediaType, $name);
             $savedId = $saved->id();
@@ -62,7 +63,16 @@ final class SignedCopies
             $this->audit->record('minutes_revision', (int) $revision->id(), 'attach_signed_copy', $actorUserId);
 
             return 'attached';
-        });
+            });
+        } catch (\Throwable $error) {
+            $current = $this->copies->currentForRevision((int) $revision->id());
+
+            if (! $current instanceof SignedCopy || $current->storageName() !== $name) {
+                $this->files->discard($name);
+            }
+
+            throw $error;
+        }
     }
 
     public function current(int $revisionId): ?SignedCopy
