@@ -60,32 +60,13 @@ The board screen shows the current board first, then upcoming changes, history, 
 
 ## Meeting flow
 
-### Before
-- choose type/template
-- date/time/place
-- participants
-- agenda
+The meetings screen is an operational overview: in-progress meetings first, then upcoming planned meetings by nearest date, then held meetings newest first. Each state offers the next action for that state, such as opening or starting a planned meeting, continuing or marking an in-progress meeting as held, and opening or reviewing minutes for a held meeting. An empty list asks an authorized officer to create the association's first meeting.
 
-### During
-The meeting page should support rapid note taking:
-- agenda visible
-- current item clear
-- notes inline
-- add decision inline
-- add action inline
-- move to next item with minimal friction
+Creating a meeting asks for type, template, title, date, time, and place. Template headings are copied into that meeting. A later template change does not rewrite it, and a template is not a legally complete annual-meeting agenda. Template management sits in a secondary section.
 
-Avoid forcing the secretary through many full-page admin forms.
+The meeting page is one workspace. The header shows title, type, date, time, place, and status, with one primary next action. Participants show name, attendance, and duty. The agenda is an ordered working list. During an in-progress meeting the secretary can focus one agenda item and add a working note, a note marked for inclusion, a decision, or a task without leaving the page. After the meeting is marked held, the minutes section becomes the next step: create a deterministic draft, save a hand edit, regenerate only with confirmation when that would discard the edit, send the existing revision through review, and finalize it as a preserved revision. A correction is a new revision. Print, PDF, a privately stored signed copy, and publication stay separate actions. Finalizing does not publish, and uploading a signed copy does not publish it.
 
-### After
-- review generated minutes
-- edit draft
-- send/mark for adjustment
-- finalize/adjust
-- print
-- export PDF
-- upload signed copy
-- publish if allowed
+A child record can be changed only together with the meeting it belongs to. A crafted request that names one meeting and a participant, agenda item, note, decision, task, or minutes revision from another meeting is rejected, and the other meeting stays unchanged.
 
 ## Destructive/irreversible actions
 

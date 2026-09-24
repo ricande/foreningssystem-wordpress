@@ -110,20 +110,31 @@ final class MinutesDrafts
         return $this->composition($this->requireMeeting($meetingId))->payload() !== $draft->payload();
     }
 
-    public function replaceBody(int $revisionId, string $body): void
+    /**
+     * @return list<MinutesRevision>
+     */
+    public function history(int $meetingId): array
+    {
+        $this->require(Capabilities::VIEW_INTERNAL_MEETINGS);
+        $this->requireMeeting($meetingId);
+
+        return $this->minutes->forMeeting($meetingId);
+    }
+
+    public function replaceBody(int $revisionId, string $body, ?int $meetingId = null): void
     {
         $this->requireRecord();
-        $draft = $this->requireEditable($revisionId);
+        $draft = $this->scoped($this->requireEditable($revisionId), $meetingId);
 
         $this->transaction->run(function () use ($draft, $body): void {
             $this->minutes->saveRevision($draft->withBody($body));
         });
     }
 
-    public function regenerate(int $revisionId, bool $confirmed): void
+    public function regenerate(int $revisionId, bool $confirmed, ?int $meetingId = null): void
     {
         $this->requireRecord();
-        $draft = $this->requireEditable($revisionId);
+        $draft = $this->scoped($this->requireEditable($revisionId), $meetingId);
 
         if ($draft->handEdited() && ! $confirmed) {
             throw new MeetingRuleException('Confirm before replacing a hand-edited draft.');
@@ -136,30 +147,30 @@ final class MinutesDrafts
         });
     }
 
-    public function submit(int $revisionId): void
+    public function submit(int $revisionId, ?int $meetingId = null): void
     {
         $this->requireRecord();
-        $draft = $this->requireEditable($revisionId);
+        $draft = $this->scoped($this->requireEditable($revisionId), $meetingId);
 
         $this->transaction->run(function () use ($draft): void {
             $this->minutes->saveRevision($this->lifecycle->submit($draft));
         });
     }
 
-    public function sendBack(int $revisionId): void
+    public function sendBack(int $revisionId, ?int $meetingId = null): void
     {
         $this->requireRecord();
-        $draft = $this->requireEditable($revisionId);
+        $draft = $this->scoped($this->requireEditable($revisionId), $meetingId);
 
         $this->transaction->run(function () use ($draft): void {
             $this->minutes->saveRevision($this->lifecycle->sendBack($draft));
         });
     }
 
-    public function finalize(int $revisionId): void
+    public function finalize(int $revisionId, ?int $meetingId = null): void
     {
         $this->require(Capabilities::FINALIZE_MINUTES);
-        $revision = $this->requireRevision($revisionId);
+        $revision = $this->scoped($this->requireRevision($revisionId), $meetingId);
 
         $this->transaction->run(function () use ($revision): void {
             $finalized = $this->lifecycle->finalize($revision);
@@ -348,6 +359,15 @@ final class MinutesDrafts
 
         if ($revision->state() !== RevisionState::Draft && $revision->state() !== RevisionState::UnderAdjustment) {
             throw new MeetingRuleException('A finalized revision cannot be edited.');
+        }
+
+        return $revision;
+    }
+
+    private function scoped(MinutesRevision $revision, ?int $meetingId): MinutesRevision
+    {
+        if ($meetingId !== null && $revision->meetingId() !== $meetingId) {
+            throw new MeetingRuleException('The record does not belong to this meeting.');
         }
 
         return $revision;

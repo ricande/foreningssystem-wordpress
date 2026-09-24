@@ -92,3 +92,7 @@ It does not mean the plugin has certified compliance with a particular country's
 A signed file can be attached only to a finalized revision. Replacing the current signed file is an audited action. The product keeps both the revision and the scan. The signed copy is the archival original. The finalized revision stays unchanged as the printed text, and it does not replace the signed copy when they differ.
 
 `publish_minutes` may expose a finalized revision through the public blocks. Publishing does not modify the body. Unpublishing hides it. The default publication target is the latest finalized revision that is not superseded.
+
+## Meeting ownership
+
+A mutation that names both a meeting and a child record checks that the participant, agenda item, note, decision, action item, or minutes revision belongs to that meeting. The redirect target is not the check. Removing an agenda item is refused while that item still has a note, decision, or task. A deceased person is not added as a new participant; an existing historical row is left as it is.

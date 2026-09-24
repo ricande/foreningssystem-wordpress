@@ -7,6 +7,7 @@ namespace Foreningssystem\Application\Meeting;
 use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Meeting\MeetingRuleException;
 use Foreningssystem\Domain\Meeting\MinutesRepository;
 use Foreningssystem\Domain\Meeting\MinutesRevision;
 use Foreningssystem\Domain\Meeting\RevisionState;
@@ -23,12 +24,16 @@ final class MinutesPdf
     ) {
     }
 
-    public function readable(int $revisionId): MinutesRevision
+    public function readable(int $revisionId, ?int $meetingId = null): MinutesRevision
     {
         $revision = $this->minutes->findRevision($revisionId);
 
         if (! $revision instanceof MinutesRevision) {
             throw new \RuntimeException('Minutes revision was not found.');
+        }
+
+        if ($meetingId !== null && $revision->meetingId() !== $meetingId) {
+            throw new MeetingRuleException('The record does not belong to this meeting.');
         }
 
         if ($revision->state() === RevisionState::Finalized) {

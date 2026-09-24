@@ -29,20 +29,20 @@ final class MinutesPublication
     ) {
     }
 
-    public function publish(int $revisionId): void
+    public function publish(int $revisionId, ?int $meetingId = null): void
     {
         $this->requirePublish();
-        $revision = $this->requireCurrentFinalized($revisionId);
+        $revision = $this->scoped($this->requireCurrentFinalized($revisionId), $meetingId);
 
         $this->transaction->run(function () use ($revision): void {
             $this->minutes->saveRevision($revision->withVisibility(PublicationVisibility::Public));
         });
     }
 
-    public function unpublish(int $revisionId): void
+    public function unpublish(int $revisionId, ?int $meetingId = null): void
     {
         $this->requirePublish();
-        $revision = $this->requireCurrentFinalized($revisionId);
+        $revision = $this->scoped($this->requireCurrentFinalized($revisionId), $meetingId);
 
         $this->transaction->run(function () use ($revision): void {
             $this->minutes->saveRevision($revision->withVisibility(PublicationVisibility::Board));
@@ -145,6 +145,15 @@ final class MinutesPublication
 
         if ($revision->state() !== RevisionState::Finalized || $revision->supersededBy() !== null) {
             throw new MeetingRuleException('Only the current finalized revision can be published.');
+        }
+
+        return $revision;
+    }
+
+    private function scoped(MinutesRevision $revision, ?int $meetingId): MinutesRevision
+    {
+        if ($meetingId !== null && $revision->meetingId() !== $meetingId) {
+            throw new MeetingRuleException('The record does not belong to this meeting.');
         }
 
         return $revision;

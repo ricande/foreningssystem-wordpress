@@ -1665,3 +1665,228 @@ msgstr "Det planerade uppdraget kunde inte avbrytas."
 
 msgid "Confirm before cancelling the scheduled assignment."
 msgstr "Bekräfta innan det planerade uppdraget avbryts."
+
+msgid "Edit meeting details"
+msgstr "Redigera mötesuppgifter"
+
+msgid "Save meeting details"
+msgstr "Spara mötesuppgifter"
+
+msgid "Start meeting"
+msgstr "Starta mötet"
+
+msgid "Record afterwards"
+msgstr "Anteckna i efterhand"
+
+msgid "Mark this meeting as held? Notes, decisions and tasks remain available for minutes preparation."
+msgstr "Markera mötet som hållet? Anteckningar, beslut och uppgifter finns kvar för protokollsarbetet."
+
+msgid "Mark meeting as held"
+msgstr "Markera mötet som hållet"
+
+msgid "Mark this meeting as held"
+msgstr "Markera det här mötet som hållet"
+
+msgid "The draft is composed from the meeting, attendance, agenda, notes marked for inclusion, decisions, and tasks."
+msgstr "Utkastet sätts ihop av mötet, närvaron, dagordningen, anteckningar som ska tas med, beslut och uppgifter."
+
+msgid "Review minutes"
+msgstr "Granska protokollet"
+
+msgid "Remove this participant from the meeting"
+msgstr "Ta bort den här deltagaren från mötet"
+
+msgid "Leave empty to use the position number."
+msgstr "Lämna tomt för att använda löpnumret."
+
+msgid "Meeting notes"
+msgstr "Anteckningar om mötet"
+
+msgid "Move up"
+msgstr "Flytta upp"
+
+msgid "Move down"
+msgstr "Flytta ned"
+
+msgid "Remove agenda item"
+msgstr "Ta bort punkt"
+
+msgid "Remove this agenda item"
+msgstr "Ta bort den här punkten"
+
+msgid "Include in minutes"
+msgstr "Ta med i protokollet"
+
+msgid "Remove this note"
+msgstr "Ta bort den här anteckningen"
+
+msgid "Mark follow-up done"
+msgstr "Markera uppföljningen som klar"
+
+msgid "Reopen follow-up"
+msgstr "Öppna uppföljningen igen"
+
+msgid "Remove this decision"
+msgstr "Ta bort det här beslutet"
+
+msgid "Mark task done"
+msgstr "Markera uppgiften som klar"
+
+msgid "Reopen task"
+msgstr "Öppna uppgiften igen"
+
+msgid "Remove this task"
+msgstr "Ta bort den här uppgiften"
+
+msgid "Add note"
+msgstr "Lägg till anteckning"
+
+msgid "A working note stays with the meeting. Only a note marked for inclusion is copied into the minutes draft."
+msgstr "En arbetsanteckning stannar vid mötet. Bara en anteckning som ska tas med kopieras in i protokollsutkastet."
+
+msgid "Add decision"
+msgstr "Lägg till beslut"
+
+msgid "Deadline"
+msgstr "Deadline"
+
+msgid "Add task"
+msgstr "Lägg till uppgift"
+
+msgid "Assignee"
+msgstr "Ansvarig för uppgiften"
+
+msgid "Due date"
+msgstr "Förfallodag"
+
+msgid "A task is something to be done. It is not the same as a decision."
+msgstr "En uppgift är något som ska göras. Den är inte samma sak som ett beslut."
+
+msgid "A held meeting is not finalized minutes. The draft is a copy of the meeting, attendance, agenda, notes marked for inclusion, decisions, and tasks."
+msgstr "Ett hållet möte är inte ett justerat protokoll. Utkastet är en kopia av mötet, närvaron, dagordningen, anteckningar som ska tas med, beslut och uppgifter."
+
+msgid "Create the minutes draft after the meeting is marked as held."
+msgstr "Skapa protokollsutkastet när mötet har markerats som hållet."
+
+msgid "Revision %d"
+msgstr "Revision %d"
+
+msgid "Minutes draft — revision %d"
+msgstr "Protokollsutkast — revision %d"
+
+msgid "Correction of revision %d"
+msgstr "Rättelse av revision %d"
+
+msgid "This revision is preserved. Further corrections use a new revision."
+msgstr "Den här revisionen bevaras. Ytterligare rättelser görs i en ny revision."
+
+msgid "The meeting details changed after the draft. Regenerating replaces the draft text with a new version from the meeting data."
+msgstr "Mötesuppgifterna har ändrats efter utkastet. Att återskapa ersätter utkasttexten med en ny version från mötesuppgifterna."
+
+msgid "This draft has been edited by hand."
+msgstr "Det här utkastet har ändrats för hand."
+
+msgid "Minutes text"
+msgstr "Protokollstext"
+
+msgid "Save draft"
+msgstr "Spara utkast"
+
+msgid "Regenerating replaces the current draft text with a new version generated from the meeting data."
+msgstr "Att återskapa ersätter den nuvarande utkasttexten med en ny version som skapas från mötesuppgifterna."
+
+msgid "Manual edits in this draft will be lost."
+msgstr "Manuella ändringar i det här utkastet försvinner."
+
+msgid "Replace the edited draft"
+msgstr "Ersätt det ändrade utkastet"
+
+msgid "Regenerate from meeting data"
+msgstr "Återskapa från mötesuppgifterna"
+
+msgid "Send for review / adjustment"
+msgstr "Skicka för granskning / justering"
+
+msgid "Return for changes"
+msgstr "Skicka tillbaka för ändring"
+
+msgid "Finalize minutes revision %d? The finalized revision is preserved as a historical record. Further corrections use a new correction revision rather than silently replacing it."
+msgstr "Lås protokollsrevision %d? Den låsta revisionen bevaras som historik. Ytterligare rättelser görs i en ny rättelserevision i stället för att tyst ersätta den."
+
+msgid "Finalize this revision"
+msgstr "Lås den här revisionen"
+
+msgid "Finalize"
+msgstr "Lås"
+
+msgid "Create correction revision"
+msgstr "Skapa rättelserevision"
+
+msgid "Superseded by revision %d"
+msgstr "Ersatt av revision %d"
+
+msgid "This revision is not the current minutes."
+msgstr "Den här revisionen är inte det aktuella protokollet."
+
+msgid "Published. The text is unchanged, and the signed copy stays private."
+msgstr "Publicerat. Texten är oförändrad, och den signerade kopian förblir privat."
+
+msgid "Visibility: Board. Publishing shows the finalized text and does not publish the signed copy."
+msgstr "Synlighet: Styrelsen. Publicering visar den låsta texten och publicerar inte den signerade kopian."
+
+msgid "Publish publicly"
+msgstr "Publicera öppet"
+
+msgid "Signed copy"
+msgstr "Signerad kopia"
+
+msgid "Signed copies are stored privately and are not published automatically."
+msgstr "Signerade kopior lagras privat och publiceras inte automatiskt."
+
+msgid "The signed scan is the archival original when it differs from the finalized text. The minutes text does not change when the scan is uploaded."
+msgstr "Den signerade skanningen är originalet i arkivet när den skiljer sig från den låsta texten. Protokollstexten ändras inte när skanningen laddas upp."
+
+msgid "A signed copy is stored."
+msgstr "En signerad kopia finns lagrad."
+
+msgid "Template headings are copied into this meeting. Changing the template later does not rewrite the meeting. A template is not a complete legal annual-meeting agenda."
+msgstr "Mallens rubriker kopieras in i det här mötet. En senare ändring av mallen skriver inte om mötet. En mall är inte en juridiskt fullständig årsmötesdagordning."
+
+msgid "Meeting templates"
+msgstr "Mötesmallar"
+
+msgid "Create the association's first meeting."
+msgstr "Skapa föreningens första möte."
+
+msgid "Upcoming"
+msgstr "Kommande"
+
+msgid "Open meeting"
+msgstr "Öppna mötet"
+
+msgid "Continue meeting"
+msgstr "Fortsätt mötet"
+
+msgid "Confirm before marking the meeting as held. Notes, decisions and tasks remain available for minutes preparation."
+msgstr "Bekräfta innan mötet markeras som hållet. Anteckningar, beslut och uppgifter finns kvar för protokollsarbetet."
+
+msgid "The meeting details are saved."
+msgstr "Mötesuppgifterna är sparade."
+
+msgid "A deceased person cannot be added to a meeting."
+msgstr "En avliden person kan inte läggas till på ett möte."
+
+msgid "That record belongs to another meeting."
+msgstr "Den posten hör till ett annat möte."
+
+msgid "Remove the notes, decisions, and tasks on this item before removing it."
+msgstr "Ta bort anteckningar, beslut och uppgifter på punkten innan den tas bort."
+
+msgid "Confirm before removing that record."
+msgstr "Bekräfta innan posten tas bort."
+
+msgid "Confirm before finalizing the revision."
+msgstr "Bekräfta innan revisionen låses."
+
+msgid "Finalized"
+msgstr "Låst"

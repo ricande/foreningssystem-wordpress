@@ -30,7 +30,7 @@ final class SignedCopies
     ) {
     }
 
-    public function attach(int $revisionId, string $bytes, int $actorUserId): string
+    public function attach(int $revisionId, string $bytes, int $actorUserId, ?int $meetingId = null): string
     {
         $this->requireUpload();
 
@@ -39,6 +39,10 @@ final class SignedCopies
         }
 
         $revision = $this->requireFinalized($revisionId);
+
+        if ($meetingId !== null && $revision->meetingId() !== $meetingId) {
+            throw new MeetingRuleException('The record does not belong to this meeting.');
+        }
         $mediaType = SignedCopyType::fromBytes($bytes);
         $name = 'signed-' . $revision->id() . '-' . hash('sha256', $bytes) . '.' . SignedCopyType::extension($mediaType);
         $this->files->put($name, $bytes);

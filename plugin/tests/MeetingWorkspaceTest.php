@@ -10,9 +10,17 @@ use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Application\People\Transaction;
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Meeting\ActionItem;
+use Foreningssystem\Domain\Meeting\ActionItemRepository;
+use Foreningssystem\Domain\Meeting\ActionStatus;
 use Foreningssystem\Domain\Meeting\AgendaItem;
 use Foreningssystem\Domain\Meeting\AgendaOrder;
 use Foreningssystem\Domain\Meeting\AgendaRepository;
+use Foreningssystem\Domain\Meeting\Decision;
+use Foreningssystem\Domain\Meeting\DecisionFollowUp;
+use Foreningssystem\Domain\Meeting\DecisionRepository;
+use Foreningssystem\Domain\Meeting\MeetingNote;
+use Foreningssystem\Domain\Meeting\MeetingNoteRepository;
 use Foreningssystem\Domain\Meeting\MeetingDuty;
 use Foreningssystem\Domain\Meeting\MeetingLifecycle;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
@@ -73,6 +81,67 @@ final class MeetingWorkspaceTest extends TestCase
         }
     }
 
+    public function test_a_deceased_person_is_not_added_and_linked_agenda_items_stay(): void
+    {
+        [$meetings, $workspace] = $this->world([
+            Capabilities::MANAGE_MEETINGS,
+            Capabilities::RECORD_MEETING,
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+        ]);
+        $deceased = (int) $this->people->add(new Person(null, 'Nils', 'Berg', 'nils@example.test', PersonStatus::Deceased, null))->id();
+        $meetingId = $meetings->schedule(1, 'Styrelsemöte', MeetingMoment::fromLocal('2026-10-02 18:00'), 'Lokalen');
+        $otherId = $meetings->schedule(1, 'Annat', MeetingMoment::fromLocal('2026-11-02 18:00'), '');
+        $itemId = $workspace->addAgendaItem($meetingId, 'Inköp', '');
+        $otherItem = $workspace->addAgendaItem($otherId, 'Annan punkt', '');
+
+        try {
+            $workspace->addParticipant($meetingId, $deceased, Presence::Present, MeetingDuty::None);
+            self::fail('A deceased person should not be added.');
+        } catch (MeetingRuleException $error) {
+            self::assertSame('A deceased person cannot be added to a meeting.', $error->getMessage());
+        }
+
+        self::assertSame([], $workspace->attendance($meetingId));
+        $this->notes->add(new MeetingNote(null, $meetingId, $itemId, 'Tre offerter.', false));
+
+        try {
+            $workspace->removeAgendaItem($itemId, $meetingId);
+            self::fail('An item with a note should stay.');
+        } catch (MeetingRuleException $error) {
+            self::assertSame('Remove the notes, decisions, and tasks on this item before removing it.', $error->getMessage());
+        }
+
+        self::assertNotNull($this->agendaItems->find($itemId));
+
+        try {
+            $workspace->moveAgendaItem($otherItem, -1, $meetingId);
+            self::fail('Another meeting agenda item should not move.');
+        } catch (MeetingRuleException $error) {
+            self::assertSame('The record does not belong to this meeting.', $error->getMessage());
+        }
+
+        try {
+            $workspace->removeAgendaItem($otherItem, $meetingId);
+            self::fail('Another meeting agenda item should not be removed.');
+        } catch (MeetingRuleException $error) {
+            self::assertSame('The record does not belong to this meeting.', $error->getMessage());
+        }
+
+        self::assertSame('Annan punkt', $this->agendaItems->find($otherItem)?->title());
+        $ada = (int) $this->people->add(new Person(null, 'Ada', 'Lovelace', 'ada-cross@example.test', PersonStatus::Known, null))->id();
+        $workspace->addParticipant($otherId, $ada, Presence::Present, MeetingDuty::None);
+        $participantId = (int) $workspace->attendance($otherId)[0]->participant()->id();
+
+        try {
+            $workspace->removeParticipant($participantId, $meetingId);
+            self::fail('A participant from another meeting should stay.');
+        } catch (MeetingRuleException $error) {
+            self::assertSame('The record does not belong to this meeting.', $error->getMessage());
+        }
+
+        self::assertCount(1, $workspace->attendance($otherId));
+    }
+
     public function test_viewing_a_meeting_does_not_allow_editing_it(): void
     {
         [$meetings] = $this->world([
@@ -85,6 +154,9 @@ final class MeetingWorkspaceTest extends TestCase
             $this->people,
             $this->participants,
             $this->agendaItems,
+            new WorkspaceNoteRepository(),
+            new WorkspaceDecisionRepository(),
+            new WorkspaceActionRepository(),
             new MeetingRoster(),
             new AgendaOrder(),
             $this->authorizer([Capabilities::VIEW_INTERNAL_MEETINGS]),
@@ -143,6 +215,12 @@ final class MeetingWorkspaceTest extends TestCase
 
     private MemoryAgendaRepository $agendaItems;
 
+    private WorkspaceNoteRepository $notes;
+
+    private WorkspaceDecisionRepository $decisions;
+
+    private WorkspaceActionRepository $actions;
+
     /**
      * @param list<string> $capabilities
      * @return array{0: MeetingService, 1: MeetingWorkspace}
@@ -158,11 +236,17 @@ final class MeetingWorkspaceTest extends TestCase
         $authorizer = $this->authorizer($capabilities);
         $transaction = $this->transaction();
         $service = new MeetingService($types, $this->meetingRows, new MeetingLifecycle(), $authorizer, $transaction);
+        $this->notes = new WorkspaceNoteRepository();
+        $this->decisions = new WorkspaceDecisionRepository();
+        $this->actions = new WorkspaceActionRepository();
         $workspace = new MeetingWorkspace(
             $this->meetingRows,
             $this->people,
             $this->participants,
             $this->agendaItems,
+            $this->notes,
+            $this->decisions,
+            $this->actions,
             new MeetingRoster(),
             new AgendaOrder(),
             $authorizer,
@@ -302,5 +386,111 @@ final class MemoryAgendaRepository implements AgendaRepository
         }
 
         return $rows;
+    }
+}
+
+final class WorkspaceNoteRepository implements MeetingNoteRepository
+{
+    /** @var array<int, MeetingNote> */
+    public array $notes = [];
+
+    private int $nextId = 1;
+
+    public function add(MeetingNote $note): MeetingNote
+    {
+        $saved = $note->withId($this->nextId);
+        $this->notes[$this->nextId] = $saved;
+        $this->nextId++;
+
+        return $saved;
+    }
+
+    public function save(MeetingNote $note): void
+    {
+    }
+
+    public function remove(int $id): void
+    {
+        unset($this->notes[$id]);
+    }
+
+    public function find(int $id): ?MeetingNote
+    {
+        return $this->notes[$id] ?? null;
+    }
+
+    public function forMeeting(int $meetingId): array
+    {
+        $rows = [];
+
+        foreach ($this->notes as $note) {
+            if ($note->meetingId() === $meetingId) {
+                $rows[] = $note;
+            }
+        }
+
+        return $rows;
+    }
+}
+
+final class WorkspaceDecisionRepository implements DecisionRepository
+{
+    public function add(Decision $decision): Decision
+    {
+        return $decision;
+    }
+
+    public function save(Decision $decision): void
+    {
+    }
+
+    public function remove(int $id): void
+    {
+    }
+
+    public function find(int $id): ?Decision
+    {
+        return null;
+    }
+
+    public function all(): array
+    {
+        return [];
+    }
+
+    public function forMeeting(int $meetingId): array
+    {
+        return [];
+    }
+}
+
+final class WorkspaceActionRepository implements ActionItemRepository
+{
+    public function add(ActionItem $item): ActionItem
+    {
+        return $item;
+    }
+
+    public function save(ActionItem $item): void
+    {
+    }
+
+    public function remove(int $id): void
+    {
+    }
+
+    public function find(int $id): ?ActionItem
+    {
+        return null;
+    }
+
+    public function all(): array
+    {
+        return [];
+    }
+
+    public function forMeeting(int $meetingId): array
+    {
+        return [];
     }
 }

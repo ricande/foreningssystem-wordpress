@@ -72,6 +72,7 @@ final class Plugin
         add_action('admin_post_assoc_remove_meeting_template', [MeetingsPage::class, 'removeTemplate']);
         add_action('admin_post_assoc_start_meeting', [MeetingsPage::class, 'start']);
         add_action('admin_post_assoc_mark_meeting_held', [MeetingsPage::class, 'markHeld']);
+        add_action('admin_post_assoc_save_meeting_header', [MeetingDetailPage::class, 'saveHeader']);
         add_action('admin_post_assoc_add_participant', [MeetingDetailPage::class, 'addParticipant']);
         add_action('admin_post_assoc_remove_participant', [MeetingDetailPage::class, 'removeParticipant']);
         add_action('admin_post_assoc_add_agenda_item', [MeetingDetailPage::class, 'addAgendaItem']);

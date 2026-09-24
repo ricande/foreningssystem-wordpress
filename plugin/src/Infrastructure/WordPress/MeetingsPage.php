@@ -91,11 +91,13 @@ final class MeetingsPage
     {
         self::guardRecord('assoc_start_meeting');
 
+        $meetingId = self::integer('meeting_id');
+
         try {
-            WordpressMeetings::service()->start(self::integer('meeting_id'));
-            self::redirect('started');
+            WordpressMeetings::service()->start($meetingId);
+            self::redirect('started', $meetingId);
         } catch (MeetingRuleException $error) {
-            self::redirect(self::noticeCode($error));
+            self::redirect(self::noticeCode($error), $meetingId);
         }
     }
 
@@ -103,11 +105,17 @@ final class MeetingsPage
     {
         self::guardRecord('assoc_mark_meeting_held');
 
+        $meetingId = self::integer('meeting_id');
+
+        if (self::text('confirm') !== '1') {
+            self::redirect('confirm_held', $meetingId);
+        }
+
         try {
-            WordpressMeetings::service()->markHeld(self::integer('meeting_id'));
-            self::redirect('held');
+            WordpressMeetings::service()->markHeld($meetingId);
+            self::redirect('held', $meetingId);
         } catch (MeetingRuleException $error) {
-            self::redirect(self::noticeCode($error));
+            self::redirect(self::noticeCode($error), $meetingId);
         }
     }
 
@@ -155,6 +163,7 @@ final class MeetingsPage
 
             echo '</select></label></p>';
             $templateService = WordpressMeetings::templates();
+            echo '<p class="description">' . esc_html__('Template headings are copied into this meeting. Changing the template later does not rewrite the meeting. A template is not a complete legal annual-meeting agenda.', 'foreningsplugin') . '</p>';
             echo '<p><label>' . esc_html__('Template', 'foreningsplugin') . ' <select name="template_id">';
             echo '<option value="0">' . esc_html__('No template', 'foreningsplugin') . '</option>';
 
@@ -171,58 +180,86 @@ final class MeetingsPage
             self::field('place', __('Place', 'foreningsplugin'), 'text', false);
             submit_button(__('Save meeting', 'foreningsplugin'));
             echo '</form>';
+            echo '<details><summary>' . esc_html__('Meeting templates', 'foreningsplugin') . '</summary>';
             self::templateEditor($types, $templateService);
+            echo '</details>';
         }
 
-        echo '<h2>' . esc_html__('Planned and held meetings', 'foreningsplugin') . '</h2>';
+        $sections = (new \Foreningssystem\Application\Meeting\MeetingOverview())->sections($service->listMeetings());
+
+        if ($sections['in_progress'] === [] && $sections['planned'] === [] && $sections['held'] === []) {
+            echo '<h2>' . esc_html__('No meetings yet.', 'foreningsplugin') . '</h2>';
+
+            if ($canManage) {
+                echo '<p>' . esc_html__('Create the association\'s first meeting.', 'foreningsplugin') . '</p>';
+            }
+        }
+
+        self::meetingSection(__('In progress', 'foreningsplugin'), $sections['in_progress'], $types, $canRecord, 'in_progress');
+        self::meetingSection(__('Upcoming', 'foreningsplugin'), $sections['planned'], $types, $canRecord, 'planned');
+        self::meetingSection(__('Held', 'foreningsplugin'), $sections['held'], $types, $canRecord, 'held');
+        echo '</div>';
+    }
+
+    /**
+     * @param list<\Foreningssystem\Domain\Meeting\Meeting> $meetings
+     * @param array<int, MeetingType> $types
+     */
+    private static function meetingSection(string $heading, array $meetings, array $types, bool $canRecord, string $kind): void
+    {
+        if ($meetings === []) {
+            return;
+        }
+
+        echo '<h2 id="assoc-meetings-' . esc_attr($kind) . '">' . esc_html($heading) . '</h2>';
         echo '<table class="widefat striped"><thead><tr>';
 
-        foreach ([__('Meeting', 'foreningsplugin'), __('Type', 'foreningsplugin'), __('Time', 'foreningsplugin'), __('Place', 'foreningsplugin'), __('State', 'foreningsplugin')] as $heading) {
-            echo '<th>' . esc_html($heading) . '</th>';
+        foreach ([__('Meeting', 'foreningsplugin'), __('Type', 'foreningsplugin'), __('Time', 'foreningsplugin'), __('Place', 'foreningsplugin'), __('State', 'foreningsplugin')] as $column) {
+            echo '<th>' . esc_html($column) . '</th>';
         }
 
-        if ($canRecord) {
-            echo '<th>' . esc_html__('Action', 'foreningsplugin') . '</th>';
-        }
-
+        echo '<th>' . esc_html__('Action', 'foreningsplugin') . '</th>';
         echo '</tr></thead><tbody>';
-        $meetings = $service->listMeetings();
-
-        if ($meetings === []) {
-            echo '<tr><td colspan="6">' . esc_html__('No meetings yet.', 'foreningsplugin') . '</td></tr>';
-        }
 
         foreach ($meetings as $meeting) {
             $type = $types[$meeting->typeId()] ?? null;
-            echo '<tr>';
             $meetingUrl = add_query_arg([
                 'page' => 'foreningsplugin-meetings',
                 'meeting' => (int) $meeting->id(),
             ], admin_url('admin.php'));
+            echo '<tr>';
             echo '<td><a href="' . esc_url($meetingUrl) . '">' . esc_html($meeting->title()) . '</a></td>';
             echo '<td>' . esc_html($type instanceof MeetingType ? self::typeLabel($type) : '') . '</td>';
             echo '<td>' . esc_html($meeting->startsAt()->date() . ' ' . $meeting->startsAt()->time()) . '</td>';
             echo '<td>' . esc_html($meeting->place()) . '</td>';
             echo '<td>' . esc_html(self::statusLabel($meeting->status())) . '</td>';
+            echo '<td>';
 
-            if ($canRecord) {
-                echo '<td>';
+            if ($kind === 'planned') {
+                echo '<a class="button" href="' . esc_url($meetingUrl) . '">' . esc_html__('Open meeting', 'foreningsplugin') . '</a> ';
 
-                if ($meeting->status() === MeetingStatus::Planned) {
-                    self::transitionForm((int) $meeting->id(), 'assoc_start_meeting', __('Start the meeting', 'foreningsplugin'));
+                if ($canRecord) {
+                    self::transitionForm((int) $meeting->id(), 'assoc_start_meeting', __('Start meeting', 'foreningsplugin'), false);
                 }
-
-                if ($meeting->status() === MeetingStatus::Planned || $meeting->status() === MeetingStatus::InProgress) {
-                    self::transitionForm((int) $meeting->id(), 'assoc_mark_meeting_held', __('Mark as held', 'foreningsplugin'));
-                }
-
-                echo '</td>';
             }
 
-            echo '</tr>';
+            if ($kind === 'in_progress') {
+                echo '<a class="button button-primary" href="' . esc_url($meetingUrl) . '">' . esc_html__('Continue meeting', 'foreningsplugin') . '</a> ';
+
+                if ($canRecord) {
+                    self::transitionForm((int) $meeting->id(), 'assoc_mark_meeting_held', __('Mark as held', 'foreningsplugin'), true);
+                }
+            }
+
+            if ($kind === 'held') {
+                echo '<a class="button" href="' . esc_url($meetingUrl) . '">' . esc_html__('Open meeting', 'foreningsplugin') . '</a> ';
+                echo '<a class="button" href="' . esc_url($meetingUrl . '#assoc-minutes') . '">' . esc_html__('Review minutes', 'foreningsplugin') . '</a>';
+            }
+
+            echo '</td></tr>';
         }
 
-        echo '</tbody></table></div>';
+        echo '</tbody></table>';
     }
 
     /**
@@ -230,7 +267,7 @@ final class MeetingsPage
      */
     private static function templateEditor(array $types, \Foreningssystem\Application\Meeting\MeetingTemplates $templates): void
     {
-        echo '<h2>' . esc_html__('Templates', 'foreningsplugin') . '</h2>';
+        echo '<h3>' . esc_html__('Templates', 'foreningsplugin') . '</h3>';
         echo '<p>' . esc_html__('A template is a list of headings. It is copied in when the meeting is created. A later change to the template does not change the meeting, and the template does not contain a ready-made annual-meeting agenda.', 'foreningsplugin') . '</p>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_save_meeting_template">';
@@ -277,12 +314,18 @@ final class MeetingsPage
         }
     }
 
-    private static function transitionForm(int $meetingId, string $action, string $label): void
+    private static function transitionForm(int $meetingId, string $action, string $label, bool $confirmHeld): void
     {
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline-block;margin-right:0.5em">';
         echo '<input type="hidden" name="action" value="' . esc_attr($action) . '">';
         echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
+        echo '<input type="hidden" name="return_meeting" value="' . esc_attr((string) $meetingId) . '">';
         wp_nonce_field($action);
+
+        if ($confirmHeld) {
+            echo '<label><input type="checkbox" name="confirm" value="1" required> ' . esc_html__('Mark this meeting as held', 'foreningsplugin') . '</label> ';
+        }
+
         submit_button($label, 'secondary', 'submit', false);
         echo '</form>';
     }
@@ -305,12 +348,18 @@ final class MeetingsPage
         check_admin_referer($nonce);
     }
 
-    private static function redirect(string $notice): void
+    private static function redirect(string $notice, int $meetingId = 0): void
     {
-        wp_safe_redirect(add_query_arg([
+        $args = [
             'page' => 'foreningsplugin-meetings',
             'assoc_notice' => $notice,
-        ], admin_url('admin.php')));
+        ];
+
+        if ($meetingId > 0) {
+            $args['meeting'] = $meetingId;
+        }
+
+        wp_safe_redirect(add_query_arg($args, admin_url('admin.php')));
         exit;
     }
 
@@ -334,6 +383,7 @@ final class MeetingsPage
             'held' => __('The meeting is marked as held.', 'foreningsplugin'),
             'not_planned' => __('Only a planned meeting can be started.', 'foreningsplugin'),
             'already_held' => __('The meeting is already held.', 'foreningsplugin'),
+            'confirm_held' => __('Confirm before marking the meeting as held. Notes, decisions and tasks remain available for minutes preparation.', 'foreningsplugin'),
             'invalid' => __('Check the details and try again.', 'foreningsplugin'),
         ];
 

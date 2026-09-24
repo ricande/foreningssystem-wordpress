@@ -61,10 +61,11 @@ final class MeetingRecord
         });
     }
 
-    public function removeNote(int $noteId): void
+    public function removeNote(int $noteId, ?int $meetingId = null): void
     {
         $this->requireRecord();
-        $this->requireNote($noteId);
+        $note = $this->requireNote($noteId);
+        $this->assertSameMeeting($note->meetingId(), $meetingId);
 
         $this->transaction->run(function () use ($noteId): void {
             $this->notes->remove($noteId);
@@ -109,20 +110,22 @@ final class MeetingRecord
         });
     }
 
-    public function setFollowUp(int $decisionId, DecisionFollowUp $followUp): void
+    public function setFollowUp(int $decisionId, DecisionFollowUp $followUp, ?int $meetingId = null): void
     {
         $this->requireRecord();
         $decision = $this->requireDecision($decisionId);
+        $this->assertSameMeeting($decision->meetingId(), $meetingId);
 
         $this->transaction->run(function () use ($decision, $followUp): void {
             $this->decisions->save($decision->withFollowUp($followUp));
         });
     }
 
-    public function removeDecision(int $decisionId): void
+    public function removeDecision(int $decisionId, ?int $meetingId = null): void
     {
         $this->requireRecord();
-        $this->requireDecision($decisionId);
+        $decision = $this->requireDecision($decisionId);
+        $this->assertSameMeeting($decision->meetingId(), $meetingId);
 
         $this->transaction->run(function () use ($decisionId): void {
             $this->decisions->remove($decisionId);
@@ -205,20 +208,22 @@ final class MeetingRecord
         return $this->savedId($saved->id(), 'The action item was not saved.');
     }
 
-    public function setActionStatus(int $actionItemId, ActionStatus $status): void
+    public function setActionStatus(int $actionItemId, ActionStatus $status, ?int $meetingId = null): void
     {
         $this->requireRecord();
         $item = $this->requireActionItem($actionItemId);
+        $this->assertSameMeeting($item->meetingId(), $meetingId);
 
         $this->transaction->run(function () use ($item, $status): void {
             $this->actionItems->save($item->withStatus($status));
         });
     }
 
-    public function removeActionItem(int $actionItemId): void
+    public function removeActionItem(int $actionItemId, ?int $meetingId = null): void
     {
         $this->requireRecord();
-        $this->requireActionItem($actionItemId);
+        $item = $this->requireActionItem($actionItemId);
+        $this->assertSameMeeting($item->meetingId(), $meetingId);
 
         $this->transaction->run(function () use ($actionItemId): void {
             $this->actionItems->remove($actionItemId);
@@ -351,6 +356,13 @@ final class MeetingRecord
         }
 
         return $item;
+    }
+
+    private function assertSameMeeting(int $actualMeetingId, ?int $meetingId): void
+    {
+        if ($meetingId !== null && $actualMeetingId !== $meetingId) {
+            throw new MeetingRuleException('The record does not belong to this meeting.');
+        }
     }
 
     private function savedId(?int $id, string $message): int

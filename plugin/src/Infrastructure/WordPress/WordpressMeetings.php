@@ -64,6 +64,9 @@ final class WordpressMeetings
             new WpdbPersonRepository(),
             new WpdbParticipantRepository(),
             new WpdbAgendaRepository(),
+            new WpdbMeetingNoteRepository(),
+            new WpdbDecisionRepository(),
+            new WpdbActionItemRepository(),
             new MeetingRoster(),
             new AgendaOrder(),
             new class implements Authorizer {

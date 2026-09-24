@@ -168,6 +168,41 @@ final class MeetingRecordTest extends TestCase
         self::assertStringNotContainsString('assoc_minutes', $sql);
     }
 
+    public function test_child_records_cannot_be_changed_through_another_meeting(): void
+    {
+        [$meetings, $record, $people] = $this->world([
+            Capabilities::RECORD_MEETING,
+            Capabilities::MANAGE_MEETINGS,
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+        ]);
+        $personId = (int) $people->add(new Person(null, 'Ada', 'Lovelace', 'ada-owner@example.test', PersonStatus::Known, null))->id();
+        $meetingId = $meetings->schedule(1, 'Styrelsemöte', MeetingMoment::fromLocal('2026-10-02 18:00'), '');
+        $otherId = $meetings->schedule(1, 'Annat', MeetingMoment::fromLocal('2026-11-02 18:00'), '');
+        $itemId = (int) $this->agenda->add(new AgendaItem(null, $meetingId, 1, 'Inköp', ''))->id();
+        $noteId = $record->addNote($meetingId, $itemId, 'Tre offerter granskades.', false);
+        $decisionId = $record->addDecision($meetingId, $itemId, 'Föreningen köper modell X.', $personId, AssociationDate::fromIso('2026-10-30'));
+        $actionId = $record->addActionItem($meetingId, $itemId, 'Karin beställer.', $personId, AssociationDate::fromIso('2026-10-30'));
+
+        foreach ([
+            static fn () => $record->removeNote($noteId, $otherId),
+            static fn () => $record->setFollowUp($decisionId, DecisionFollowUp::Done, $otherId),
+            static fn () => $record->removeDecision($decisionId, $otherId),
+            static fn () => $record->setActionStatus($actionId, ActionStatus::Done, $otherId),
+            static fn () => $record->removeActionItem($actionId, $otherId),
+        ] as $change) {
+            try {
+                $change();
+                self::fail('A child record should stay on its own meeting.');
+            } catch (MeetingRuleException $error) {
+                self::assertSame('The record does not belong to this meeting.', $error->getMessage());
+            }
+        }
+
+        self::assertSame('Tre offerter granskades.', $this->noteBody($record, $meetingId, $noteId));
+        self::assertSame(DecisionFollowUp::Open, $this->decision($record, $meetingId, $decisionId)->followUp());
+        self::assertSame(ActionStatus::Open, $this->actionItem($record, $meetingId, $actionId)->status());
+    }
+
     public function test_planning_a_meeting_does_not_allow_notes(): void
     {
         [, $record] = $this->world([Capabilities::MANAGE_MEETINGS, Capabilities::VIEW_INTERNAL_MEETINGS]);
@@ -191,6 +226,17 @@ final class MeetingRecordTest extends TestCase
     }
 
     private MemoryAgendaRepository $agenda;
+
+    private function noteBody(MeetingRecord $record, int $meetingId, int $noteId): string
+    {
+        foreach ($record->notes($meetingId) as $note) {
+            if ($note->id() === $noteId) {
+                return $note->body();
+            }
+        }
+
+        self::fail('Note was not found.');
+    }
 
     private function decision(MeetingRecord $record, int $meetingId, int $decisionId): Decision
     {

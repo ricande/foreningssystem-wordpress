@@ -8,18 +8,23 @@ use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Application\People\Transaction;
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Meeting\ActionItemRepository;
 use Foreningssystem\Domain\Meeting\AgendaItem;
 use Foreningssystem\Domain\Meeting\AgendaOrder;
 use Foreningssystem\Domain\Meeting\AgendaRepository;
+use Foreningssystem\Domain\Meeting\DecisionRepository;
 use Foreningssystem\Domain\Meeting\Meeting;
 use Foreningssystem\Domain\Meeting\MeetingDuty;
+use Foreningssystem\Domain\Meeting\MeetingNoteRepository;
 use Foreningssystem\Domain\Meeting\MeetingRepository;
 use Foreningssystem\Domain\Meeting\MeetingRoster;
+use Foreningssystem\Domain\Meeting\MeetingRuleException;
 use Foreningssystem\Domain\Meeting\Participant;
 use Foreningssystem\Domain\Meeting\ParticipantRepository;
 use Foreningssystem\Domain\Meeting\Presence;
 use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonRepository;
+use Foreningssystem\Domain\Person\PersonStatus;
 
 final class MeetingWorkspace
 {
@@ -28,6 +33,9 @@ final class MeetingWorkspace
         private readonly PersonRepository $people,
         private readonly ParticipantRepository $participants,
         private readonly AgendaRepository $agenda,
+        private readonly MeetingNoteRepository $notes,
+        private readonly DecisionRepository $decisions,
+        private readonly ActionItemRepository $actionItems,
         private readonly MeetingRoster $roster,
         private readonly AgendaOrder $order,
         private readonly Authorizer $authorizer,
@@ -47,10 +55,11 @@ final class MeetingWorkspace
         });
     }
 
-    public function removeParticipant(int $participantId): void
+    public function removeParticipant(int $participantId, ?int $meetingId = null): void
     {
         $this->requireEdit();
         $participant = $this->requireParticipant($participantId);
+        $this->assertSameMeeting($participant->meetingId(), $meetingId);
 
         $this->transaction->run(function () use ($participant): void {
             $id = $participant->id();
@@ -82,10 +91,11 @@ final class MeetingWorkspace
         return $id;
     }
 
-    public function moveAgendaItem(int $itemId, int $direction): void
+    public function moveAgendaItem(int $itemId, int $direction, ?int $meetingId = null): void
     {
         $this->requireEdit();
         $item = $this->requireAgendaItem($itemId);
+        $this->assertSameMeeting($item->meetingId(), $meetingId);
 
         $this->transaction->run(function () use ($item, $direction): void {
             foreach ($this->order->move($this->agenda->forMeeting($item->meetingId()), (int) $item->id(), $direction) as $changed) {
@@ -94,10 +104,12 @@ final class MeetingWorkspace
         });
     }
 
-    public function removeAgendaItem(int $itemId): void
+    public function removeAgendaItem(int $itemId, ?int $meetingId = null): void
     {
         $this->requireEdit();
         $item = $this->requireAgendaItem($itemId);
+        $this->assertSameMeeting($item->meetingId(), $meetingId);
+        $this->assertNoLinkedRecords($item);
 
         $this->transaction->run(function () use ($item): void {
             $remaining = $this->order->remove($this->agenda->forMeeting($item->meetingId()), (int) $item->id());
@@ -187,7 +199,41 @@ final class MeetingWorkspace
             throw new \RuntimeException('Person was not found.');
         }
 
+        if ($person->status() === PersonStatus::Deceased) {
+            throw new MeetingRuleException('A deceased person cannot be added to a meeting.');
+        }
+
         return $person;
+    }
+
+    private function assertSameMeeting(int $actualMeetingId, ?int $meetingId): void
+    {
+        if ($meetingId !== null && $actualMeetingId !== $meetingId) {
+            throw new MeetingRuleException('The record does not belong to this meeting.');
+        }
+    }
+
+    private function assertNoLinkedRecords(AgendaItem $item): void
+    {
+        $itemId = $item->id();
+
+        foreach ($this->notes->forMeeting($item->meetingId()) as $note) {
+            if ($note->agendaItemId() === $itemId) {
+                throw new MeetingRuleException('Remove the notes, decisions, and tasks on this item before removing it.');
+            }
+        }
+
+        foreach ($this->decisions->forMeeting($item->meetingId()) as $decision) {
+            if ($decision->agendaItemId() === $itemId) {
+                throw new MeetingRuleException('Remove the notes, decisions, and tasks on this item before removing it.');
+            }
+        }
+
+        foreach ($this->actionItems->forMeeting($item->meetingId()) as $action) {
+            if ($action->agendaItemId() === $itemId) {
+                throw new MeetingRuleException('Remove the notes, decisions, and tasks on this item before removing it.');
+            }
+        }
     }
 
     private function requireParticipant(int $participantId): Participant

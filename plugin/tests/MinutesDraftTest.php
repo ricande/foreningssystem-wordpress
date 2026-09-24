@@ -39,6 +39,45 @@ use PHPUnit\Framework\TestCase;
 
 final class MinutesDraftTest extends TestCase
 {
+    public function test_a_revision_cannot_be_changed_through_another_meeting(): void
+    {
+        [$meetings, $drafts] = $this->world([
+            Capabilities::RECORD_MEETING,
+            Capabilities::MANAGE_MEETINGS,
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+            Capabilities::FINALIZE_MINUTES,
+        ]);
+        $first = $meetings->schedule(1, 'Första', MeetingMoment::fromLocal('2026-10-02 18:00'), '');
+        $second = $meetings->schedule(1, 'Andra', MeetingMoment::fromLocal('2026-11-02 18:00'), '');
+        $meetings->markHeld($first);
+        $meetings->markHeld($second);
+        $firstDraft = $drafts->create($first);
+        $secondDraft = $drafts->create($second);
+        $body = (string) $drafts->current($first)?->body();
+
+        foreach ([
+            static fn () => $drafts->replaceBody($firstDraft, 'Tyst ändring.', $second),
+            static fn () => $drafts->regenerate($firstDraft, true, $second),
+            static fn () => $drafts->submit($firstDraft, $second),
+            static fn () => $drafts->sendBack($firstDraft, $second),
+            static fn () => $drafts->finalize($firstDraft, $second),
+        ] as $change) {
+            try {
+                $change();
+                self::fail('A revision should stay on its own meeting.');
+            } catch (MeetingRuleException $error) {
+                self::assertSame('The record does not belong to this meeting.', $error->getMessage());
+            }
+        }
+
+        $kept = $drafts->current($first);
+        self::assertNotNull($kept);
+        self::assertSame($body, $kept->body());
+        self::assertSame(RevisionState::Draft, $kept->state());
+        self::assertSame(RevisionState::Draft, $drafts->current($second)?->state());
+        self::assertNotSame($firstDraft, $secondDraft);
+    }
+
     public function test_a_draft_keeps_the_copied_text_when_live_rows_change(): void
     {
         [$meetings, $drafts, $people, $participants, $agenda, $notes, $decisions, $actions] = $this->world([
