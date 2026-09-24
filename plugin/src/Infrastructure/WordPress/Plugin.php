@@ -33,6 +33,8 @@ final class Plugin
         add_action('init', [LatestMinutesBlock::class, 'register']);
         add_action('init', [CurrentBoardBlock::class, 'register']);
         add_action('init', [LatestBoardMeetingBlock::class, 'register']);
+        add_action('init', [PublicDocumentsBlock::class, 'register']);
+        add_action('template_redirect', [DocumentDownload::class, 'maybeSend']);
         add_action('admin_init', [self::class, 'migrateInAdmin']);
         add_action('admin_menu', [self::class, 'registerAdminMenu']);
         add_action('admin_post_assoc_register_person', [MembersPage::class, 'registerPerson']);
@@ -69,6 +71,8 @@ final class Plugin
         add_action('admin_post_assoc_download_signed_copy', [MeetingDetailPage::class, 'downloadSignedCopy']);
         add_action('admin_post_assoc_publish_minutes', [MeetingDetailPage::class, 'publishMinutes']);
         add_action('admin_post_assoc_unpublish_minutes', [MeetingDetailPage::class, 'unpublishMinutes']);
+        add_action('admin_post_assoc_add_document', [DocumentsPage::class, 'add']);
+        add_action('admin_post_assoc_set_document_visibility', [DocumentsPage::class, 'setVisibility']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();
@@ -128,6 +132,15 @@ final class Plugin
             Capabilities::VIEW_MEMBERS,
             'foreningsplugin-board',
             [BoardPage::class, 'render']
+        );
+
+        add_submenu_page(
+            'foreningsplugin',
+            __('Dokument', 'foreningsplugin'),
+            __('Dokument', 'foreningsplugin'),
+            Capabilities::VIEW_BOARD_DOCUMENTS,
+            'foreningsplugin-documents',
+            [DocumentsPage::class, 'render']
         );
 
         add_submenu_page(
