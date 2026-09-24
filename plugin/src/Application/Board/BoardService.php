@@ -133,6 +133,55 @@ final class BoardService
     }
 
     /**
+     * @return list<PublicBoardSeat>
+     */
+    public function currentPublic(AssociationDate $today): array
+    {
+        $seats = [];
+
+        foreach ($this->assignments->all() as $assignment) {
+            if (! $assignment->covers($today)) {
+                continue;
+            }
+
+            $person = $this->people->find($assignment->personId());
+            $role = $this->roles->find($assignment->roleId());
+
+            if (! $person instanceof Person || ! $role instanceof BoardRole || $person->status() === PersonStatus::Deceased) {
+                continue;
+            }
+
+            $seats[] = new PublicBoardSeat(
+                $person->firstName() . ' ' . $person->lastName(),
+                $role->name(),
+                $assignment->publicContact(),
+                $role->sortOrder()
+            );
+        }
+
+        usort(
+            $seats,
+            static function (PublicBoardSeat $left, PublicBoardSeat $right): int {
+                $byOrder = $left->sortOrder() <=> $right->sortOrder();
+
+                if ($byOrder !== 0) {
+                    return $byOrder;
+                }
+
+                $byRole = strcasecmp($left->roleName(), $right->roleName());
+
+                if ($byRole !== 0) {
+                    return $byRole;
+                }
+
+                return strcasecmp($left->personName(), $right->personName());
+            }
+        );
+
+        return $seats;
+    }
+
+    /**
      * @return list<BoardRole>
      */
     public function roles(): array
