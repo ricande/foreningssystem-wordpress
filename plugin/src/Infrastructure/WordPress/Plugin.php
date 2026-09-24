@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Meeting\MeetingStatus;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Infrastructure\Persistence\MigrationException;
 
@@ -36,6 +37,9 @@ final class Plugin
         add_action('admin_post_assoc_mark_deceased', [MembersPage::class, 'markDeceased']);
         add_action('admin_post_assoc_place_assignment', [BoardPage::class, 'place']);
         add_action('admin_post_assoc_end_assignment', [BoardPage::class, 'end']);
+        add_action('admin_post_assoc_schedule_meeting', [MeetingsPage::class, 'schedule']);
+        add_action('admin_post_assoc_start_meeting', [MeetingsPage::class, 'start']);
+        add_action('admin_post_assoc_mark_meeting_held', [MeetingsPage::class, 'markHeld']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();
@@ -96,6 +100,15 @@ final class Plugin
             'foreningsplugin-board',
             [BoardPage::class, 'render']
         );
+
+        add_submenu_page(
+            'foreningsplugin',
+            __('Möten', 'foreningsplugin'),
+            __('Möten', 'foreningsplugin'),
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+            'foreningsplugin-meetings',
+            [MeetingsPage::class, 'render']
+        );
     }
 
     public static function renderAdminPage(): void
@@ -120,6 +133,14 @@ final class Plugin
             __('Styrelseuppdrag idag: %d', 'foreningsplugin'),
             $currentBoard
         )) . '</p>';
+
+        if (current_user_can(Capabilities::VIEW_INTERNAL_MEETINGS)) {
+            echo '<p>' . esc_html(sprintf(
+                /* translators: %d: number of planned meetings */
+                __('Planerade möten: %d', 'foreningsplugin'),
+                WordpressMeetings::service()->countWithStatus(MeetingStatus::Planned)
+            )) . '</p>';
+        }
         echo '<p>' . esc_html(sprintf(
             /* translators: %d: schema version */
             __('Databasschema: %d', 'foreningsplugin'),
