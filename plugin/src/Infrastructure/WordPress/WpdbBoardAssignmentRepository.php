@@ -74,6 +74,17 @@ final class WpdbBoardAssignmentRepository implements BoardAssignmentRepository
         }
     }
 
+    public function remove(int $id): void
+    {
+        global $wpdb;
+
+        $deleted = $wpdb->delete($this->table(), ['id' => $id], ['%d']);
+
+        if ($deleted === false || $deleted < 1) {
+            throw new \RuntimeException('The assignment could not be removed.');
+        }
+    }
+
     public function find(int $id): ?BoardAssignment
     {
         global $wpdb;

@@ -10,6 +10,8 @@ interface BoardAssignmentRepository
 
     public function save(BoardAssignment $assignment): void;
 
+    public function remove(int $id): void;
+
     public function find(int $id): ?BoardAssignment;
 
     /**

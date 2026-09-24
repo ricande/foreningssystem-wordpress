@@ -97,27 +97,62 @@ final class BoardScreen
                     continue;
                 }
 
+                echo '<div id="assoc-role-' . esc_attr((string) $role->id()) . '">';
                 $holders = [];
+                $holderEnd = null;
 
                 foreach ($current as $seat) {
-                    if ($seat->roleId() === $role->id() && $seat->endedOn() === null) {
-                        $holders[] = $seat->personName();
+                    if ($seat->roleId() !== $role->id()) {
+                        continue;
+                    }
+
+                    $holders[] = $seat->personName();
+                    $holderEnd = $seat->endedOn();
+                }
+
+                $scheduled = [];
+
+                foreach ($upcoming as $seat) {
+                    if ($seat->roleId() === $role->id()) {
+                        $scheduled[] = $seat;
                     }
                 }
 
-                if ($holders === []) {
+                $label = self::roleLabel($role->slug(), $role->name());
+
+                if ($scheduled !== []) {
+                    echo '<h3>' . esc_html(sprintf(
+                        /* translators: %s is the board role name. */
+                        __('A future %s is already scheduled:', 'foreningsplugin'),
+                        $label
+                    )) . '</h3>';
+
+                    foreach ($scheduled as $seat) {
+                        echo '<p>' . esc_html($seat->personName() . ' — ' . sprintf(
+                            /* translators: %s is a date. */
+                            __('Starts %s', 'foreningsplugin'),
+                            $seat->startedOn()
+                        )) . '</p>';
+                        self::cancelForm($seat, $label);
+                    }
+
+                    echo '</div>';
                     continue;
                 }
 
-                $label = self::roleLabel($role->slug(), $role->name());
+                if ($holders === []) {
+                    echo '</div>';
+                    continue;
+                }
+
                 echo '<h3>' . esc_html(sprintf(
                     /* translators: %s is the board role name. */
                     __('Replace %s', 'foreningsplugin'),
                     $label
                 )) . '</h3>';
-                echo '<p class="description assoc-replace-preview" data-current="' . esc_attr(implode(', ', $holders)) . '">' . esc_html(sprintf(
+                echo '<p class="description assoc-replace-preview" data-current="' . esc_attr(implode(', ', $holders)) . '" data-end="' . esc_attr((string) $holderEnd) . '">' . esc_html(sprintf(
                     /* translators: %s is the current holder's name. */
-                    __('%s is the current holder. The new assignment starts on the date you choose, and this assignment ends the day before. The previous assignment remains in history.', 'foreningsplugin'),
+                    __('%s is the current holder. If the new start date falls inside this assignment, it ends the day before. A later start leaves the current end date unchanged. The earlier assignment remains in history.', 'foreningsplugin'),
                     implode(', ', $holders)
                 )) . '</p>';
                 self::placeForm($people, $roles, $role->id(), implode(', ', $holders), sprintf(
@@ -125,9 +160,11 @@ final class BoardScreen
                     __('Replace %s', 'foreningsplugin'),
                     $label
                 ));
+                echo '</div>';
             }
 
             echo '<h3>' . esc_html__('New assignment', 'foreningsplugin') . '</h3>';
+            echo '<p class="description">' . esc_html__('For a role with one holder, cancel a scheduled successor before adding another assignment.', 'foreningsplugin') . '</p>';
             self::placeForm($people, $roles, null, null, __('Add assignment', 'foreningsplugin'));
             echo '</div>';
             self::script();
@@ -187,7 +224,9 @@ final class BoardScreen
             if ($canEdit) {
                 echo '<td>';
 
-                if ($seat->endedOn() === null) {
+                if ($context === 'upcoming') {
+                    self::cancelForm($seat, $role);
+                } elseif ($context === 'current' && $seat->endedOn() === null) {
                     self::endForm($seat, $role);
                 }
 
@@ -202,23 +241,26 @@ final class BoardScreen
 
     private static function dates(BoardSeat $seat, string $context): string
     {
-        if ($seat->endedOn() === null && $context === 'current') {
-            return sprintf(
+        unset($context);
+
+        return match ($seat->datePresentation()) {
+            'starts' => sprintf(
+                /* translators: %s is the start date. */
+                __('Starts %s', 'foreningsplugin'),
+                $seat->startedOn()
+            ),
+            'since' => sprintf(
                 /* translators: %s is a date. */
                 __('Since %s', 'foreningsplugin'),
                 $seat->startedOn()
-            );
-        }
-
-        if ($seat->endedOn() === null) {
-            return sprintf(
+            ),
+            'present' => sprintf(
                 /* translators: %s is the start date. */
                 __('%s – present', 'foreningsplugin'),
                 $seat->startedOn()
-            );
-        }
-
-        return $seat->startedOn() . ' – ' . $seat->endedOn();
+            ),
+            default => $seat->startedOn() . ' – ' . $seat->endedOn(),
+        };
     }
 
     /**
@@ -298,6 +340,24 @@ final class BoardScreen
         echo '</select></label></p>';
     }
 
+    private static function cancelForm(BoardSeat $seat, string $role): void
+    {
+        echo '<form method="post" class="assoc-cancel-form" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<input type="hidden" name="action" value="assoc_cancel_assignment">';
+        echo '<input type="hidden" name="assignment_id" value="' . esc_attr((string) $seat->assignmentId()) . '">';
+        wp_nonce_field('assoc_cancel_assignment');
+        echo '<p class="description">' . esc_html(sprintf(
+            /* translators: 1: person name, 2: role name, 3: start date. */
+            __('Cancel %1$s\'s scheduled %2$s assignment starting %3$s? This assignment has not started and will not be kept as board history.', 'foreningsplugin'),
+            $seat->personName(),
+            $role,
+            $seat->startedOn()
+        )) . '</p>';
+        echo '<p><label><input type="checkbox" name="confirm" value="1" required> ' . esc_html__('Cancel this scheduled assignment', 'foreningsplugin') . '</label></p>';
+        submit_button(__('Cancel scheduled assignment', 'foreningsplugin'), 'secondary', 'cancel-' . $seat->assignmentId());
+        echo '</form>';
+    }
+
     private static function endForm(BoardSeat $seat, string $role): void
     {
         echo '<form method="post" class="assoc-end-form" action="' . esc_url(admin_url('admin-post.php')) . '">';
@@ -326,14 +386,16 @@ final class BoardScreen
     private static function script(): void
     {
         $replace = __('%1$s\'s assignment will end %2$s. %3$s\'s assignment will begin %4$s. The previous assignment remains in history.', 'foreningsplugin');
+        $gap = __('The current assignment still ends %1$s. %2$s\'s assignment will begin %3$s. The earlier assignment remains in history.', 'foreningsplugin');
         $end = __('End %1$s\'s %2$s assignment on %3$s? The historical assignment will remain.', 'foreningsplugin');
         echo '<script>';
         echo 'document.addEventListener("DOMContentLoaded",function(){';
         echo 'var replaceTemplate=' . wp_json_encode($replace) . ';';
+        echo 'var gapTemplate=' . wp_json_encode($gap) . ';';
         echo 'var endTemplate=' . wp_json_encode($end) . ';';
         echo 'function fill(template,values){return template.replace(/%(\\d+)\\$s/g,function(_,index){return values[Number(index)-1]||"";});}';
         echo 'function previousDay(iso){var parts=iso.split("-");if(parts.length!==3){return "";}var date=new Date(Date.UTC(Number(parts[0]),Number(parts[1])-1,Number(parts[2])));if(Number.isNaN(date.getTime())){return "";}date.setUTCDate(date.getUTCDate()-1);var month=String(date.getUTCMonth()+1).padStart(2,"0");var day=String(date.getUTCDate()).padStart(2,"0");return date.getUTCFullYear()+"-"+month+"-"+day;}';
-        echo 'document.querySelectorAll(".assoc-replace-form").forEach(function(form){var preview=form.previousElementSibling;var person=form.querySelector("[name=person_id]");var start=form.querySelector("[name=started_on]");var holder=form.querySelector(".assoc-current-holder");if(!preview||!person||!start||!holder){return;}var refresh=function(){var selected=person.options[person.selectedIndex];var name=selected?selected.getAttribute("data-name")||"":"";var end=previousDay(start.value);if(!name||!end){return;}preview.textContent=fill(replaceTemplate,[holder.value,end,name,start.value]);};person.addEventListener("change",refresh);start.addEventListener("change",refresh);start.addEventListener("input",refresh);});';
+        echo 'document.querySelectorAll(".assoc-replace-form").forEach(function(form){var preview=form.previousElementSibling;var person=form.querySelector("[name=person_id]");var start=form.querySelector("[name=started_on]");var holder=form.querySelector(".assoc-current-holder");if(!preview||!person||!start||!holder){return;}var refresh=function(){var selected=person.options[person.selectedIndex];var name=selected?selected.getAttribute("data-name")||"":"";var end=previousDay(start.value);if(!name||!end){return;}var planned=preview.getAttribute("data-end")||"";if(planned&&start.value>planned){preview.textContent=fill(gapTemplate,[planned,name,start.value]);return;}preview.textContent=fill(replaceTemplate,[holder.value,end,name,start.value]);};person.addEventListener("change",refresh);start.addEventListener("change",refresh);start.addEventListener("input",refresh);});';
         echo 'document.querySelectorAll(".assoc-end-form").forEach(function(form){var preview=form.querySelector(".assoc-end-preview");var date=form.querySelector("[name=ended_on]");if(!preview||!date){return;}date.addEventListener("change",function(){if(!date.value){return;}preview.textContent=fill(endTemplate,[preview.getAttribute("data-person")||"",preview.getAttribute("data-role")||"",date.value]);});});';
         echo '});</script>';
     }

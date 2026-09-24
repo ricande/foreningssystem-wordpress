@@ -244,10 +244,10 @@ final class BoardServiceTest extends TestCase
         self::assertSame('2026-03-01', $annaAssignment->startedOn()->iso());
 
         try {
-            $service->place($karin, $roleId, AssociationDate::fromIso('2025-01-01'), null, '', '');
+            $service->place($karin, $roleId, AssociationDate::fromIso('2025-01-01'), null, '', '', AssociationDate::fromIso('2026-09-24'));
             self::fail('A replacement cannot start before the open assignment.');
         } catch (BoardRuleException $error) {
-            self::assertSame('An assignment cannot end before it starts.', $error->getMessage());
+            self::assertSame('This role already has a holder for those dates.', $error->getMessage());
         }
 
         $annaAssignment = $this->assignmentFor($assignments, $anna, $roleId);
@@ -386,6 +386,205 @@ final class BoardServiceTest extends TestCase
         }
     }
 
+    public function test_upcoming_dates_are_not_described_as_present(): void
+    {
+        $open = $this->seat('upcoming', '2027-01-01', null);
+        $fixed = $this->seat('upcoming', '2027-01-01', '2028-03-10');
+        $current = $this->seat('current', '2026-03-10', null);
+
+        self::assertSame('starts', $open->datePresentation());
+        self::assertSame('range', $fixed->datePresentation());
+        self::assertSame('since', $current->datePresentation());
+        self::assertNotSame('present', $open->datePresentation());
+    }
+
+    public function test_a_current_holder_with_a_planned_end_can_be_replaced_before_that_end(): void
+    {
+        [$service, $people, $memberships, $roles, $assignments] = $this->world(true);
+        $today = AssociationDate::fromIso('2026-09-24');
+        $anna = $this->person($people, 'Anna', 'Andersson', 'anna-fixed@example.test');
+        $lisa = $this->person($people, 'Lisa', 'Nilsson', 'lisa-fixed@example.test');
+        $this->membership($memberships, $anna, 'M-FIXED-ANNA', MembershipStatus::Active, '2024-01-01', null);
+        $this->membership($memberships, $lisa, 'M-FIXED-LISA', MembershipStatus::Active, '2024-01-01', null);
+        $roleId = (int) $roles->add(new BoardRole(null, 'treasurer', 'Kassör', false, 20))->id();
+        $service->place($anna, $roleId, AssociationDate::fromIso('2026-01-01'), AssociationDate::fromIso('2027-03-31'), '', '', $today);
+
+        self::assertSame('replaced', $service->place($lisa, $roleId, AssociationDate::fromIso('2027-02-01'), null, '', '', $today));
+
+        $annaAssignment = $this->assignmentFor($assignments, $anna, $roleId);
+        $lisaAssignment = $this->assignmentFor($assignments, $lisa, $roleId);
+        self::assertSame('2027-01-31', $annaAssignment->endedOn()?->iso());
+        self::assertSame('2026-01-01', $annaAssignment->startedOn()->iso());
+        self::assertSame('2027-02-01', $lisaAssignment->startedOn()->iso());
+        self::assertNull($lisaAssignment->endedOn());
+    }
+
+    public function test_a_later_start_does_not_extend_the_current_holder(): void
+    {
+        [$service, $people, $memberships, $roles, $assignments] = $this->world(true);
+        $today = AssociationDate::fromIso('2026-09-24');
+        $anna = $this->person($people, 'Anna', 'Andersson', 'anna-gap@example.test');
+        $lisa = $this->person($people, 'Lisa', 'Nilsson', 'lisa-gap@example.test');
+        $this->membership($memberships, $anna, 'M-GAP-ANNA', MembershipStatus::Active, '2024-01-01', null);
+        $this->membership($memberships, $lisa, 'M-GAP-LISA', MembershipStatus::Active, '2024-01-01', null);
+        $roleId = (int) $roles->add(new BoardRole(null, 'treasurer', 'Kassör', false, 20))->id();
+        $service->place($anna, $roleId, AssociationDate::fromIso('2026-01-01'), AssociationDate::fromIso('2026-12-31'), '', '', $today);
+        self::assertSame('saved', $service->place($lisa, $roleId, AssociationDate::fromIso('2027-02-01'), null, '', '', $today));
+        self::assertSame('2026-12-31', $this->assignmentFor($assignments, $anna, $roleId)->endedOn()?->iso());
+    }
+
+    public function test_a_scheduled_successor_blocks_another_until_it_is_cancelled(): void
+    {
+        [$service, $people, $memberships, $roles, $assignments] = $this->world(true);
+        $today = AssociationDate::fromIso('2026-09-24');
+        $anna = $this->person($people, 'Anna', 'Andersson', 'anna-plan@example.test');
+        $karin = $this->person($people, 'Karin', 'Nilsson', 'karin-plan@example.test');
+        $lisa = $this->person($people, 'Lisa', 'Nilsson', 'lisa-plan@example.test');
+        $this->membership($memberships, $anna, 'M-PLAN-ANNA', MembershipStatus::Active, '2024-01-01', null);
+        $this->membership($memberships, $karin, 'M-PLAN-KARIN', MembershipStatus::Active, '2024-01-01', null);
+        $this->membership($memberships, $lisa, 'M-PLAN-LISA', MembershipStatus::Active, '2024-01-01', null);
+        $roleId = (int) $roles->add(new BoardRole(null, 'treasurer', 'Kassör', false, 20))->id();
+        $service->place($anna, $roleId, AssociationDate::fromIso('2025-03-10'), null, 'anna-public@example.test', '', $today);
+        $service->place($karin, $roleId, AssociationDate::fromIso('2027-01-01'), null, 'karin-public@example.test', '', $today);
+
+        self::assertSame('2026-12-31', $this->assignmentFor($assignments, $anna, $roleId)->endedOn()?->iso());
+        $karinAssignment = $this->assignmentFor($assignments, $karin, $roleId);
+
+        try {
+            $service->place($lisa, $roleId, AssociationDate::fromIso('2026-11-01'), null, '', '', $today);
+            self::fail('A second scheduled successor should be rejected.');
+        } catch (BoardRuleException $error) {
+            self::assertSame('This role already has a scheduled assignment.', $error->getMessage());
+        }
+
+        self::assertSame('2026-12-31', $this->assignmentFor($assignments, $anna, $roleId)->endedOn()?->iso());
+        self::assertNull($this->assignmentFor($assignments, $karin, $roleId)->endedOn());
+        self::assertCount(2, $assignments->all());
+
+        $cancelled = $service->cancelScheduled((int) $karinAssignment->id(), $today);
+        self::assertSame('2026-12-31', $cancelled->currentEnd());
+        self::assertSame('2026-12-31', $this->assignmentFor($assignments, $anna, $roleId)->endedOn()?->iso());
+        self::assertNull($assignments->find((int) $karinAssignment->id()));
+
+        $publicToday = $service->currentPublic($today);
+        $publicLater = $service->currentPublic(AssociationDate::fromIso('2027-01-01'));
+        $todayNames = array_map(static fn ($seat) => $seat->personName(), $publicToday);
+        $laterNames = array_map(static fn ($seat) => $seat->personName(), $publicLater);
+        self::assertContains('Anna Andersson', $todayNames);
+        self::assertNotContains('Karin Nilsson', $todayNames);
+        self::assertNotContains('Karin Nilsson', $laterNames);
+        self::assertSame('anna-public@example.test', $publicToday[0]->publicContact());
+
+        try {
+            $service->cancelScheduled((int) $this->assignmentFor($assignments, $anna, $roleId)->id(), $today);
+            self::fail('The current assignment should not be cancelled as a scheduled one.');
+        } catch (BoardRuleException $error) {
+            self::assertSame('Only a scheduled assignment that has not started can be cancelled.', $error->getMessage());
+        }
+
+        self::assertNotNull($assignments->find((int) $this->assignmentFor($assignments, $anna, $roleId)->id()));
+    }
+
+    public function test_cancellation_rejects_history_today_and_a_failed_delete(): void
+    {
+        [$service, $people, $memberships, $roles, $assignments] = $this->world(true);
+        $today = AssociationDate::fromIso('2026-09-24');
+        $anna = $this->person($people, 'Anna', 'Andersson', 'anna-cancel@example.test');
+        $past = $this->person($people, 'Erik', 'Berg', 'erik-cancel@example.test');
+        $this->membership($memberships, $anna, 'M-CANCEL-ANNA', MembershipStatus::Active, '2024-01-01', null);
+        $this->membership($memberships, $past, 'M-CANCEL-ERIK', MembershipStatus::Active, '2019-01-01', null);
+        $roleId = (int) $roles->add(new BoardRole(null, 'treasurer', 'Kassör', false, 20))->id();
+        $service->place($past, $roleId, AssociationDate::fromIso('2020-01-01'), AssociationDate::fromIso('2020-12-31'), '', '', $today);
+        $service->place($anna, $roleId, AssociationDate::fromIso('2026-09-24'), null, '', '', $today);
+        $historyId = (int) $this->assignmentFor($assignments, $past, $roleId)->id();
+        $todayId = (int) $this->assignmentFor($assignments, $anna, $roleId)->id();
+
+        try {
+            $service->cancelScheduled($historyId, $today);
+            self::fail('A historical assignment should not be cancelled.');
+        } catch (BoardRuleException) {
+            self::assertSame('2020-12-31', $assignments->find($historyId)?->endedOn()?->iso());
+        }
+
+        try {
+            $service->cancelScheduled($todayId, $today);
+            self::fail('An assignment that starts today is not a future assignment.');
+        } catch (BoardRuleException) {
+            self::assertNull($assignments->find($todayId)?->endedOn());
+        }
+
+        try {
+            $service->cancelScheduled(999, $today);
+            self::fail('An unknown assignment should be rejected.');
+        } catch (\RuntimeException $error) {
+            self::assertSame('Assignment was not found.', $error->getMessage());
+        }
+
+        $future = $this->person($people, 'Karin', 'Nilsson', 'karin-cancel@example.test');
+        $this->membership($memberships, $future, 'M-CANCEL-KARIN', MembershipStatus::Active, '2024-01-01', null);
+        $service->place($future, $roleId, AssociationDate::fromIso('2027-01-01'), null, '', '', $today);
+        $futureId = (int) $this->assignmentFor($assignments, $future, $roleId)->id();
+        $assignments->failRemove = true;
+
+        try {
+            $service->cancelScheduled($futureId, $today);
+            self::fail('A failed delete should not be reported as a cancellation.');
+        } catch (\RuntimeException $error) {
+            self::assertSame('The assignment could not be removed.', $error->getMessage());
+        }
+
+        self::assertNotNull($assignments->find($futureId));
+        self::assertSame('2026-12-31', $this->assignmentFor($assignments, $anna, $roleId)->endedOn()?->iso());
+    }
+
+    public function test_cancelling_a_scheduled_assignment_requires_manage_board(): void
+    {
+        [$service] = $this->world(false);
+
+        $this->expectException(NotAllowed::class);
+        $service->cancelScheduled(1, AssociationDate::fromIso('2026-09-24'));
+    }
+
+    public function test_a_historical_assignment_is_not_rewritten_by_a_later_candidate(): void
+    {
+        [$service, $people, $memberships, $roles, $assignments] = $this->world(true);
+        $today = AssociationDate::fromIso('2026-09-24');
+        $anna = $this->person($people, 'Anna', 'Andersson', 'anna-history@example.test');
+        $lisa = $this->person($people, 'Lisa', 'Nilsson', 'lisa-history@example.test');
+        $this->membership($memberships, $anna, 'M-HIST-ANNA', MembershipStatus::Active, '2019-01-01', '2020-12-31');
+        $this->membership($memberships, $lisa, 'M-HIST-LISA', MembershipStatus::Active, '2019-01-01', null);
+        $roleId = (int) $roles->add(new BoardRole(null, 'treasurer', 'Kassör', false, 20))->id();
+        $service->place($anna, $roleId, AssociationDate::fromIso('2020-01-01'), AssociationDate::fromIso('2020-12-31'), '', '', $today);
+
+        try {
+            $service->place($lisa, $roleId, AssociationDate::fromIso('2020-06-01'), null, '', '', $today);
+            self::fail('A new assignment should not rewrite a historical row.');
+        } catch (BoardRuleException) {
+            self::assertSame('2020-12-31', $this->assignmentFor($assignments, $anna, $roleId)->endedOn()?->iso());
+        }
+
+        self::assertCount(1, $assignments->all());
+    }
+
+    private function seat(string $state, string $startedOn, ?string $endedOn): \Foreningssystem\Application\Board\BoardSeat
+    {
+        return new \Foreningssystem\Application\Board\BoardSeat(
+            1,
+            1,
+            'Karin Nilsson',
+            1,
+            'treasurer',
+            'Kassör',
+            20,
+            false,
+            $startedOn,
+            $endedOn,
+            '',
+            '',
+            $state
+        );
+    }
+
     /**
      * @return array{0: BoardService, 1: MemoryPersonRepository, 2: MemoryMembershipRepository, 3: MemoryBoardRoleRepository, 4: MemoryBoardAssignmentRepository}
      */
@@ -520,6 +719,17 @@ final class MemoryBoardAssignmentRepository implements BoardAssignmentRepository
         }
 
         $this->assignments[$id] = $assignment;
+    }
+
+    public bool $failRemove = false;
+
+    public function remove(int $id): void
+    {
+        if ($this->failRemove || ! isset($this->assignments[$id])) {
+            throw new \RuntimeException('The assignment could not be removed.');
+        }
+
+        unset($this->assignments[$id]);
     }
 
     public function find(int $id): ?BoardAssignment

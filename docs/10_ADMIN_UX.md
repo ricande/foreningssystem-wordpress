@@ -56,7 +56,7 @@ Dangerous actions must distinguish:
 Key task:
 “Replace treasurer without destroying history.”
 
-The board screen shows the current board first, then upcoming changes, history, and the actions that change it. A single-holder role offers replacement. A role that allows several holders offers another holder instead, and the existing holders stay. Ending an assignment asks for a date and confirmation. The earlier row remains. An open assignment is shown as continuing until it is changed, not as a distant end date.
+The board screen shows the current board first, then upcoming changes, history, and the actions that change it. A single-holder role offers replacement for whoever is current today, including when that assignment already has an end date. If a successor is already scheduled, the screen asks the officer to cancel that plan before adding another. A role that allows several holders offers another holder instead, and the existing holders stay. Ending an assignment that has started asks for a date and confirmation. The earlier row remains. A future assignment is shown as starting on its date, and cancelling it removes the plan without reopening the current holder. An open current assignment is shown as continuing until it is changed, not as a distant end date.
 
 ## Meeting flow
 

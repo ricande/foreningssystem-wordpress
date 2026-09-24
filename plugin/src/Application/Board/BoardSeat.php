@@ -87,4 +87,25 @@ final class BoardSeat
     {
         return $this->state;
     }
+
+    /**
+     * How an open or closed assignment should be described.
+     * Upcoming rows have not started, so they are never "present".
+     */
+    public function datePresentation(): string
+    {
+        if ($this->state === 'upcoming' && $this->endedOn === null) {
+            return 'starts';
+        }
+
+        if ($this->endedOn === null && $this->state === 'current') {
+            return 'since';
+        }
+
+        if ($this->endedOn === null) {
+            return 'present';
+        }
+
+        return 'range';
+    }
 }

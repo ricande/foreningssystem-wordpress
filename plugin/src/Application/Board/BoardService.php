@@ -41,10 +41,12 @@ final class BoardService
         ?AssociationDate $endedOn,
         string $publicContact,
         string $termLabel,
+        ?AssociationDate $today = null,
     ): string {
         $this->require(Capabilities::MANAGE_BOARD);
+        $asOf = $today ?? $startedOn;
 
-        return $this->transaction->run(function () use ($personId, $roleId, $startedOn, $endedOn, $publicContact, $termLabel): string {
+        return $this->transaction->run(function () use ($personId, $roleId, $startedOn, $endedOn, $publicContact, $termLabel, $asOf): string {
             $person = $this->requirePerson($personId);
             $role = $this->requireRole($roleId);
 
@@ -66,16 +68,44 @@ final class BoardService
             );
             $checked = [];
             $replacements = [];
+            $openSuccessor = ! $endedOn instanceof AssociationDate && ! $role->allowsMultiple();
 
-            foreach ($this->forRole($roleId) as $open) {
-                if ($endedOn instanceof AssociationDate || $role->allowsMultiple() || $open->endedOn() instanceof AssociationDate) {
-                    $checked[] = $open;
+            foreach ($this->forRole($roleId) as $existing) {
+                if (! $openSuccessor || ! $this->canShorten($existing, $candidate, $asOf)) {
+                    $checked[] = $existing;
                     continue;
                 }
 
-                $ended = $this->ledger->end($open, $startedOn->previousDay());
+                $on = $startedOn->previousDay();
+
+                if ($on->isBefore($existing->startedOn())) {
+                    throw new BoardRuleException('An assignment cannot end before it starts.');
+                }
+
+                if ($existing->endedOn() instanceof AssociationDate && ! $on->isBefore($existing->endedOn())) {
+                    $checked[] = $existing;
+                    continue;
+                }
+
+                $ended = $existing->endedOn() instanceof AssociationDate
+                    ? $existing->withEnd($on)
+                    : $this->ledger->end($existing, $on);
                 $checked[] = $ended;
                 $replacements[] = $ended;
+            }
+
+            if (! $role->allowsMultiple()) {
+                foreach ($checked as $existing) {
+                    if (! $existing->overlaps($candidate)) {
+                        continue;
+                    }
+
+                    if ($existing->startedOn()->isAfter($asOf)) {
+                        throw new BoardRuleException('This role already has a scheduled assignment.');
+                    }
+
+                    throw new BoardRuleException('This role already has a holder for those dates.');
+                }
             }
 
             $this->ledger->add($checked, $role, $candidate, $covered);
@@ -88,6 +118,36 @@ final class BoardService
 
             return $replacements === [] ? 'saved' : 'replaced';
         });
+    }
+
+    public function cancelScheduled(int $assignmentId, AssociationDate $today): ScheduledCancellation
+    {
+        $this->require(Capabilities::MANAGE_BOARD);
+        $assignment = $this->requireAssignment($assignmentId);
+
+        if (! $assignment->startedOn()->isAfter($today)) {
+            throw new BoardRuleException('Only a scheduled assignment that has not started can be cancelled.');
+        }
+
+        $role = $this->requireRole($assignment->roleId());
+        $currentEnd = null;
+
+        foreach ($this->forRole($assignment->roleId()) as $other) {
+            if ($other->id() === $assignment->id() || ! $other->covers($today)) {
+                continue;
+            }
+
+            $currentEnd = $other->endedOn()?->iso();
+        }
+
+        $result = new ScheduledCancellation($role->slug(), $role->name(), $currentEnd);
+        $id = (int) $assignment->id();
+
+        $this->transaction->run(function () use ($id): void {
+            $this->assignments->remove($id);
+        });
+
+        return $result;
     }
 
     public function end(int $assignmentId, AssociationDate $on): void
@@ -199,6 +259,19 @@ final class BoardService
         $this->require(Capabilities::VIEW_MEMBERS);
 
         return $this->roles->all();
+    }
+
+    private function canShorten(BoardAssignment $existing, BoardAssignment $candidate, AssociationDate $today): bool
+    {
+        if ($existing->endedOn() instanceof AssociationDate && $existing->endedOn()->isBefore($today)) {
+            return false;
+        }
+
+        if (! $existing->startedOn()->isBefore($candidate->startedOn())) {
+            return false;
+        }
+
+        return $existing->overlaps($candidate);
     }
 
     /**

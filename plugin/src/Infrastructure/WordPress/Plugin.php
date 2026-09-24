@@ -65,6 +65,7 @@ final class Plugin
         add_action('admin_post_assoc_withdraw_guardian_approval', [MembersPage::class, 'withdrawGuardianApproval']);
         add_action('admin_post_assoc_place_assignment', [BoardPage::class, 'place']);
         add_action('admin_post_assoc_end_assignment', [BoardPage::class, 'end']);
+        add_action('admin_post_assoc_cancel_assignment', [BoardPage::class, 'cancelScheduled']);
         add_action('admin_post_assoc_schedule_meeting', [MeetingsPage::class, 'schedule']);
         add_action('admin_post_assoc_save_meeting_template', [MeetingsPage::class, 'saveTemplate']);
         add_action('admin_post_assoc_add_template_heading', [MeetingsPage::class, 'addTemplateHeading']);

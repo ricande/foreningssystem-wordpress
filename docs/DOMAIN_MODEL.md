@@ -70,7 +70,9 @@ The public member count is the number of active individual members, not the numb
 
 ## Board history
 
-Replacing the treasurer creates a new assignment and sets the end date on the previous one. The previous row stays.
+Replacing the treasurer creates a new assignment and sets the end date on the previous one when the new start falls inside that assignment. A later start leaves the current end date unchanged. The previous row stays. An assignment that already ended before today is not rewritten.
+
+A future assignment is a planned assignment. It may be cancelled before the day it starts, and that row is removed because the person has not held the role yet. Cancelling it does not reopen or extend the current holder. An assignment that has started, or that has already ended, is not deleted this way.
 
 Public role contact is optional. If it is empty, the public board block shows the person's name and role only.
 

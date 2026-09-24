@@ -38,6 +38,7 @@ Positive:
 - Current board is the set of assignments whose dates cover today.
 - Public and admin views share that query.
 - Placing an assignment uses the same continuous member coverage as the rest of the membership model. Adjacent effective intervals cover one assignment. A gap does not.
+- A planned assignment that has not started may be cancelled. That removes the row and does not change the current holder's end date. Assignments that have started stay in history.
 
 Negative/tradeoffs:
 - Open-ended assignments need a clear "current" presentation so a missing end date is not a data error.

@@ -1623,3 +1623,45 @@ msgstr "Det uppdraget kunde inte hittas."
 
 msgid "Confirm the end date before ending the assignment."
 msgstr "Bekräfta slutdatumet innan uppdraget avslutas."
+
+msgid "Starts %s"
+msgstr "Börjar %s"
+
+msgid "A future %s is already scheduled:"
+msgstr "En framtida %s är redan planerad:"
+
+msgid "%s is the current holder. If the new start date falls inside this assignment, it ends the day before. A later start leaves the current end date unchanged. The earlier assignment remains in history."
+msgstr "%s är nuvarande innehavare. Om det nya startdatumet ligger inom det här uppdraget slutar det dagen innan. Ett senare startdatum lämnar det nuvarande slutdatumet oförändrat. Det tidigare uppdraget finns kvar i historiken."
+
+msgid "For a role with one holder, cancel a scheduled successor before adding another assignment."
+msgstr "För en roll med en innehavare behöver ett planerat uppdrag avbrytas innan ett nytt läggs till."
+
+msgid "Cancel %1$s's scheduled %2$s assignment starting %3$s? This assignment has not started and will not be kept as board history."
+msgstr "Avbryt det planerade uppdraget som %2$s för %1$s med start %3$s? Uppdraget har inte börjat och sparas inte som styrelsehistorik."
+
+msgid "Cancel this scheduled assignment"
+msgstr "Avbryt det här planerade uppdraget"
+
+msgid "Cancel scheduled assignment"
+msgstr "Avbryt planerat uppdrag"
+
+msgid "The current assignment still ends %1$s. %2$s's assignment will begin %3$s. The earlier assignment remains in history."
+msgstr "Det nuvarande uppdraget slutar fortfarande %1$s. Uppdraget för %2$s börjar %3$s. Det tidigare uppdraget finns kvar i historiken."
+
+msgid "The scheduled assignment was cancelled."
+msgstr "Det planerade uppdraget avbröts."
+
+msgid "The scheduled assignment was cancelled. The current %1$s still ends on %2$s. Review the current assignment if that end date should change."
+msgstr "Det planerade uppdraget avbröts. Nuvarande %1$s slutar fortfarande %2$s. Granska det nuvarande uppdraget om slutdatumet ska ändras."
+
+msgid "This role already has a scheduled assignment. Cancel that assignment before adding another."
+msgstr "Den här rollen har redan ett planerat uppdrag. Avbryt det innan ett nytt läggs till."
+
+msgid "Only a scheduled assignment that has not started can be cancelled."
+msgstr "Bara ett planerat uppdrag som inte har börjat kan avbrytas."
+
+msgid "The scheduled assignment could not be cancelled."
+msgstr "Det planerade uppdraget kunde inte avbrytas."
+
+msgid "Confirm before cancelling the scheduled assignment."
+msgstr "Bekräfta innan det planerade uppdraget avbryts."
