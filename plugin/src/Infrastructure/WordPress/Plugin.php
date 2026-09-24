@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Association\WorkOverview;
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Meeting\MeetingMoment;
 use Foreningssystem\Domain\Meeting\MeetingStatus;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Infrastructure\Persistence\MigrationException;
@@ -233,27 +235,62 @@ final class Plugin
         )) . '</p>';
 
         if (current_user_can(Capabilities::VIEW_INTERNAL_MEETINGS)) {
+            $meetings = WordpressMeetings::service();
+            $overview = new WorkOverview();
+            $now = MeetingMoment::fromLocal(wp_date('Y-m-d H:i:s'));
+            $today = AssociationDate::fromIso(wp_date('Y-m-d'));
+            $allMeetings = $meetings->listMeetings();
+            $next = $overview->nextPlanned($allMeetings, $now);
+            $last = $overview->lastHeld($allMeetings);
+            echo '<h2>' . esc_html__('Nästa möte', 'foreningsplugin') . '</h2>';
+            echo '<p>' . esc_html($next === null ? __('Inget kommande möte.', 'foreningsplugin') : $next->title() . ' ' . $next->startsAt()->date()) . '</p>';
+            echo '<h2>' . esc_html__('Senaste hållet möte', 'foreningsplugin') . '</h2>';
+            echo '<p>' . esc_html($last === null ? __('Inget hållet möte.', 'foreningsplugin') : $last->title() . ' ' . $last->startsAt()->date()) . '</p>';
             echo '<p>' . esc_html(sprintf(
                 /* translators: %d: number of planned meetings */
                 __('Planerade möten: %d', 'foreningsplugin'),
-                WordpressMeetings::service()->countWithStatus(MeetingStatus::Planned)
+                $meetings->countWithStatus(MeetingStatus::Planned)
             )) . '</p>';
             echo '<p>' . esc_html(sprintf(
                 /* translators: %d: number of open decisions */
                 __('Öppna beslut: %d', 'foreningsplugin'),
                 WordpressMeetings::record()->openCount()
             )) . '</p>';
-            echo '<p>' . esc_html(sprintf(
-                /* translators: %d: number of open action items */
-                __('Öppna uppgifter: %d', 'foreningsplugin'),
-                WordpressMeetings::record()->openActionCount()
-            )) . '</p>';
+            echo '<h2>' . esc_html__('Försenade uppgifter', 'foreningsplugin') . '</h2>';
+            $overdue = array_slice($overview->overdue(WordpressMeetings::record()->actions(), $today), 0, 8);
+
+            if ($overdue === []) {
+                echo '<p>' . esc_html__('Inga försenade uppgifter.', 'foreningsplugin') . '</p>';
+            } else {
+                echo '<ul>';
+
+                foreach ($overdue as $item) {
+                    $due = $item->dueOn();
+                    echo '<li>' . esc_html($item->task() . ($due === null ? '' : ' (' . $due->iso() . ')')) . '</li>';
+                }
+
+                echo '</ul>';
+            }
         }
-        echo '<p>' . esc_html(sprintf(
-            /* translators: %d: schema version */
-            __('Databasschema: %d', 'foreningsplugin'),
-            (int) get_option(WordpressSchemaVersionStore::OPTION, 0)
-        )) . '</p>';
+
+        if (current_user_can(Capabilities::VIEW_BOARD_DOCUMENTS) || current_user_can(Capabilities::MANAGE_DOCUMENTS)) {
+            $documents = WordpressDocuments::archive()->officerList();
+            usort($documents, static fn ($left, $right): int => $right->id() <=> $left->id());
+            echo '<h2>' . esc_html__('Senaste dokument', 'foreningsplugin') . '</h2>';
+
+            if ($documents === []) {
+                echo '<p>' . esc_html__('Inga dokument att visa.', 'foreningsplugin') . '</p>';
+            } else {
+                echo '<ul>';
+
+                foreach (array_slice($documents, 0, 5) as $document) {
+                    echo '<li>' . esc_html($document->title()) . '</li>';
+                }
+
+                echo '</ul>';
+            }
+        }
+
         echo '</div>';
     }
 }

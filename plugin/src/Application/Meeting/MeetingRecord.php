@@ -249,6 +249,16 @@ final class MeetingRecord
         return $rows;
     }
 
+    /**
+     * @return list<ActionItem>
+     */
+    public function actions(): array
+    {
+        $this->require(Capabilities::VIEW_INTERNAL_MEETINGS);
+
+        return $this->actionItems->all();
+    }
+
     public function openActionCount(): int
     {
         $this->require(Capabilities::VIEW_INTERNAL_MEETINGS);
