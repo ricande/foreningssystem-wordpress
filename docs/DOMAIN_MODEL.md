@@ -38,11 +38,12 @@ A person, a membership and a membership period are different things. The members
 ## Invariants
 
 - A Person may have zero or more memberships. Periods on the same membership must not overlap. A person who counts as a member also cannot have overlapping coverage on two memberships.
-- A participation has an inclusive start and an optional inclusive end. The person is a member on a date only when both the participation and a covering period include that date. Leaving and rejoining the same membership adds another participation row. The earlier row stays.
+- A participation has an inclusive start and an optional inclusive end. The person is a member on a date only when both the participation and a covering period include that date. Those two ends stay independent: coverage is their intersection, and neither date is rewritten to match the other. Leaving and rejoining the same membership adds another participation row. The earlier row stays.
 - Ending a membership period sets an end date and a terminal status. It does not delete the Person, the membership, or past assignments.
 - Only a participant with role `member` counts as a member for the active-member count and for board eligibility. Role `contact` does not. A company contact is a contact.
 - A Board assignment has a start date and either an open end or an end date. "Who held this role on date D?" is answered from those dates, not from protocol text.
-- The membership period must cover the whole assignment. An assignment cannot be created outside an active membership. Ending a membership ends any open assignment on the same date.
+- Creating an assignment still requires one membership period and one member participation that together cover the whole assignment. An assignment cannot be created outside an active membership. Ending a membership period ends any open assignment of a current member participant on that date.
+- Ending one member participation does not end a board assignment when other member coverage still covers it. Coverage for that decision is the merged intersection of member participations and periods. Inclusive intervals are continuous when the next one starts the day after the previous end. If coverage stops, an assignment that extends past that date is truncated to the coverage end, including when that date is in the future. An assignment that already ends on or before the coverage end is left unchanged. Ending a contact participation does not change board assignments. A later participation does not reopen an assignment that was ended.
 - A term label, membership year, or source meeting may be stored on an assignment. The dates remain the query source.
 - An annual meeting may propose board changes. Applying them creates and ends assignments only after an explicit confirmation.
 - A finalized minutes revision is a snapshot. Later edits to people, board, notes, decisions, or action status do not change it.
@@ -61,7 +62,7 @@ Recommended status values:
 
 `dormant` means the person remains a member under the association's own rules but is not counted as active. The product does not invent the legal meaning of dormant.
 
-`pending` and `dormant` do not cover a date, and they cannot carry an end date. `ended` requires an end date. `active` may be open or may carry an inclusive end date. Both `active` and `ended` cover a date inside the inclusive range. An open assignment is covered only by an open `active` period and an open participation.
+`pending` and `dormant` do not cover a date, and they cannot carry an end date. `ended` requires an end date. `active` may be open or may carry an inclusive end date. Both `active` and `ended` cover a date inside the inclusive range. An open assignment is covered only by an open `active` period and an open participation when the check is a single interval, which is what creating an assignment uses. Keeping an existing assignment after one participation ends uses the continuous union described above. Only role `member` counts in either check.
 
 `Membership.kind` is the current classification. The period's `historical_class` is the classification for that interval. A new period copies the current kind. There is no automatic youth-to-ordinary change.
 

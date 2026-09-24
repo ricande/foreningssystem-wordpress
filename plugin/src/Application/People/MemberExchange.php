@@ -11,6 +11,7 @@ use Foreningssystem\Domain\Membership\MembershipPeriod;
 use Foreningssystem\Domain\Membership\MembershipRepository;
 use Foreningssystem\Domain\Membership\MembershipRuleException;
 use Foreningssystem\Domain\Membership\MembershipStatus;
+use Foreningssystem\Domain\Membership\ParticipantAdmission;
 use Foreningssystem\Domain\Organization\Organization;
 use Foreningssystem\Domain\Organization\OrganizationNumber;
 use Foreningssystem\Domain\Organization\OrganizationRepository;
@@ -244,18 +245,13 @@ final class MemberExchange
             null
         );
         $period = new MembershipPeriod(null, $membershipId, $membershipStatus, $startedOn, $endedOn, $row['membership_type']);
-
-        foreach ($this->memberships->allParticipants() as $participant) {
-            if ($participant->personId() !== $personId || ! $participant->role()->countsAsMember() || $participant->membershipId() === $membershipId) {
-                continue;
-            }
-
-            foreach ($this->memberships->periodsForMembership($participant->membershipId()) as $existing) {
-                if (\Foreningssystem\Domain\Membership\MemberCoverage::coveragesOverlap($incoming, $period, $participant, $existing)) {
-                    throw new MembershipRuleException('Membership periods cannot overlap.');
-                }
-            }
-        }
+        ParticipantAdmission::assertNoOverlap(
+            $incoming,
+            [],
+            [$period],
+            $this->memberships->allParticipants(),
+            $this->memberships->all()
+        );
 
         $this->memberships->addParticipant($incoming);
 
@@ -439,16 +435,12 @@ final class MemberExchange
             }
 
             $personId = (int) $person->id();
-            $startedOn = $value(8) !== '' ? AssociationDate::fromIso($value(8)) : $this->earliestPeriodStart($membership->id());
+            $startedOn = $this->participantStart($cells, $membership->id());
             $endedOn = $value(9) === '' ? null : AssociationDate::fromIso($value(9));
             $role = \Foreningssystem\Domain\Membership\ParticipantRole::tryFrom($value(6));
 
             if (! $role instanceof \Foreningssystem\Domain\Membership\ParticipantRole) {
                 throw new InvalidArgumentException('Unknown participant role.');
-            }
-
-            if ($membership->kind() === \Foreningssystem\Domain\Membership\MembershipKind::Company && $role->countsAsMember()) {
-                throw new MembershipRuleException('A company contact is not an individual member.');
             }
 
             $participant = new \Foreningssystem\Domain\Membership\MembershipParticipant(
@@ -462,10 +454,27 @@ final class MemberExchange
             );
 
             foreach ($this->memberships->participantsForMembership($membership->id()) as $existing) {
-                if ($existing->personId() === $personId && $existing->overlaps($participant)) {
+                $sameInterval = $existing->personId() === $personId
+                    && $existing->startedOn()->iso() === $participant->startedOn()->iso()
+                    && $existing->endedOn()?->iso() === $participant->endedOn()?->iso();
+
+                if ($sameInterval) {
                     return 'skipped';
                 }
             }
+
+            ParticipantAdmission::assertRole(
+                $membership->kind(),
+                $role,
+                $person->status() === PersonStatus::Deceased
+            );
+            ParticipantAdmission::assertNoOverlap(
+                $participant,
+                $this->memberships->participantsForMembership($membership->id()),
+                $this->memberships->periodsForMembership($membership->id()),
+                $this->memberships->allParticipants(),
+                $this->memberships->all()
+            );
 
             $this->memberships->addParticipant($participant);
 
@@ -495,6 +504,28 @@ final class MemberExchange
         $this->memberships->add($period);
 
         return 'created';
+    }
+
+    /**
+     * The current export always writes the start column.
+     * An empty start in that column is rejected.
+     * A row that has no start column at all is older compatibility input, and uses the earliest period start.
+     *
+     * @param list<string|null> $cells
+     */
+    private function participantStart(array $cells, int $membershipId): AssociationDate
+    {
+        if (! array_key_exists(8, $cells)) {
+            return $this->earliestPeriodStart($membershipId);
+        }
+
+        $startedOn = $this->cellIn((string) $cells[8]);
+
+        if ($startedOn === '') {
+            throw new InvalidArgumentException('A participant needs a start date.');
+        }
+
+        return AssociationDate::fromIso($startedOn);
     }
 
     private function earliestPeriodStart(int $membershipId): AssociationDate

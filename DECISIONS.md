@@ -55,6 +55,14 @@ Status terminology:
 - custom WordPress theme
 - custom mail transport infrastructure
 
+## Migration history
+
+**PROVISIONAL.** The project owner has not locked this policy.
+
+Before the first public release, a migration implementation may still be corrected while development databases are disposable. Every correction must remain upgrade-safe from all committed development schema states we care about.
+
+After the first public release, released migrations are immutable. All changes use forward migrations only.
+
 ## Technical decisions not yet locked
 
 - PHP minimum version. The plugin header and Composer require PHP 8.3 because that is the version the lab and PHPUnit run. This is not an approved lower floor.

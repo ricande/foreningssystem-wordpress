@@ -153,6 +153,89 @@ final class MemberCoverage
         );
     }
 
+    /**
+     * Continuous member coverage that includes $from.
+     * Adjacent inclusive intervals meet when the next one starts the day after the previous end.
+     * Null when $from is not inside member coverage.
+     *
+     * @param list<MembershipParticipant> $participants
+     * @param list<MembershipPeriod> $periods
+     */
+    public static function continuousCoverageFrom(
+        int $personId,
+        AssociationDate $from,
+        array $participants,
+        array $periods,
+    ): ?CoverageSpan {
+        foreach (self::mergedMemberIntervals($personId, $participants, $periods) as [$start, $end]) {
+            if ($from->isBefore($start)) {
+                continue;
+            }
+
+            if ($end instanceof AssociationDate && $from->isAfter($end)) {
+                continue;
+            }
+
+            return new CoverageSpan($end);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<MembershipParticipant> $participants
+     * @param list<MembershipPeriod> $periods
+     * @return list<array{0: AssociationDate, 1: ?AssociationDate}>
+     */
+    private static function mergedMemberIntervals(int $personId, array $participants, array $periods): array
+    {
+        $raw = [];
+
+        foreach ($participants as $participant) {
+            if ($participant->personId() !== $personId || ! $participant->role()->countsAsMember()) {
+                continue;
+            }
+
+            foreach ($periods as $period) {
+                if (! self::participationOverlapsPeriod($participant, $period)) {
+                    continue;
+                }
+
+                $raw[] = [
+                    self::later($participant->startedOn(), $period->startedOn()),
+                    self::coverageEnd($participant, $period),
+                ];
+            }
+        }
+
+        usort($raw, static fn (array $left, array $right): int => $left[0]->iso() <=> $right[0]->iso());
+        $merged = [];
+
+        foreach ($raw as [$start, $end]) {
+            if ($merged === []) {
+                $merged[] = [$start, $end];
+                continue;
+            }
+
+            $last = count($merged) - 1;
+            $lastEnd = $merged[$last][1];
+
+            if (! $lastEnd instanceof AssociationDate || ! $start->isAfter($lastEnd->nextDay())) {
+                if (! $end instanceof AssociationDate || ! $lastEnd instanceof AssociationDate) {
+                    $merged[$last][1] = null;
+                } elseif ($end->isAfter($lastEnd)) {
+                    $merged[$last][1] = $end;
+                }
+
+                continue;
+            }
+
+            $merged[] = [$start, $end];
+        }
+
+        return $merged;
+    }
+
     private static function participationCovers(
         MembershipParticipant $participant,
         AssociationDate $startedOn,

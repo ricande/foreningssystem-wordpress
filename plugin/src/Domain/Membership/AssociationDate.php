@@ -49,6 +49,17 @@ final class AssociationDate
         return new self($parsed->modify('-1 day')->format('Y-m-d'));
     }
 
+    public function nextDay(): self
+    {
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $this->iso);
+
+        if ($parsed === false) {
+            throw new InvalidArgumentException('Date must use YYYY-MM-DD.');
+        }
+
+        return new self($parsed->modify('+1 day')->format('Y-m-d'));
+    }
+
     public function plusYears(int $years): self
     {
         return $this->shiftYears($years, '+');

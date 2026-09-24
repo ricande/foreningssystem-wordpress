@@ -249,6 +249,15 @@ final class RecordingOpenAssignments implements OpenBoardAssignments
     {
         $this->calls[] = [$personId, $on->iso()];
     }
+
+    public function assignmentsFor(int $personId): array
+    {
+        return [];
+    }
+
+    public function endAssignment(\Foreningssystem\Domain\Board\BoardAssignment $assignment, AssociationDate $on): void
+    {
+    }
 }
 
 final class MemoryPersonRepository implements PersonRepository
@@ -469,6 +478,12 @@ final class MemoryMembershipRepository implements MembershipRepository
 
     public function addParticipant(\Foreningssystem\Domain\Membership\MembershipParticipant $participant): \Foreningssystem\Domain\Membership\MembershipParticipant
     {
+        if ($this->failNext === 'participant') {
+            $this->failNext = '';
+
+            throw new \RuntimeException('participant insert failed');
+        }
+
         $saved = $participant->withId($this->nextParticipant);
         $this->participants[$this->nextParticipant] = $saved;
         $this->nextParticipant++;

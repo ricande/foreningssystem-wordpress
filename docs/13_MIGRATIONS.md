@@ -2,6 +2,16 @@
 
 Design before the first production schema.
 
+## Migration history policy
+
+**Status: PROVISIONAL.** The project owner has not locked this policy.
+
+Before the first public release, a migration implementation may still be corrected while development databases are disposable. Every correction must remain upgrade-safe from all committed development schema states we care about.
+
+After the first public release, released migrations are immutable. All changes use forward migrations only.
+
+Schema 15's copy routine was corrected in place, and schema 16 runs that repair again. That happened before any public release. Do not treat it as permission to rewrite a released migration.
+
 ## Requirements
 
 - explicit plugin schema version
