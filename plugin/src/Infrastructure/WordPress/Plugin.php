@@ -81,6 +81,7 @@ final class Plugin
         add_action('admin_post_assoc_apply_retention_now', [RetentionPage::class, 'apply']);
         add_action('admin_post_assoc_save_minutes_lock', [MinutesLockPage::class, 'save']);
         add_action('admin_post_assoc_save_minutes_publish', [MinutesPublishPage::class, 'save']);
+        add_action('admin_post_assoc_save_profile', [AssociationProfilePage::class, 'save']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();
@@ -162,6 +163,15 @@ final class Plugin
 
         add_submenu_page(
             'foreningsplugin',
+            __('Profil', 'foreningsplugin'),
+            __('Profil', 'foreningsplugin'),
+            Capabilities::MANAGE_ASSOCIATION,
+            'foreningsplugin-profile',
+            [AssociationProfilePage::class, 'render']
+        );
+
+        add_submenu_page(
+            'foreningsplugin',
             __('Kvarhållning', 'foreningsplugin'),
             __('Kvarhållning', 'foreningsplugin'),
             Capabilities::MANAGE_ASSOCIATION,
@@ -194,11 +204,17 @@ final class Plugin
             return;
         }
 
+        $profile = WordpressAssociationProfile::load();
         $activeMembers = WordpressPeople::service()->activeMemberCount();
         $currentBoard = WordpressBoard::service()->currentCount(AssociationDate::fromIso(wp_date('Y-m-d')));
 
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Föreningsplugin', 'foreningsplugin') . '</h1>';
+
+        if ($profile->name() !== '') {
+            echo '<p>' . esc_html($profile->name()) . '</p>';
+        }
+
         echo '<p>' . esc_html__('Pluginet är aktivt.', 'foreningsplugin') . '</p>';
         echo '<p>' . esc_html(sprintf(
             /* translators: %d: number of active members */
