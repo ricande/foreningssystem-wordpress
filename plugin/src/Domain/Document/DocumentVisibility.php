@@ -8,5 +8,6 @@ enum DocumentVisibility: string
 {
     case Board = 'board';
     case Member = 'member';
+    case Administrator = 'administrator';
     case Public = 'public';
 }

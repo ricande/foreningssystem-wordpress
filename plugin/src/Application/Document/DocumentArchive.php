@@ -95,12 +95,19 @@ final class DocumentArchive
     public function officerList(): array
     {
         $this->requireOfficer();
+        $mayManage = $this->authorizer->allows(Capabilities::MANAGE_DOCUMENTS);
         $rows = [];
 
         foreach ($this->documents->all() as $document) {
-            if ($document->id() !== null) {
-                $rows[] = $this->list($document);
+            if ($document->id() === null) {
+                continue;
             }
+
+            if (! $mayManage && $document->visibility() === DocumentVisibility::Administrator) {
+                continue;
+            }
+
+            $rows[] = $this->list($document);
         }
 
         return $rows;
@@ -141,6 +148,14 @@ final class DocumentArchive
             }
 
             throw new NotAllowed('active_membership');
+        }
+
+        if ($document->visibility() === DocumentVisibility::Administrator) {
+            if ($this->authorizer->allows(Capabilities::MANAGE_DOCUMENTS)) {
+                return $document;
+            }
+
+            throw new NotAllowed(Capabilities::MANAGE_DOCUMENTS);
         }
 
         if (! $this->authorizer->allows(Capabilities::VIEW_BOARD_DOCUMENTS) && ! $this->authorizer->allows(Capabilities::MANAGE_DOCUMENTS)) {

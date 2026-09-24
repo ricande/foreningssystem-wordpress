@@ -105,6 +105,38 @@ final class DocumentArchiveTest extends TestCase
         self::assertSame(2, $files->writes);
     }
 
+    public function test_an_administrator_document_is_readable_only_by_someone_who_manages_documents(): void
+    {
+        $documents = new MemoryDocumentRepository();
+        $files = new MemoryDocumentFileStore();
+        $pdf = "%PDF-1.4\n1 0 obj\nendobj\n%%EOF";
+        $manager = $this->archive([Capabilities::MANAGE_DOCUMENTS], $documents, $files);
+        $id = $manager->add('Avtal', $pdf, DocumentVisibility::Administrator);
+        $boardId = $manager->add('Intern budget', $pdf . ' ', DocumentVisibility::Board);
+        $boardReader = $this->archive([Capabilities::VIEW_BOARD_DOCUMENTS], $documents, $files, true);
+        $titles = array_map(static fn ($document): string => $document->title(), $boardReader->officerList());
+
+        self::assertSame(['Intern budget'], $titles);
+        self::assertSame(['Avtal', 'Intern budget'], array_map(static fn ($document): string => $document->title(), $manager->officerList()));
+        self::assertSame([], $manager->publicList());
+        self::assertSame([], $boardReader->memberList() ?? []);
+        self::assertSame($pdf, $manager->read($id));
+        self::assertSame($pdf . ' ', $boardReader->read($boardId));
+
+        $denied = false;
+
+        try {
+            $boardReader->read($id);
+        } catch (NotAllowed $error) {
+            $denied = $error->getMessage() === Capabilities::MANAGE_DOCUMENTS;
+        }
+
+        self::assertTrue($denied);
+        $manager->setVisibility($id, DocumentVisibility::Board);
+        self::assertSame($pdf, $boardReader->read($id));
+        self::assertSame(2, $files->writes);
+    }
+
     public function test_schema_migration_stores_document_visibility(): void
     {
         $migration = new DocumentSchemaMigration('wp_', '');

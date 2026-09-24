@@ -47,7 +47,7 @@ final class DocumentsPage
         $canManage = current_user_can(Capabilities::MANAGE_DOCUMENTS);
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Dokument', 'foreningsplugin') . '</h1>';
-        echo '<p>' . esc_html__('Offentliga dokument visas på webbplatsen. Medlemsdokument visas för en inloggad person med aktivt medlemskap. Interna dokument syns för styrelsen. Hämtningen går via en kontroll, inte via filens adress.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('Offentliga dokument visas på webbplatsen. Medlemsdokument visas för en inloggad person med aktivt medlemskap. Interna dokument syns för styrelsen. Administratörsdokument syns bara för den som får hantera dokument. Hämtningen går via en kontroll, inte via filens adress.', 'foreningsplugin') . '</p>';
         self::notice();
 
         if ($canManage) {
@@ -59,6 +59,7 @@ final class DocumentsPage
             echo '<p><label>' . esc_html__('Synlighet', 'foreningsplugin') . ' <select name="visibility">';
             echo '<option value="board">' . esc_html__('Intern', 'foreningsplugin') . '</option>';
             echo '<option value="member">' . esc_html__('Medlem', 'foreningsplugin') . '</option>';
+            echo '<option value="administrator">' . esc_html__('Administratör', 'foreningsplugin') . '</option>';
             echo '<option value="public">' . esc_html__('Offentlig', 'foreningsplugin') . '</option>';
             echo '</select></label></p>';
             echo '<p><label>' . esc_html__('PDF, JPEG eller PNG', 'foreningsplugin') . ' <input type="file" name="document_file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required></label></p>';
@@ -115,6 +116,7 @@ final class DocumentsPage
         return match ($visibility) {
             DocumentVisibility::Public => __('Offentlig', 'foreningsplugin'),
             DocumentVisibility::Member => __('Medlem', 'foreningsplugin'),
+            DocumentVisibility::Administrator => __('Administratör', 'foreningsplugin'),
             DocumentVisibility::Board => __('Intern', 'foreningsplugin'),
         };
     }
