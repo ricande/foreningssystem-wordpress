@@ -68,11 +68,17 @@ final class PublicBoardTest extends TestCase
         $service->place($grace, $chair, AssociationDate::fromIso('2024-06-01'), null, '', '');
 
         $reader = $this->service($people, $memberships, $roles, $assignments, false);
+        $before = $reader->currentPublic(AssociationDate::fromIso('2024-05-31'));
         $seats = $reader->currentPublic(AssociationDate::fromIso('2024-06-01'));
 
+        self::assertCount(1, $before);
+        self::assertSame('Ada Lovelace', $before[0]->personName());
+        self::assertSame('gammal@example.test', $before[0]->publicContact());
+        self::assertStringNotContainsString('ada@example.test', $before[0]->publicContact());
         self::assertCount(1, $seats);
         self::assertSame('Kim Lab <X>', $seats[0]->personName());
         self::assertSame('', $seats[0]->publicContact());
+        self::assertStringNotContainsString('Ada Lovelace', $seats[0]->personName());
         self::assertStringNotContainsString('ada@example.test', $seats[0]->personName() . $seats[0]->publicContact());
         self::assertStringNotContainsString('kim@example.test', $seats[0]->personName() . $seats[0]->publicContact());
     }

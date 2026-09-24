@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Tests;
 
+use Foreningssystem\Application\Board\BoardDirectory;
 use Foreningssystem\Application\Board\BoardService;
 use Foreningssystem\Application\Board\EndOpenBoardAssignments;
 use Foreningssystem\Application\People\Authorizer;
@@ -193,6 +194,196 @@ final class BoardServiceTest extends TestCase
         }
 
         self::assertSame('saved', $service->place($personId, $roleId, AssociationDate::fromIso('2026-09-24'), null, '', ''));
+    }
+
+    public function test_continuous_membership_covers_an_assignment_and_a_gap_does_not(): void
+    {
+        [$service, $people, $memberships, $roles, $assignments] = $this->world(true);
+        $covered = $this->person($people, 'Karin', 'Andersson', 'karin-cover@example.test');
+        $gapped = $this->person($people, 'Johan', 'Berg', 'johan-gap@example.test');
+        $this->membership($memberships, $covered, 'M-COVER-A', MembershipStatus::Active, '2025-01-01', '2026-12-31');
+        $this->membership($memberships, $covered, 'M-COVER-B', MembershipStatus::Active, '2027-01-01', null);
+        $this->membership($memberships, $gapped, 'M-GAP-A', MembershipStatus::Active, '2025-01-01', '2026-12-31');
+        $this->membership($memberships, $gapped, 'M-GAP-B', MembershipStatus::Active, '2027-01-02', null);
+        $roleId = (int) $roles->add(new BoardRole(null, 'treasurer', 'Kassör', false, 20))->id();
+
+        try {
+            $service->place($gapped, $roleId, AssociationDate::fromIso('2026-06-01'), null, '', '');
+            self::fail('A gap in membership should reject the assignment.');
+        } catch (BoardRuleException $error) {
+            self::assertSame('The membership does not cover this assignment.', $error->getMessage());
+        }
+
+        self::assertSame('saved', $service->place($covered, $roleId, AssociationDate::fromIso('2026-06-01'), null, 'kassor@example.test', '2026–2027'));
+
+        self::assertCount(1, $assignments->all());
+        self::assertSame('kassor@example.test', $assignments->all()[0]->publicContact());
+        self::assertNotSame('karin-cover@example.test', $assignments->all()[0]->publicContact());
+    }
+
+    public function test_a_failed_or_backdated_replacement_leaves_the_open_assignment(): void
+    {
+        [$service, $people, $memberships, $roles, $assignments] = $this->world(true);
+        $anna = $this->person($people, 'Anna', 'Andersson', 'anna-board@example.test');
+        $karin = $this->person($people, 'Karin', 'Nilsson', 'karin-board@example.test');
+        $outsider = $this->person($people, 'Erik', 'Berg', 'erik-board@example.test');
+        $this->membership($memberships, $anna, 'M-ANNA', MembershipStatus::Active, '2024-01-01', null);
+        $this->membership($memberships, $karin, 'M-KARIN', MembershipStatus::Active, '2024-01-01', null);
+        $roleId = (int) $roles->add(new BoardRole(null, 'treasurer', 'Kassör', false, 20))->id();
+        $service->place($anna, $roleId, AssociationDate::fromIso('2026-03-01'), null, 'anna@example.test', '');
+
+        try {
+            $service->place($outsider, $roleId, AssociationDate::fromIso('2026-06-01'), null, '', '');
+            self::fail('A person without membership should not replace the treasurer.');
+        } catch (BoardRuleException) {
+            self::assertTrue(true);
+        }
+
+        $annaAssignment = $this->assignmentFor($assignments, $anna, $roleId);
+        self::assertNull($annaAssignment->endedOn());
+        self::assertSame('2026-03-01', $annaAssignment->startedOn()->iso());
+
+        try {
+            $service->place($karin, $roleId, AssociationDate::fromIso('2025-01-01'), null, '', '');
+            self::fail('A replacement cannot start before the open assignment.');
+        } catch (BoardRuleException $error) {
+            self::assertSame('An assignment cannot end before it starts.', $error->getMessage());
+        }
+
+        $annaAssignment = $this->assignmentFor($assignments, $anna, $roleId);
+        self::assertNull($annaAssignment->endedOn());
+        self::assertSame('2026-03-01', $annaAssignment->startedOn()->iso());
+        self::assertCount(1, $assignments->all());
+    }
+
+    public function test_directory_separates_current_upcoming_and_history(): void
+    {
+        [$service, $people, $memberships, $roles, $assignments] = $this->world(true);
+        $anna = $this->person($people, 'Anna', 'Andersson', 'anna-dir@example.test');
+        $karin = $this->person($people, 'Karin', 'Nilsson', 'karin-dir@example.test');
+        $lisa = $this->person($people, 'Lisa', 'Nilsson', 'lisa-dir@example.test');
+        $johan = $this->person($people, 'Johan', 'Berg', 'johan-dir@example.test');
+        $this->membership($memberships, $anna, 'M-DIR-ANNA', MembershipStatus::Active, '2024-01-01', null);
+        $this->membership($memberships, $karin, 'M-DIR-KARIN', MembershipStatus::Active, '2024-01-01', null);
+        $this->membership($memberships, $lisa, 'M-DIR-LISA', MembershipStatus::Active, '2024-01-01', null);
+        $this->membership($memberships, $johan, 'M-DIR-JOHAN', MembershipStatus::Active, '2024-01-01', null);
+        $treasurer = (int) $roles->add(new BoardRole(null, 'treasurer', 'Kassör', false, 20))->id();
+        $chair = (int) $roles->add(new BoardRole(null, 'chair', 'Ordförande', false, 10))->id();
+        $alternate = (int) $roles->add(new BoardRole(null, 'alternate', 'Suppleant', true, 40))->id();
+        $service->place($anna, $treasurer, AssociationDate::fromIso('2024-03-12'), null, '', '2024');
+        $service->place($karin, $treasurer, AssociationDate::fromIso('2027-01-01'), null, 'kassor@example.test', '2027');
+        $service->place($lisa, $chair, AssociationDate::fromIso('2026-01-01'), null, '', '');
+        $service->place($lisa, $alternate, AssociationDate::fromIso('2026-01-01'), null, '', '');
+        $service->place($johan, $alternate, AssociationDate::fromIso('2026-02-01'), null, '', '');
+        $directory = new BoardDirectory($people, $memberships, $roles, $assignments);
+        $today = AssociationDate::fromIso('2026-09-24');
+        $current = [];
+        $upcoming = [];
+        $history = [];
+
+        foreach ($directory->seats($today) as $seat) {
+            if ($seat->state() === 'current') {
+                $current[] = $seat;
+            } elseif ($seat->state() === 'upcoming') {
+                $upcoming[] = $seat;
+            } else {
+                $history[] = $seat;
+            }
+        }
+
+        self::assertSame(['chair', 'treasurer', 'alternate', 'alternate'], array_map(static fn ($seat) => $seat->roleSlug(), $current));
+        self::assertSame(['Lisa Nilsson', 'Anna Andersson', 'Johan Berg', 'Lisa Nilsson'], array_map(static fn ($seat) => $seat->personName(), $current));
+        self::assertSame('2026-12-31', $current[1]->endedOn());
+        self::assertSame(['Karin Nilsson'], array_map(static fn ($seat) => $seat->personName(), $upcoming));
+        self::assertSame('treasurer', $upcoming[0]->roleSlug());
+        self::assertSame([], $history);
+        self::assertSame('active', $directory->people($today)[0]['coverage']);
+
+        $public = $service->currentPublic($today);
+        $names = array_map(static fn ($seat) => $seat->personName(), $public);
+        self::assertContains('Anna Andersson', $names);
+        self::assertNotContains('Karin Nilsson', $names);
+        $later = $service->currentPublic(AssociationDate::fromIso('2027-01-01'));
+        $laterNames = array_map(static fn ($seat) => $seat->personName(), $later);
+        self::assertContains('Karin Nilsson', $laterNames);
+        self::assertNotContains('Anna Andersson', $laterNames);
+
+        foreach ($later as $seat) {
+            if ($seat->personName() === 'Karin Nilsson') {
+                self::assertSame('kassor@example.test', $seat->publicContact());
+                self::assertStringNotContainsString('karin-dir@example.test', $seat->publicContact());
+            }
+        }
+    }
+
+    public function test_ending_an_assignment_keeps_the_row_and_rejects_a_bad_end(): void
+    {
+        [$service, $people, $memberships, $roles, $assignments] = $this->world(true);
+        $personId = $this->person($people, 'Karin', 'Andersson', 'karin-end@example.test');
+        $this->membership($memberships, $personId, 'M-END', MembershipStatus::Active, '2024-01-01', null);
+        $roleId = (int) $roles->add(new BoardRole(null, 'secretary', 'Sekreterare', false, 30))->id();
+        $service->place($personId, $roleId, AssociationDate::fromIso('2026-03-10'), null, '', '');
+        $assignmentId = (int) $this->assignmentFor($assignments, $personId, $roleId)->id();
+        $service->end($assignmentId, AssociationDate::fromIso('2026-09-24'));
+        $ended = $this->assignmentFor($assignments, $personId, $roleId);
+        self::assertSame('2026-09-24', $ended->endedOn()?->iso());
+        self::assertSame('2026-03-10', $ended->startedOn()->iso());
+
+        try {
+            $service->end($assignmentId, AssociationDate::fromIso('2026-10-01'));
+            self::fail('An ended assignment should stay ended.');
+        } catch (BoardRuleException $error) {
+            self::assertSame('The assignment is already ended.', $error->getMessage());
+        }
+
+        $service->place($personId, $roleId, AssociationDate::fromIso('2026-10-01'), null, '', '');
+        $open = null;
+
+        foreach ($assignments->all() as $assignment) {
+            if ($assignment->endedOn() === null) {
+                $open = $assignment;
+            }
+        }
+
+        self::assertNotNull($open);
+
+        try {
+            $service->end((int) $open->id(), AssociationDate::fromIso('2026-09-01'));
+            self::fail('An assignment cannot end before it starts.');
+        } catch (BoardRuleException) {
+            self::assertNull($open->endedOn());
+        }
+
+        self::assertCount(2, $assignments->all());
+    }
+
+    public function test_invalid_board_targets_are_rejected(): void
+    {
+        [$service, $people, $memberships, $roles] = $this->world(true);
+        $personId = $this->person($people, 'Anna', 'Andersson', 'anna-invalid@example.test');
+        $this->membership($memberships, $personId, 'M-INVALID', MembershipStatus::Active, '2024-01-01', null);
+        $roleId = (int) $roles->add(new BoardRole(null, 'chair', 'Ordförande', false, 10))->id();
+
+        try {
+            $service->place(999, $roleId, AssociationDate::fromIso('2026-01-01'), null, '', '');
+            self::fail('An unknown person should be rejected.');
+        } catch (\RuntimeException $error) {
+            self::assertSame('Person was not found.', $error->getMessage());
+        }
+
+        try {
+            $service->place($personId, 999, AssociationDate::fromIso('2026-01-01'), null, '', '');
+            self::fail('An unknown role should be rejected.');
+        } catch (\RuntimeException $error) {
+            self::assertSame('Role was not found.', $error->getMessage());
+        }
+
+        try {
+            $service->end(999, AssociationDate::fromIso('2026-01-01'));
+            self::fail('An unknown assignment should be rejected.');
+        } catch (\RuntimeException $error) {
+            self::assertSame('Assignment was not found.', $error->getMessage());
+        }
     }
 
     /**

@@ -37,6 +37,7 @@ Propose option B. Dates are required for the query. A term name, membership year
 Positive:
 - Current board is the set of assignments whose dates cover today.
 - Public and admin views share that query.
+- Placing an assignment uses the same continuous member coverage as the rest of the membership model. Adjacent effective intervals cover one assignment. A gap does not.
 
 Negative/tradeoffs:
 - Open-ended assignments need a clear "current" presentation so a missing end date is not a data error.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Board\BoardDirectory;
 use Foreningssystem\Application\Board\BoardService;
 use Foreningssystem\Application\Board\EndOpenBoardAssignments;
 use Foreningssystem\Application\People\Authorizer;
@@ -22,6 +23,16 @@ final class WordpressBoard
             new BoardAssignmentLedger(),
             self::authorizer(),
             self::transaction()
+        );
+    }
+
+    public static function directory(): BoardDirectory
+    {
+        return new BoardDirectory(
+            new WpdbPersonRepository(),
+            new WpdbMembershipRepository(),
+            new WpdbBoardRoleRepository(),
+            new WpdbBoardAssignmentRepository()
         );
     }
 

@@ -62,6 +62,7 @@ Implemented areas:
 - public blocks
 - privacy export, erase and retention
 - schema migrations through version 16
-- members admin: list, detail, typed create flows, guardians, protected identity display and membership history
+- members admin UX v1: list, detail, typed create flows, guardians, protected identity display and membership history
+- board admin UX v1: current board, upcoming changes, history, replacement, multi-holder roles, and ending an assignment without deleting it
 
 Some product decisions remain provisional, including the migration policy and personal-identity encryption. Schema 16 is the current schema, not a claim that every earlier design note is locked.

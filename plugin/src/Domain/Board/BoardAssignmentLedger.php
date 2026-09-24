@@ -5,30 +5,19 @@ declare(strict_types=1);
 namespace Foreningssystem\Domain\Board;
 
 use Foreningssystem\Domain\Membership\AssociationDate;
-use Foreningssystem\Domain\Membership\MembershipPeriod;
 
 final class BoardAssignmentLedger
 {
     /**
      * @param list<BoardAssignment> $existingForRole
-     * @param list<MembershipPeriod> $memberships
      */
-    public function add(array $existingForRole, BoardRole $role, BoardAssignment $candidate, array $memberships): void
+    public function add(array $existingForRole, BoardRole $role, BoardAssignment $candidate, bool $membershipCovers): void
     {
         if ($role->id() === null || $candidate->roleId() !== $role->id()) {
             throw new \InvalidArgumentException('The assignment does not match the role.');
         }
 
-        $covered = false;
-
-        foreach ($memberships as $period) {
-            if ($period->coversAssignment($candidate->startedOn(), $candidate->endedOn())) {
-                $covered = true;
-                break;
-            }
-        }
-
-        if (! $covered) {
+        if (! $membershipCovers) {
             throw new BoardRuleException('The membership does not cover this assignment.');
         }
 

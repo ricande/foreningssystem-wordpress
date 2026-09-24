@@ -837,8 +837,8 @@ msgstr "Mötet är markerat som hållet."
 msgid "The meeting is saved as planned."
 msgstr "Mötet är sparat som planerat."
 
-msgid "The membership does not cover the whole assignment."
-msgstr "Medlemskapet täcker inte hela uppdraget."
+msgid "The selected person's membership does not cover the full assignment period."
+msgstr "Den valda personens medlemskap täcker inte hela uppdragsperioden."
 
 msgid "The membership is already ended."
 msgstr "Medlemskapet är redan avslutat."
@@ -1542,3 +1542,84 @@ msgstr "Lägg till ett födelsedatum innan du startar ett ungdomsmedlemskap."
 
 msgid "A youth membership needs a birth date on the person. Add that date on the person first. A personal identity number is not used to fill it in."
 msgstr "Ett ungdomsmedlemskap behöver ett födelsedatum på personen. Lägg till datumet på personen först. Ett personnummer används inte för att fylla i det."
+
+msgid "No current board assignments."
+msgstr "Inga aktuella styrelseuppdrag."
+
+msgid "Add the first board assignment."
+msgstr "Lägg till det första styrelseuppdraget."
+
+msgid "Upcoming changes"
+msgstr "Kommande förändringar"
+
+msgid "No earlier board assignments."
+msgstr "Inga tidigare styrelseuppdrag."
+
+msgid "Change board"
+msgstr "Ändra styrelsen"
+
+msgid "Add holder: %s"
+msgstr "Lägg till innehavare: %s"
+
+msgid "Existing holders of this role stay in place."
+msgstr "Befintliga innehavare av den här rollen är kvar."
+
+msgid "Replace %s"
+msgstr "Ersätt %s"
+
+msgid "%s is the current holder. The new assignment starts on the date you choose, and this assignment ends the day before. The previous assignment remains in history."
+msgstr "%s är nuvarande innehavare. Det nya uppdraget börjar det datum du väljer, och det här uppdraget slutar dagen innan. Det tidigare uppdraget finns kvar i historiken."
+
+msgid "Since %s"
+msgstr "Sedan %s"
+
+msgid "%s – present"
+msgstr "%s – pågår"
+
+msgid "Leave the end date empty if the assignment continues until it is changed."
+msgstr "Lämna slutdatum tomt om uppdraget fortsätter tills det ändras."
+
+msgid "This may be shown on the public website for this board role."
+msgstr "Detta kan visas på den offentliga webbplatsen för det här styrelseuppdraget."
+
+msgid "Add holder"
+msgstr "Lägg till innehavare"
+
+msgid "Add assignment"
+msgstr "Lägg till uppdrag"
+
+msgid "active member"
+msgstr "aktiv medlem"
+
+msgid "membership ends %s"
+msgstr "medlemskapet slutar %s"
+
+msgid "membership starts %s"
+msgstr "medlemskapet börjar %s"
+
+msgid "not a current member"
+msgstr "inte medlem nu"
+
+msgid "End %1$s's %2$s assignment on the date below? The historical assignment will remain."
+msgstr "Avsluta uppdraget som %2$s för %1$s på datumet nedan? Det historiska uppdraget finns kvar."
+
+msgid "End this assignment"
+msgstr "Avsluta det här uppdraget"
+
+msgid "%1$s's assignment will end %2$s. %3$s's assignment will begin %4$s. The previous assignment remains in history."
+msgstr "Uppdraget för %1$s slutar %2$s. Uppdraget för %3$s börjar %4$s. Det tidigare uppdraget finns kvar i historiken."
+
+msgid "End %1$s's %2$s assignment on %3$s? The historical assignment will remain."
+msgstr "Avsluta uppdraget som %2$s för %1$s den %3$s? Det historiska uppdraget finns kvar."
+
+msgid "That person could not be found."
+msgstr "Den personen kunde inte hittas."
+
+msgid "That role could not be found."
+msgstr "Den rollen kunde inte hittas."
+
+msgid "That assignment could not be found."
+msgstr "Det uppdraget kunde inte hittas."
+
+msgid "Confirm the end date before ending the assignment."
+msgstr "Bekräfta slutdatumet innan uppdraget avslutas."

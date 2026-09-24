@@ -56,7 +56,7 @@ Dangerous actions must distinguish:
 Key task:
 “Replace treasurer without destroying history.”
 
-UI should make start/end/term obvious.
+The board screen shows the current board first, then upcoming changes, history, and the actions that change it. A single-holder role offers replacement. A role that allows several holders offers another holder instead, and the existing holders stay. Ending an assignment asks for a date and confirmation. The earlier row remains. An open assignment is shown as continuing until it is changed, not as a distant end date.
 
 ## Meeting flow
 

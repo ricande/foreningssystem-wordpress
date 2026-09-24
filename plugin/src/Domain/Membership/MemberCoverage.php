@@ -222,6 +222,36 @@ final class MemberCoverage
     }
 
     /**
+     * The assignment is covered when continuous member coverage includes the start
+     * and runs through the end. An open assignment needs open coverage.
+     * Adjacent effective intervals count. A gap does not.
+     *
+     * @param list<MembershipParticipant> $participants
+     * @param list<MembershipPeriod> $periods
+     */
+    public static function coversContinuousAssignment(
+        int $personId,
+        AssociationDate $startedOn,
+        ?AssociationDate $endedOn,
+        array $participants,
+        array $periods,
+    ): bool {
+        $span = self::continuousCoverageFrom($personId, $startedOn, $participants, $periods);
+
+        if (! $span instanceof CoverageSpan) {
+            return false;
+        }
+
+        if (! $endedOn instanceof AssociationDate) {
+            return $span->isOpenEnded();
+        }
+
+        $ends = $span->endsOn();
+
+        return ! $ends instanceof AssociationDate || ! $endedOn->isAfter($ends);
+    }
+
+    /**
      * @param list<MembershipParticipant> $participants
      * @param list<MembershipPeriod> $periods
      * @return list<array{0: AssociationDate, 1: ?AssociationDate}>

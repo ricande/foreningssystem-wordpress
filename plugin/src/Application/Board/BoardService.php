@@ -52,19 +52,9 @@ final class BoardService
                 throw new BoardRuleException('A deceased person cannot hold an open assignment.');
             }
 
-            $replaced = false;
-
-            if (! $endedOn instanceof AssociationDate && ! $role->allowsMultiple()) {
-                foreach ($this->forRole($roleId) as $open) {
-                    if ($open->endedOn() instanceof AssociationDate) {
-                        continue;
-                    }
-
-                    $this->assignments->save($this->ledger->end($open, $startedOn->previousDay()));
-                    $replaced = true;
-                }
-            }
-
+            $participants = $this->memberships->allParticipants();
+            $periods = $this->memberships->all();
+            $covered = MemberCoverage::coversContinuousAssignment($personId, $startedOn, $endedOn, $participants, $periods);
             $candidate = new BoardAssignment(
                 null,
                 $personId,
@@ -74,21 +64,29 @@ final class BoardService
                 trim($publicContact),
                 trim($termLabel)
             );
-            $this->ledger->add(
-                $this->forRole($roleId),
-                $role,
-                $candidate,
-                MemberCoverage::periodsCoveringAssignment(
-                    $personId,
-                    $startedOn,
-                    $endedOn,
-                    $this->memberships->allParticipants(),
-                    $this->memberships->all()
-                )
-            );
+            $checked = [];
+            $replacements = [];
+
+            foreach ($this->forRole($roleId) as $open) {
+                if ($endedOn instanceof AssociationDate || $role->allowsMultiple() || $open->endedOn() instanceof AssociationDate) {
+                    $checked[] = $open;
+                    continue;
+                }
+
+                $ended = $this->ledger->end($open, $startedOn->previousDay());
+                $checked[] = $ended;
+                $replacements[] = $ended;
+            }
+
+            $this->ledger->add($checked, $role, $candidate, $covered);
+
+            foreach ($replacements as $replacement) {
+                $this->assignments->save($replacement);
+            }
+
             $this->assignments->add($candidate);
 
-            return $replaced ? 'replaced' : 'saved';
+            return $replacements === [] ? 'saved' : 'replaced';
         });
     }
 
