@@ -10,6 +10,7 @@ use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Application\People\Transaction;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Membership\MembershipLedger;
+use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonStatus;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
@@ -61,6 +62,38 @@ CSV);
         self::assertSame(0, $overlap->created());
         self::assertSame(['Line 2: Membership periods cannot overlap.'], $overlap->errors());
         self::assertCount(2, $memberships->all());
+    }
+
+    public function test_email_does_not_merge_people(): void
+    {
+        $people = new MemoryPersonRepository();
+        $memberships = new MemoryMembershipRepository();
+        $exchange = $this->exchange($people, $memberships, [Capabilities::EDIT_MEMBERS]);
+        $blank = $exchange->import(<<<'CSV'
+first_name;last_name;email;person_status;membership_number;membership_type;membership_status;started_on;ended_on
+Ada;Ett;;known;M-1;ordinarie;active;2024-01-01;
+Bea;Tva;;known;M-2;ordinarie;active;2024-01-01;
+CSV);
+        $people->add(new Person(null, 'Cara', 'Delad', 'samma@example.test', PersonStatus::Known, null));
+        $people->add(new Person(null, 'Dan', 'Delad', 'samma@example.test', PersonStatus::Known, null));
+        $ambiguous = $exchange->import(<<<'CSV'
+first_name;last_name;email;person_status;membership_number;membership_type;membership_status;started_on;ended_on
+Ny;Person;samma@example.test;known;M-3;ordinarie;active;2024-02-01;
+CSV);
+        $changed = $exchange->import(<<<'CSV'
+first_name;last_name;email;person_status;membership_number;membership_type;membership_status;started_on;ended_on
+Ada;Bytt;ny@example.test;known;M-1;ordinarie;active;2024-01-01;
+Ada;Ny;ny@example.test;known;M-4;ordinarie;ended;2020-01-01;2020-12-31
+CSV);
+
+        self::assertSame(2, $blank->created());
+        self::assertSame(['Line 2: More than one person has this email.'], $ambiguous->errors());
+        self::assertSame(0, $ambiguous->created());
+        self::assertSame(1, $changed->skipped());
+        self::assertSame(1, $changed->created());
+        self::assertSame('', $people->all()[0]->email());
+        self::assertSame('Ada', $people->all()[0]->firstName());
+        self::assertCount(5, $people->all());
     }
 
     public function test_a_file_without_the_member_columns_imports_nothing(): void

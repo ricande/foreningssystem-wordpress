@@ -47,3 +47,5 @@ Negative/tradeoffs:
 
 - The association wants to correct a stored period from a file.
 - A second identifier, other than email, is needed to attach a period to a person.
+
+Email is not an identity key. A blank email always creates a new person. More than one person with the same email rejects the row. A changed email does not update the stored person; the row is a new person unless the membership number already exists, in which case the row is skipped. The file has no stable person id, so a round trip cannot rename or re-address someone. That limit stays until the owner chooses an identifier.
