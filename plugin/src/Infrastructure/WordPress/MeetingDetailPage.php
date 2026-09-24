@@ -377,6 +377,56 @@ final class MeetingDetailPage
         exit;
     }
 
+    public static function uploadSignedCopy(): void
+    {
+        self::guardSignedUpload('assoc_upload_signed_copy');
+        $meetingId = self::integer('meeting_id');
+
+        try {
+            $result = WordpressMeetings::signedCopies()->attach(
+                self::integer('revision_id'),
+                self::uploadedBytes('signed_copy'),
+                get_current_user_id()
+            );
+            self::redirect($meetingId, $result === 'replaced' ? 'signed_replaced' : 'signed_uploaded');
+        } catch (NotAllowed) {
+            wp_die(esc_html__('Du har inte behörighet att ladda upp den signerade kopian.', 'foreningsplugin'), '', ['response' => 403]);
+        } catch (MeetingRuleException) {
+            self::redirect($meetingId, 'signed_blocked');
+        } catch (\InvalidArgumentException | \RuntimeException) {
+            self::redirect($meetingId, 'signed_type');
+        }
+    }
+
+    public static function downloadSignedCopy(): void
+    {
+        $revisionId = self::queryInteger('revision_id');
+        check_admin_referer('assoc_download_signed_copy');
+
+        try {
+            $copies = WordpressMeetings::signedCopies();
+            $current = $copies->current($revisionId);
+            $bytes = $copies->read($revisionId);
+        } catch (NotAllowed) {
+            wp_die(esc_html__('Du har inte behörighet att hämta den signerade kopian.', 'foreningsplugin'), '', ['response' => 403]);
+        } catch (\RuntimeException) {
+            wp_die(esc_html__('Den signerade kopian kunde inte hämtas.', 'foreningsplugin'), '', ['response' => 404]);
+        }
+
+        if (! $current instanceof \Foreningssystem\Domain\Meeting\SignedCopy) {
+            wp_die(esc_html__('Den signerade kopian kunde inte hämtas.', 'foreningsplugin'), '', ['response' => 404]);
+        }
+
+        $extension = \Foreningssystem\Domain\Meeting\SignedCopyType::extension($current->mediaType());
+        nocache_headers();
+        header('Content-Type: ' . $current->mediaType());
+        header('Content-Disposition: attachment; filename="signerad-kopia.' . $extension . '"');
+        header('Content-Length: ' . strlen($bytes));
+        header('X-Content-Type-Options: nosniff');
+        echo $bytes;
+        exit;
+    }
+
     public static function render(int $meetingId): void
     {
         $meeting = self::meeting($meetingId);
@@ -643,6 +693,43 @@ final class MeetingDetailPage
         if ($draft->state() === \Foreningssystem\Domain\Meeting\RevisionState::Finalized || $canRecord) {
             self::minutesFileLinks($meetingId, (int) $draft->id());
         }
+
+        self::renderSignedCopy($meetingId, $draft, $canFinalize && current_user_can(Capabilities::MANAGE_DOCUMENTS));
+    }
+
+    private static function renderSignedCopy(int $meetingId, \Foreningssystem\Domain\Meeting\MinutesRevision $draft, bool $canUpload): void
+    {
+        if ($draft->state() !== \Foreningssystem\Domain\Meeting\RevisionState::Finalized || $draft->id() === null) {
+            return;
+        }
+
+        echo '<h3>' . esc_html__('Signerad skanning', 'foreningsplugin') . '</h3>';
+        echo '<p>' . esc_html__('Den signerade skanningen är originalet. Protokolltexten ändras inte när skanningen laddas upp.', 'foreningsplugin') . '</p>';
+        $current = WordpressMeetings::signedCopies()->current($draft->id());
+
+        if ($current instanceof \Foreningssystem\Domain\Meeting\SignedCopy) {
+            $download = wp_nonce_url(add_query_arg([
+                'action' => 'assoc_download_signed_copy',
+                'meeting_id' => (string) $meetingId,
+                'revision_id' => (string) $draft->id(),
+            ], admin_url('admin-post.php')), 'assoc_download_signed_copy');
+            echo '<p><a class="button" href="' . esc_url($download) . '">' . esc_html__('Hämta signerad kopia', 'foreningsplugin') . '</a></p>';
+        } else {
+            echo '<p>' . esc_html__('Ingen signerad kopia ännu.', 'foreningsplugin') . '</p>';
+        }
+
+        if (! $canUpload) {
+            return;
+        }
+
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" enctype="multipart/form-data">';
+        echo '<input type="hidden" name="action" value="assoc_upload_signed_copy">';
+        echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
+        echo '<input type="hidden" name="revision_id" value="' . esc_attr((string) $draft->id()) . '">';
+        wp_nonce_field('assoc_upload_signed_copy');
+        echo '<p><label>' . esc_html__('PDF, JPEG eller PNG', 'foreningsplugin') . ' <input type="file" name="signed_copy" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required></label></p>';
+        submit_button(__('Ladda upp signerad kopia', 'foreningsplugin'), 'secondary');
+        echo '</form>';
     }
 
     private static function minutesFileLinks(int $meetingId, int $revisionId): void
@@ -718,6 +805,38 @@ final class MeetingDetailPage
         check_admin_referer($nonce);
     }
 
+    private static function guardSignedUpload(string $nonce): void
+    {
+        if (! current_user_can(Capabilities::FINALIZE_MINUTES) || ! current_user_can(Capabilities::MANAGE_DOCUMENTS)) {
+            wp_die(esc_html__('Du har inte behörighet att ladda upp den signerade kopian.', 'foreningsplugin'), '', ['response' => 403]);
+        }
+
+        check_admin_referer($nonce);
+    }
+
+    private static function uploadedBytes(string $key): string
+    {
+        $file = $_FILES[$key] ?? null;
+
+        if (! is_array($file) || ! isset($file['tmp_name'], $file['error']) || (int) $file['error'] !== UPLOAD_ERR_OK) {
+            throw new \InvalidArgumentException('The signed copy was not uploaded.');
+        }
+
+        $tmp = (string) $file['tmp_name'];
+
+        if (! is_uploaded_file($tmp)) {
+            throw new \InvalidArgumentException('The signed copy was not uploaded.');
+        }
+
+        $bytes = file_get_contents($tmp);
+
+        if (! is_string($bytes) || $bytes === '') {
+            throw new \InvalidArgumentException('The signed copy was not uploaded.');
+        }
+
+        return $bytes;
+    }
+
     private static function redirect(int $meetingId, string $notice): void
     {
         wp_safe_redirect(add_query_arg([
@@ -757,6 +876,10 @@ final class MeetingDetailPage
             'minutes_finalized' => __('Revisionen är låst. Texten ändras inte längre.', 'foreningsplugin'),
             'minutes_correction' => __('Rättelsen är ett nytt utkast med den låsta texten.', 'foreningsplugin'),
             'minutes_blocked' => __('Den här ändringen passar inte revisionens läge.', 'foreningsplugin'),
+            'signed_uploaded' => __('Den signerade kopian är sparad. Protokolltexten är oförändrad.', 'foreningsplugin'),
+            'signed_replaced' => __('Den signerade kopian är ersatt. Protokolltexten är oförändrad.', 'foreningsplugin'),
+            'signed_blocked' => __('En signerad kopia kan bara knytas till en låst revision.', 'foreningsplugin'),
+            'signed_type' => __('Den signerade kopian ska vara en PDF, JPEG eller PNG.', 'foreningsplugin'),
             'wrong_item' => __('Punkten hör inte till det här mötet.', 'foreningsplugin'),
             'invalid' => __('Kontrollera uppgifterna och försök igen.', 'foreningsplugin'),
         ];
@@ -765,7 +888,7 @@ final class MeetingDetailPage
             return;
         }
 
-        $class = in_array($notice, ['participant_added', 'participant_removed', 'agenda_added', 'agenda_moved', 'agenda_removed', 'note_added', 'note_removed', 'decision_added', 'follow_up', 'decision_removed', 'action_added', 'action_status', 'action_removed', 'draft_created', 'draft_saved', 'draft_regenerated', 'minutes_submitted', 'minutes_returned', 'minutes_finalized', 'minutes_correction'], true)
+        $class = in_array($notice, ['participant_added', 'participant_removed', 'agenda_added', 'agenda_moved', 'agenda_removed', 'note_added', 'note_removed', 'decision_added', 'follow_up', 'decision_removed', 'action_added', 'action_status', 'action_removed', 'draft_created', 'draft_saved', 'draft_regenerated', 'minutes_submitted', 'minutes_returned', 'minutes_finalized', 'minutes_correction', 'signed_uploaded', 'signed_replaced'], true)
             ? 'notice-success'
             : 'notice-error';
         echo '<div class="notice ' . esc_attr($class) . '"><p>' . esc_html($messages[$notice]) . '</p></div>';
