@@ -14,31 +14,37 @@ final class MinutesLockSetting
     /**
      * @param list<string> $roles
      */
-    public function change(RoleCapabilitySetting $current, array $roles): MinutesLockChange
+    public function change(RoleCapabilitySetting $current, array $roles, string $capability = Capabilities::FINALIZE_MINUTES): MinutesLockChange
     {
+        if (! in_array($capability, [Capabilities::FINALIZE_MINUTES, Capabilities::PUBLISH_MINUTES], true)) {
+            throw new InvalidArgumentException('This setting only covers locking and publishing minutes.');
+        }
+
         foreach ($roles as $role) {
             if (! in_array($role, RoleBundles::roles(), true)) {
                 throw new InvalidArgumentException('Unknown association role.');
             }
         }
 
+        $grantAction = $capability === Capabilities::PUBLISH_MINUTES ? 'grant_publish_minutes' : 'grant_finalize_minutes';
+        $revokeAction = $capability === Capabilities::PUBLISH_MINUTES ? 'revoke_publish_minutes' : 'revoke_finalize_minutes';
         $next = $current;
         $events = [];
 
         foreach (RoleBundles::roles() as $role) {
-            $shouldLock = in_array($role, $roles, true);
-            $locksNow = in_array(Capabilities::FINALIZE_MINUTES, $next->capabilitiesFor($role), true);
+            $shouldHave = in_array($role, $roles, true);
+            $hasNow = in_array($capability, $next->capabilitiesFor($role), true);
 
-            if ($shouldLock === $locksNow) {
+            if ($shouldHave === $hasNow) {
                 continue;
             }
 
-            $next = $shouldLock
-                ? $next->grant($role, Capabilities::FINALIZE_MINUTES)
-                : $next->revoke($role, Capabilities::FINALIZE_MINUTES);
+            $next = $shouldHave
+                ? $next->grant($role, $capability)
+                : $next->revoke($role, $capability);
             $events[] = new MinutesLockEvent(
                 RoleBundles::auditId($role),
-                $shouldLock ? 'grant_finalize_minutes' : 'revoke_finalize_minutes'
+                $shouldHave ? $grantAction : $revokeAction
             );
         }
 

@@ -58,6 +58,35 @@ final class MinutesLockSettingTest extends TestCase
         );
     }
 
+    public function test_publishing_can_be_given_to_another_role_without_changing_who_may_lock(): void
+    {
+        $change = (new MinutesLockSetting())->change(RoleCapabilitySetting::defaults(), [
+            RoleBundles::CHAIR,
+            RoleBundles::SECRETARY,
+        ], Capabilities::PUBLISH_MINUTES);
+        $secretary = $change->setting()->capabilitiesFor(RoleBundles::SECRETARY);
+        $chair = $change->setting()->capabilitiesFor(RoleBundles::CHAIR);
+
+        self::assertContains(Capabilities::PUBLISH_MINUTES, $secretary);
+        self::assertNotContains(Capabilities::FINALIZE_MINUTES, $secretary);
+        self::assertContains(Capabilities::RECORD_MEETING, $secretary);
+        self::assertContains(Capabilities::PUBLISH_MINUTES, $chair);
+        self::assertContains(Capabilities::FINALIZE_MINUTES, $chair);
+        self::assertCount(1, $change->events());
+        self::assertSame('grant_publish_minutes', $change->events()[0]->action());
+        self::assertSame(RoleBundles::auditId(RoleBundles::SECRETARY), $change->events()[0]->roleId());
+    }
+
+    public function test_removing_publication_keeps_the_lock(): void
+    {
+        $change = (new MinutesLockSetting())->change(RoleCapabilitySetting::defaults(), [], Capabilities::PUBLISH_MINUTES);
+        $chair = $change->setting()->capabilitiesFor(RoleBundles::CHAIR);
+
+        self::assertNotContains(Capabilities::PUBLISH_MINUTES, $chair);
+        self::assertContains(Capabilities::FINALIZE_MINUTES, $chair);
+        self::assertSame('revoke_publish_minutes', $change->events()[0]->action());
+    }
+
     public function test_an_unknown_role_is_rejected(): void
     {
         $this->expectException(InvalidArgumentException::class);

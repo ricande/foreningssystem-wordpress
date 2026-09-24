@@ -80,6 +80,7 @@ final class Plugin
         add_action('admin_post_assoc_save_retention', [RetentionPage::class, 'save']);
         add_action('admin_post_assoc_apply_retention_now', [RetentionPage::class, 'apply']);
         add_action('admin_post_assoc_save_minutes_lock', [MinutesLockPage::class, 'save']);
+        add_action('admin_post_assoc_save_minutes_publish', [MinutesPublishPage::class, 'save']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();
@@ -175,6 +176,15 @@ final class Plugin
             Capabilities::MANAGE_ASSOCIATION,
             'foreningsplugin-minutes-lock',
             [MinutesLockPage::class, 'render']
+        );
+
+        add_submenu_page(
+            'foreningsplugin',
+            __('Publicera protokoll', 'foreningsplugin'),
+            __('Publicera protokoll', 'foreningsplugin'),
+            Capabilities::MANAGE_ASSOCIATION,
+            'foreningsplugin-minutes-publish',
+            [MinutesPublishPage::class, 'render']
         );
     }
 
