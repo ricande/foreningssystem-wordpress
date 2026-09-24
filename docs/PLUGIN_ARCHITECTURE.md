@@ -31,6 +31,10 @@ Source strings are English. `languages/foreningsplugin-sv_SE.mo` supplies Swedis
 
 Use the WordPress admin menu from `docs/10_ADMIN_UX.md`: Overview, Members, Board, Meetings, Decisions, Documents, Settings.
 
+`MeetingDetailPage` still handles the meeting request, the minutes actions, and the signed-copy response in one WordPress adapter. Splitting it is follow-up work. The private helpers are shared, and a move that only reduces the line count would not change the behavior.
+
+The member list loads people once and memberships once. The overview still loads meetings, documents, and decisions and filters them in PHP. Those queries are acceptable at the current size. A repository method for the next meeting, the latest held meeting, and the newest documents is follow-up work if those screens become slow.
+
 Server-rendered screens are the default. The meeting workspace may use a small script for inline notes, decisions, and moving to the next agenda item. That script posts to admin-ajax or REST with the same capability checks as the form. It is not a separate application and it does not become a required SPA framework.
 
 Do not build the meeting UI as many full-page forms.
