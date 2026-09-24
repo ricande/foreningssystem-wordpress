@@ -13,6 +13,7 @@ use Foreningssystem\Domain\Meeting\Meeting;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
 use Foreningssystem\Domain\Meeting\MeetingRuleException;
 use Foreningssystem\Domain\Meeting\MeetingStatus;
+use Foreningssystem\Domain\Meeting\MeetingType;
 use Foreningssystem\Domain\Meeting\MinutesRevision;
 use Foreningssystem\Domain\Meeting\PublicationVisibility;
 use Foreningssystem\Domain\Meeting\RevisionState;
@@ -140,6 +141,49 @@ final class MinutesPublicationTest extends TestCase
         self::assertSame('Offentlig text', $latest->revision()->body());
     }
 
+    public function test_the_public_board_meeting_is_the_latest_published_board_meeting(): void
+    {
+        $meetings = new MemoryMeetingRepository();
+        $minutes = new MemoryMinutesRepository();
+        $types = new MemoryMeetingTypeRepository();
+        $boardId = (int) $types->add(new MeetingType(null, 'board_meeting', 'Styrelsemöte', 10))->id();
+        $annualId = (int) $types->add(new MeetingType(null, 'annual_meeting', 'Årsmöte', 20))->id();
+        $early = $meetings->add(new Meeting(null, $boardId, 'Tidigt styrelsemöte', MeetingMoment::fromLocal('2024-05-02 18:00'), 'Lokalen <A>', MeetingStatus::Held));
+        $annual = $meetings->add(new Meeting(null, $annualId, 'Årsmöte', MeetingMoment::fromLocal('2024-07-01 18:00'), 'Lokalen', MeetingStatus::Held));
+        $hidden = $meetings->add(new Meeting(null, $boardId, 'Dolt styrelsemöte', MeetingMoment::fromLocal('2024-08-01 18:00'), 'Lokalen', MeetingStatus::Held));
+        $earlyRevision = $this->revision($minutes, (int) $early->id(), 1, 'Beslutet om modell Z.');
+        $annualRevision = $this->revision($minutes, (int) $annual->id(), 1, 'Årsmötets text.');
+        $this->revision($minutes, (int) $hidden->id(), 1, 'Opublicerad text.');
+        $service = $this->service([Capabilities::PUBLISH_MINUTES], $meetings, $minutes, $types);
+        $service->publish((int) $earlyRevision->id());
+        $service->publish((int) $annualRevision->id());
+
+        $shown = $service->latestBoardMeeting();
+        $reader = $this->service([], $meetings, $minutes, $types)->latestBoardMeeting();
+
+        self::assertNotNull($shown);
+        self::assertSame('Tidigt styrelsemöte', $shown->title());
+        self::assertSame('2024-05-02', $shown->date());
+        self::assertSame('Lokalen <A>', $shown->place());
+        self::assertNotNull($reader);
+        self::assertSame('Tidigt styrelsemöte', $reader->title());
+
+        $late = $meetings->add(new Meeting(null, $boardId, 'Sent styrelsemöte', MeetingMoment::fromLocal('2024-09-01 18:00'), '', MeetingStatus::Held));
+        $lateRevision = $this->revision($minutes, (int) $late->id(), 1, 'Sen text.');
+        $service->publish((int) $lateRevision->id());
+        $later = $service->latestBoardMeeting();
+
+        self::assertNotNull($later);
+        self::assertSame('Sent styrelsemöte', $later->title());
+        self::assertSame('', $later->place());
+
+        $service->unpublish((int) $lateRevision->id());
+        $after = $service->latestBoardMeeting();
+
+        self::assertNotNull($after);
+        self::assertSame('Tidigt styrelsemöte', $after->title());
+    }
+
     public function test_a_draft_cannot_be_marked_public(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -175,10 +219,15 @@ final class MinutesPublicationTest extends TestCase
     /**
      * @param list<string> $capabilities
      */
-    private function service(array $capabilities, MemoryMeetingRepository $meetings, MemoryMinutesRepository $minutes): MinutesPublication
-    {
+    private function service(
+        array $capabilities,
+        MemoryMeetingRepository $meetings,
+        MemoryMinutesRepository $minutes,
+        ?MemoryMeetingTypeRepository $types = null,
+    ): MinutesPublication {
         return new MinutesPublication(
             $meetings,
+            $types ?? new MemoryMeetingTypeRepository(),
             $minutes,
             new class ($capabilities) implements Authorizer {
                 /** @param list<string> $capabilities */

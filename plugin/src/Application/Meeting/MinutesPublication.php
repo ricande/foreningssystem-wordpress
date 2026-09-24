@@ -10,6 +10,8 @@ use Foreningssystem\Application\People\Transaction;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Meeting\Meeting;
 use Foreningssystem\Domain\Meeting\MeetingRepository;
+use Foreningssystem\Domain\Meeting\MeetingType;
+use Foreningssystem\Domain\Meeting\MeetingTypeRepository;
 use Foreningssystem\Domain\Meeting\MeetingRuleException;
 use Foreningssystem\Domain\Meeting\MinutesRepository;
 use Foreningssystem\Domain\Meeting\MinutesRevision;
@@ -20,6 +22,7 @@ final class MinutesPublication
 {
     public function __construct(
         private readonly MeetingRepository $meetings,
+        private readonly MeetingTypeRepository $types,
         private readonly MinutesRepository $minutes,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
@@ -73,6 +76,41 @@ final class MinutesPublication
         }
 
         return new PublicMinutes($chosen, $chosenMeeting);
+    }
+
+    public function latestBoardMeeting(): ?PublicBoardMeeting
+    {
+        $type = $this->types->findBySlug('board_meeting');
+
+        if (! $type instanceof MeetingType || $type->id() === null) {
+            return null;
+        }
+
+        $chosen = null;
+        $chosenMeeting = null;
+
+        foreach ($this->minutes->publicRevisions() as $revision) {
+            if (! $this->isCurrentPublic($revision)) {
+                continue;
+            }
+
+            $meeting = $this->meetings->find($revision->meetingId());
+
+            if (! $meeting instanceof Meeting || $meeting->typeId() !== $type->id()) {
+                continue;
+            }
+
+            if ($chosen === null || $chosenMeeting === null || $this->isLater($meeting, $revision, $chosenMeeting, $chosen)) {
+                $chosen = $revision;
+                $chosenMeeting = $meeting;
+            }
+        }
+
+        if (! $chosenMeeting instanceof Meeting) {
+            return null;
+        }
+
+        return new PublicBoardMeeting($chosenMeeting->title(), $chosenMeeting->startsAt()->date(), $chosenMeeting->place());
     }
 
     private function isLater(Meeting $candidateMeeting, MinutesRevision $candidate, Meeting $currentMeeting, MinutesRevision $current): bool

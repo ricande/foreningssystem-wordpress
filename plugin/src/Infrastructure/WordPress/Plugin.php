@@ -32,6 +32,7 @@ final class Plugin
 
         add_action('init', [LatestMinutesBlock::class, 'register']);
         add_action('init', [CurrentBoardBlock::class, 'register']);
+        add_action('init', [LatestBoardMeetingBlock::class, 'register']);
         add_action('admin_init', [self::class, 'migrateInAdmin']);
         add_action('admin_menu', [self::class, 'registerAdminMenu']);
         add_action('admin_post_assoc_register_person', [MembersPage::class, 'registerPerson']);

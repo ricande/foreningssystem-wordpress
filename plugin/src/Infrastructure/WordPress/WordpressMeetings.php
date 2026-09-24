@@ -191,6 +191,7 @@ final class WordpressMeetings
     {
         return new MinutesPublication(
             new WpdbMeetingRepository(),
+            new WpdbMeetingTypeRepository(),
             new WpdbMinutesRepository(),
             new class implements Authorizer {
                 public function allows(string $capability): bool
