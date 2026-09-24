@@ -76,6 +76,8 @@ final class RetentionTest extends TestCase
         self::assertSame('grace-ordf@example.test', $this->contact($assignments, (int) $grace->id()));
         self::assertSame('kim@example.test', $people->find((int) $kim->id())?->email());
         self::assertSame(MembershipStatus::Active, $this->period($memberships, 'M-KIM')?->status());
+        self::assertCount(7, $memberships->all());
+        self::assertCount(2, $assignments->all());
         self::assertSame('nils@example.test', $people->find((int) $nils->id())?->email());
         self::assertSame('bea@example.test', $people->find((int) $bea->id())?->email());
         $events = $audit->forObject('person', $adaId);
