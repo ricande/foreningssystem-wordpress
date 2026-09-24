@@ -212,7 +212,7 @@ final class Plugin
         }
 
         $profile = WordpressAssociationProfile::load();
-        $activeMembers = WordpressPeople::service()->activeMemberCount();
+        $activeMembers = WordpressPeople::service()->activeMemberCount(AssociationDate::fromIso(wp_date('Y-m-d')));
         $currentBoard = WordpressBoard::service()->currentCount(AssociationDate::fromIso(wp_date('Y-m-d')));
 
         echo '<div class="wrap">';

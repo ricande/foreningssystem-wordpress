@@ -104,16 +104,16 @@ final class PeopleService
         });
     }
 
-    public function activeMemberCount(): int
+    public function activeMemberCount(AssociationDate $on): int
     {
         $this->require(Capabilities::VIEW_MEMBERS);
 
-        return $this->countActiveMembers();
+        return $this->countActiveMembers($on);
     }
 
-    public function publicMemberCount(): int
+    public function publicMemberCount(AssociationDate $on): int
     {
-        return $this->countActiveMembers();
+        return $this->countActiveMembers($on);
     }
 
     /**
@@ -170,12 +170,12 @@ final class PeopleService
         return $periods;
     }
 
-    private function countActiveMembers(): int
+    private function countActiveMembers(AssociationDate $on): int
     {
         $people = [];
 
         foreach ($this->memberships->all() as $period) {
-            if ($period->countsAsActiveMember()) {
+            if ($period->isActiveOn($on)) {
                 $people[$period->personId()] = true;
             }
         }

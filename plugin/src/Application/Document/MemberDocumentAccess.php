@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Application\Document;
 
+use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Membership\MembershipRepository;
 use Foreningssystem\Domain\Person\PersonRepository;
 
@@ -15,7 +16,7 @@ final class MemberDocumentAccess
     ) {
     }
 
-    public function allows(int $wordpressUserId): bool
+    public function allows(int $wordpressUserId, AssociationDate $on): bool
     {
         if ($wordpressUserId < 1) {
             return false;
@@ -29,7 +30,7 @@ final class MemberDocumentAccess
             }
 
             foreach ($this->memberships->all() as $period) {
-                if ($period->personId() === $personId && $period->countsAsActiveMember()) {
+                if ($period->personId() === $personId && $period->isActiveOn($on)) {
                     return true;
                 }
             }

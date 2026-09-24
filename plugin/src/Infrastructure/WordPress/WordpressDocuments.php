@@ -9,6 +9,7 @@ use Foreningssystem\Application\Document\DocumentArchive;
 use Foreningssystem\Application\Document\MemberDocumentAccess;
 use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\Transaction;
+use Foreningssystem\Domain\Membership\AssociationDate;
 
 final class WordpressDocuments
 {
@@ -48,7 +49,7 @@ final class WordpressDocuments
                     return (new MemberDocumentAccess(
                         new WpdbPersonRepository(),
                         new WpdbMembershipRepository()
-                    ))->allows(get_current_user_id());
+                    ))->allows(get_current_user_id(), AssociationDate::fromIso(wp_date('Y-m-d')));
                 }
             }
         );

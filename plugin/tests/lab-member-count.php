@@ -28,9 +28,10 @@ $fail = static function (string $message) use ($cleanup): void {
 $cleanup();
 wp_set_current_user(1);
 $service = WordpressPeople::service();
-$before = $service->publicMemberCount();
+$today = AssociationDate::fromIso(wp_date('Y-m-d'));
+$before = $service->publicMemberCount($today);
 $personId = $service->register('Räkne', 'Lab', 'lab-count@example.test', 'LAB-COUNT-1', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
-$during = $service->publicMemberCount();
+$during = $service->publicMemberCount($today);
 
 wp_set_current_user(0);
 $shown = MemberCountBlock::render();

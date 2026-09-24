@@ -43,7 +43,8 @@ final class MembershipLedgerTest extends TestCase
 
         self::assertSame(4, $ended->id());
         self::assertSame(MembershipStatus::Ended, $ended->status());
-        self::assertFalse($ended->countsAsActiveMember());
+        self::assertTrue($ended->isActiveOn(AssociationDate::fromIso('2024-06-01')));
+        self::assertFalse($ended->isActiveOn(AssociationDate::fromIso('2024-06-02')));
         self::assertSame('2024-06-01', $ended->endedOn()?->iso());
 
         $this->expectException(MembershipRuleException::class);
@@ -70,11 +71,19 @@ final class MembershipLedgerTest extends TestCase
         self::assertSame('2024-09-24', $periods[1]->endedOn()?->iso());
     }
 
-    public function test_only_an_open_active_period_counts_as_an_active_member(): void
+    public function test_a_membership_is_active_only_on_dates_it_covers(): void
     {
-        self::assertTrue($this->period(1, '2024-01-01', null, MembershipStatus::Active)->countsAsActiveMember());
-        self::assertFalse($this->period(1, '2024-01-01', null, MembershipStatus::Dormant)->countsAsActiveMember());
-        self::assertFalse($this->period(1, '2024-01-01', '2024-02-01', MembershipStatus::Ended)->countsAsActiveMember());
+        $today = AssociationDate::fromIso('2024-06-15');
+        $open = $this->period(1, '2024-01-01', null, MembershipStatus::Active);
+
+        self::assertTrue($open->isActiveOn(AssociationDate::fromIso('2024-06-14')));
+        self::assertTrue($open->isActiveOn($today));
+        self::assertTrue($this->period(2, '2024-06-15', null, MembershipStatus::Active)->isActiveOn($today));
+        self::assertFalse($this->period(3, '2024-06-16', null, MembershipStatus::Active)->isActiveOn($today));
+        self::assertFalse($this->period(4, '2024-01-01', '2024-06-14', MembershipStatus::Ended)->isActiveOn($today));
+        self::assertTrue($this->period(5, '2024-01-01', '2024-06-15', MembershipStatus::Ended)->isActiveOn($today));
+        self::assertFalse($this->period(6, '2024-01-01', null, MembershipStatus::Dormant)->isActiveOn($today));
+        self::assertFalse($this->period(7, '2024-01-01', null, MembershipStatus::Pending)->isActiveOn($today));
     }
 
     private function period(?int $id, string $start, ?string $end, MembershipStatus $status): MembershipPeriod

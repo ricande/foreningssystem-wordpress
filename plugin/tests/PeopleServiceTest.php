@@ -30,13 +30,14 @@ final class PeopleServiceTest extends TestCase
         $service = $this->service(true, $closer);
         $personId = $service->register('Ada', 'Lovelace', 'ada@example.test', 'M-1', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
 
-        self::assertSame(1, $service->activeMemberCount());
+        $today = AssociationDate::fromIso('2024-09-24');
+        self::assertSame(1, $service->activeMemberCount($today));
 
         try {
             $service->register('Grace', 'Hopper', 'grace@example.test', 'M-1', 'ordinarie', AssociationDate::fromIso('2024-02-01'));
             self::fail('A duplicate membership number should be rejected.');
         } catch (MembershipRuleException) {
-            self::assertSame(1, $service->activeMemberCount());
+            self::assertSame(1, $service->activeMemberCount($today));
         }
 
         $membershipId = $service->listPeople()[0]->membership()?->id();
@@ -47,7 +48,7 @@ final class PeopleServiceTest extends TestCase
         self::assertSame($personId, $ended->person()->id());
         self::assertSame(PersonStatus::Known, $ended->person()->status());
         self::assertSame(MembershipStatus::Ended, $ended->membership()?->status());
-        self::assertSame(0, $service->activeMemberCount());
+        self::assertSame(0, $service->activeMemberCount($today));
 
         $secondId = $service->register('Grace', 'Hopper', '', 'M-2', 'ordinarie', AssociationDate::fromIso('2023-01-01'));
         $service->markDeceased($secondId, AssociationDate::fromIso('2024-09-24'));
@@ -95,10 +96,12 @@ final class PeopleServiceTest extends TestCase
         $memberships->add(new MembershipPeriod(null, 2, 'M-3', 'ordinarie', MembershipStatus::Dormant, AssociationDate::fromIso('2024-01-01'), null));
         $memberships->add(new MembershipPeriod(null, 3, 'M-4', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2024-06-01')));
         $memberships->add(new MembershipPeriod(null, 4, 'M-5', 'ordinarie', MembershipStatus::Pending, AssociationDate::fromIso('2024-01-01'), null));
+        $memberships->add(new MembershipPeriod(null, 5, 'M-FUTURE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2025-01-01'), null));
+        $on = AssociationDate::fromIso('2024-09-24');
 
-        self::assertSame(1, $service->publicMemberCount());
+        self::assertSame(1, $service->publicMemberCount($on));
         $this->expectException(NotAllowed::class);
-        $service->activeMemberCount();
+        $service->activeMemberCount($on);
     }
 
     public function test_viewing_and_editing_require_capabilities(): void

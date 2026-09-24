@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Domain\Membership\AssociationDate;
+
 final class MemberCountBlock
 {
     public static function register(): void
@@ -28,7 +30,7 @@ final class MemberCountBlock
     public static function render(array $attributes = [], string $content = ''): string
     {
         unset($attributes, $content);
-        $count = WordpressPeople::service()->publicMemberCount();
+        $count = WordpressPeople::service()->publicMemberCount(AssociationDate::fromIso(wp_date('Y-m-d')));
 
         return '<p class="foreningsplugin-member-count">' . esc_html(sprintf(
             /* translators: %d: number of active members */

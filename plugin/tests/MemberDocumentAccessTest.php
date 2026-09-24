@@ -31,14 +31,18 @@ final class MemberDocumentAccessTest extends TestCase
         $memberships->add(new MembershipPeriod(null, (int) $dormant->id(), 'M-DORMANT', 'ordinarie', MembershipStatus::Dormant, AssociationDate::fromIso('2024-01-01'), null));
         $memberships->add(new MembershipPeriod(null, (int) $closedActive->id(), 'M-CLOSED', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2024-06-01')));
         $memberships->add(new MembershipPeriod(null, (int) $unlinked->id(), 'M-OPEN', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
+        $future = $people->add(new Person(null, 'Futura', 'Senare', 'futura-member@example.test', PersonStatus::Known, 3));
+        $memberships->add(new MembershipPeriod(null, (int) $future->id(), 'M-FUTURE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-06-16'), null));
         $access = new MemberDocumentAccess($people, $memberships);
+        $today = AssociationDate::fromIso('2024-06-15');
 
-        self::assertTrue($access->allows(9));
-        self::assertFalse($access->allows(8));
-        self::assertFalse($access->allows(7));
-        self::assertFalse($access->allows(6));
-        self::assertFalse($access->allows(5));
-        self::assertFalse($access->allows(4));
-        self::assertFalse($access->allows(0));
+        self::assertTrue($access->allows(9, $today));
+        self::assertFalse($access->allows(8, $today));
+        self::assertFalse($access->allows(7, $today));
+        self::assertFalse($access->allows(6, $today));
+        self::assertFalse($access->allows(5, $today));
+        self::assertFalse($access->allows(4, $today));
+        self::assertFalse($access->allows(3, $today));
+        self::assertFalse($access->allows(0, $today));
     }
 }

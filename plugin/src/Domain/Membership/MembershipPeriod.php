@@ -82,9 +82,21 @@ final class MembershipPeriod
         return $startsBeforeOtherEnds && $otherStartsBeforeThisEnds;
     }
 
-    public function countsAsActiveMember(): bool
+    public function isActiveOn(AssociationDate $date): bool
     {
-        return $this->status === MembershipStatus::Active && ! $this->endedOn instanceof AssociationDate;
+        if ($this->status !== MembershipStatus::Active && $this->status !== MembershipStatus::Ended) {
+            return false;
+        }
+
+        if ($date->isBefore($this->startedOn)) {
+            return false;
+        }
+
+        if (! $this->endedOn instanceof AssociationDate) {
+            return $this->status === MembershipStatus::Active;
+        }
+
+        return ! $date->isAfter($this->endedOn);
     }
 
     public function coversAssignment(AssociationDate $startedOn, ?AssociationDate $endedOn): bool
