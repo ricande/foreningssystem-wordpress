@@ -23,6 +23,7 @@ final class Plugin
 
             if (defined('WP_CLI') && WP_CLI) {
                 WordpressMigrations::migrateIfNeeded();
+                WordpressAccess::sync();
             }
         });
 
@@ -37,6 +38,7 @@ final class Plugin
     public static function activate(): void
     {
         WordpressMigrations::runner()->migrate();
+        WordpressAccess::sync();
     }
 
     public static function migrateInAdmin(): void
@@ -47,6 +49,7 @@ final class Plugin
 
         try {
             WordpressMigrations::migrateIfNeeded();
+            WordpressAccess::sync();
         } catch (MigrationException $error) {
             add_action('admin_notices', static function () use ($error): void {
                 printf(

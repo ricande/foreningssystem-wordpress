@@ -13,3 +13,5 @@ if [ "$version" != "1" ]; then
 fi
 
 echo "Lab schema version is 1."
+
+docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-access.php

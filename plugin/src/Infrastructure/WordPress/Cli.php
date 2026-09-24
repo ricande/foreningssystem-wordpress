@@ -12,10 +12,16 @@ final class Cli
             try {
                 $runner = WordpressMigrations::runner();
                 $runner->migrate();
+                WordpressAccess::sync();
                 \WP_CLI::success('Schema version ' . (string) $runner->currentVersion());
             } catch (\Throwable $error) {
                 \WP_CLI::error($error->getMessage());
             }
+        });
+
+        \WP_CLI::add_command('assoc sync-roles', static function (): void {
+            WordpressAccess::sync();
+            \WP_CLI::success('Association roles synced.');
         });
     }
 }
