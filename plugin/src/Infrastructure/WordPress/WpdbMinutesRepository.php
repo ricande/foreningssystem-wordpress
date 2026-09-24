@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Domain\Meeting\FinalizedRevisionChange;
 use Foreningssystem\Domain\Meeting\MinutesRepository;
 use Foreningssystem\Domain\Meeting\MinutesRevision;
+use Foreningssystem\Domain\Meeting\RevisionNumberTaken;
 use Foreningssystem\Domain\Meeting\PublicationVisibility;
 use Foreningssystem\Domain\Meeting\RevisionState;
 
@@ -83,6 +85,10 @@ final class WpdbMinutesRepository implements MinutesRepository
         $inserted = $wpdb->insert($this->revisions(), $data, $format);
 
         if ($inserted === false) {
+            if (str_contains(strtolower($wpdb->last_error), 'duplicate')) {
+                throw new RevisionNumberTaken('That revision number is already used for the meeting.');
+            }
+
             throw new \RuntimeException('The minutes draft could not be saved.');
         }
 
@@ -97,6 +103,12 @@ final class WpdbMinutesRepository implements MinutesRepository
 
         if ($id === null) {
             throw new \RuntimeException('Minutes draft was not saved.');
+        }
+
+        $stored = $this->findRevision($id);
+
+        if ($stored instanceof MinutesRevision) {
+            FinalizedRevisionChange::assertAllowed($stored, $revision);
         }
 
         $table = $this->revisions();
