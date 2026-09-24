@@ -34,6 +34,7 @@ final class Plugin
         add_action('init', [CurrentBoardBlock::class, 'register']);
         add_action('init', [LatestBoardMeetingBlock::class, 'register']);
         add_action('init', [PublicDocumentsBlock::class, 'register']);
+        add_action('init', [MemberCountBlock::class, 'register']);
         add_action('template_redirect', [DocumentDownload::class, 'maybeSend']);
         add_action('admin_init', [self::class, 'migrateInAdmin']);
         add_action('admin_menu', [self::class, 'registerAdminMenu']);

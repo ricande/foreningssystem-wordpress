@@ -107,15 +107,13 @@ final class PeopleService
     public function activeMemberCount(): int
     {
         $this->require(Capabilities::VIEW_MEMBERS);
-        $people = [];
 
-        foreach ($this->memberships->all() as $period) {
-            if ($period->countsAsActiveMember()) {
-                $people[$period->personId()] = true;
-            }
-        }
+        return $this->countActiveMembers();
+    }
 
-        return count($people);
+    public function publicMemberCount(): int
+    {
+        return $this->countActiveMembers();
     }
 
     /**
@@ -170,6 +168,19 @@ final class PeopleService
         }
 
         return $periods;
+    }
+
+    private function countActiveMembers(): int
+    {
+        $people = [];
+
+        foreach ($this->memberships->all() as $period) {
+            if ($period->countsAsActiveMember()) {
+                $people[$period->personId()] = true;
+            }
+        }
+
+        return count($people);
     }
 
     private function require(string $capability): void

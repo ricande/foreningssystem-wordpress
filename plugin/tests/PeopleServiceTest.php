@@ -69,6 +69,38 @@ final class PeopleServiceTest extends TestCase
         ], $closer->calls);
     }
 
+    public function test_the_public_member_count_is_only_a_number(): void
+    {
+        $memberships = new MemoryMembershipRepository();
+        $service = new PeopleService(
+            new MemoryPersonRepository(),
+            $memberships,
+            new MembershipLedger(),
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return false;
+                }
+            },
+            new class implements Transaction {
+                public function run(callable $callback): mixed
+                {
+                    return $callback();
+                }
+            },
+            new RecordingOpenAssignments()
+        );
+        $memberships->add(new MembershipPeriod(null, 1, 'M-1', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
+        $memberships->add(new MembershipPeriod(null, 1, 'M-2', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null));
+        $memberships->add(new MembershipPeriod(null, 2, 'M-3', 'ordinarie', MembershipStatus::Dormant, AssociationDate::fromIso('2024-01-01'), null));
+        $memberships->add(new MembershipPeriod(null, 3, 'M-4', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2024-06-01')));
+        $memberships->add(new MembershipPeriod(null, 4, 'M-5', 'ordinarie', MembershipStatus::Pending, AssociationDate::fromIso('2024-01-01'), null));
+
+        self::assertSame(1, $service->publicMemberCount());
+        $this->expectException(NotAllowed::class);
+        $service->activeMemberCount();
+    }
+
     public function test_viewing_and_editing_require_capabilities(): void
     {
         $service = $this->service(false);
