@@ -70,6 +70,11 @@ final class Person
         return new self($id, $this->firstName, $this->lastName, $this->email, $this->status, $this->wordpressUserId, $this->birthDate);
     }
 
+    public function withContact(string $firstName, string $lastName, string $email, ?\Foreningssystem\Domain\Membership\AssociationDate $birthDate): self
+    {
+        return new self($this->id, trim($firstName), trim($lastName), trim($email), $this->status, $this->wordpressUserId, $birthDate);
+    }
+
     public function markedDeceased(): self
     {
         return new self($this->id, $this->firstName, $this->lastName, $this->email, PersonStatus::Deceased, $this->wordpressUserId, $this->birthDate);

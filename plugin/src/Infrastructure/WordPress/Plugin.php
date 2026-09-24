@@ -57,6 +57,12 @@ final class Plugin
         add_action('admin_post_assoc_record_guardian_approval', [MembersPage::class, 'recordGuardianApproval']);
         add_action('admin_post_assoc_export_member_structure', [MembersPage::class, 'exportStructure']);
         add_action('admin_post_assoc_mark_deceased', [MembersPage::class, 'markDeceased']);
+        add_action('admin_post_assoc_open_membership', [MembersPage::class, 'openExisting']);
+        add_action('admin_post_assoc_update_person', [MembersPage::class, 'updatePerson']);
+        add_action('admin_post_assoc_end_participation', [MembersPage::class, 'endParticipation']);
+        add_action('admin_post_assoc_add_company_contact', [MembersPage::class, 'addCompanyContact']);
+        add_action('admin_post_assoc_end_guardian', [MembersPage::class, 'endGuardian']);
+        add_action('admin_post_assoc_withdraw_guardian_approval', [MembersPage::class, 'withdrawGuardianApproval']);
         add_action('admin_post_assoc_place_assignment', [BoardPage::class, 'place']);
         add_action('admin_post_assoc_end_assignment', [BoardPage::class, 'end']);
         add_action('admin_post_assoc_schedule_meeting', [MeetingsPage::class, 'schedule']);

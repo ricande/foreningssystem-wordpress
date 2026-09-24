@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\People\BoardCoverageNotice;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Board\BoardRuleException;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Membership\MembershipRuleException;
-use Foreningssystem\Domain\Membership\MembershipStatus;
-use Foreningssystem\Domain\Person\PersonStatus;
 
 final class MembersPage
 {
@@ -21,7 +20,7 @@ final class MembersPage
         try {
             $kind = self::text('membership_kind');
             $birth = self::text('birth_date');
-            WordpressPeople::service()->register(
+            $personId = WordpressPeople::service()->register(
                 self::text('first_name'),
                 self::text('last_name'),
                 self::text('email'),
@@ -31,11 +30,9 @@ final class MembersPage
                 $birth === '' ? null : AssociationDate::fromIso($birth),
                 AssociationDate::fromIso(wp_date('Y-m-d'))
             );
-            self::redirect('created');
-        } catch (MembershipRuleException $error) {
-            self::redirect($error->getMessage() === 'Membership number is already used.' ? 'duplicate_number' : 'overlap');
-        } catch (\InvalidArgumentException) {
-            self::redirect('invalid');
+            self::redirect('created', ['assoc_person' => (string) $personId]);
+        } catch (MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error));
         }
     }
 
@@ -48,16 +45,9 @@ final class MembersPage
                 self::integer('membership_id'),
                 AssociationDate::fromIso(self::text('started_on'))
             );
-            self::redirect('renewed');
-        } catch (MembershipRuleException $error) {
-            $message = $error->getMessage();
-            self::redirect(match ($message) {
-                'Membership number is already used.' => 'duplicate_number',
-                'A deceased person cannot start a membership.' => 'deceased_period',
-                default => 'overlap',
-            });
-        } catch (\InvalidArgumentException) {
-            self::redirect('invalid');
+            self::redirect('renewed', self::returnArgs());
+        } catch (MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error), self::returnArgs());
         }
     }
 
@@ -75,11 +65,9 @@ final class MembersPage
                 AssociationDate::fromIso(self::text('started_on')),
                 null
             );
-            self::redirect('created');
-        } catch (MembershipRuleException $error) {
-            self::redirect($error->getMessage() === 'Membership number is already used.' ? 'duplicate_number' : 'invalid');
-        } catch (\InvalidArgumentException) {
-            self::redirect('invalid');
+            self::redirect('company_saved', ['assoc_number' => self::text('membership_number')]);
+        } catch (MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error));
         }
     }
 
@@ -91,12 +79,18 @@ final class MembersPage
             $startedOn = AssociationDate::fromIso(self::text('started_on'));
             $personId = self::integer('person_id');
 
+            if (self::text('participant_role') === 'contact') {
+                throw new \InvalidArgumentException('A family participant is a member.');
+            }
+
+            $primary = self::text('primary_contact') === '1';
+
             if ($personId > 0) {
                 WordpressPeople::service()->addParticipant(
                     self::integer('membership_id'),
                     $personId,
                     \Foreningssystem\Domain\Membership\ParticipantRole::Member,
-                    false,
+                    $primary,
                     $startedOn
                 );
             } else {
@@ -108,16 +102,14 @@ final class MembersPage
                     self::text('birth_date') === '' ? null : AssociationDate::fromIso(self::text('birth_date')),
                     $startedOn,
                     \Foreningssystem\Domain\Membership\ParticipantRole::Member,
-                    false,
+                    $primary,
                     AssociationDate::fromIso(wp_date('Y-m-d'))
                 );
             }
 
-            self::redirect('participant_saved');
-        } catch (MembershipRuleException) {
-            self::redirect('overlap');
-        } catch (\InvalidArgumentException) {
-            self::redirect('invalid');
+            self::redirect('participant_saved', self::returnArgs());
+        } catch (MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error), self::returnArgs());
         }
     }
 
@@ -139,9 +131,9 @@ final class MembersPage
                 AssociationDate::fromIso(wp_date('Y-m-d')),
                 get_current_user_id()
             );
-            self::redirect('identity_saved');
-        } catch (\InvalidArgumentException) {
-            self::redirect('invalid');
+            self::redirect('identity_saved', self::returnArgs());
+        } catch (\InvalidArgumentException $error) {
+            self::redirect(self::noticeCode($error), self::returnArgs());
         }
     }
 
@@ -152,8 +144,13 @@ final class MembersPage
         }
 
         check_admin_referer('assoc_remove_identity');
+
+        if (! self::confirmed()) {
+            self::redirect('confirm', self::returnArgs());
+        }
+
         WordpressPeople::identity()->remove(self::integer('person_id'), get_current_user_id());
-        self::redirect('identity_removed');
+        self::redirect('identity_removed', self::returnArgs());
     }
 
     public static function addGuardian(): void
@@ -173,15 +170,16 @@ final class MembersPage
                 );
             }
 
+            $started = self::text('started_on');
             WordpressPeople::guardians()->relate(
                 self::integer('child_person_id'),
                 $guardianId,
                 self::text('relationship') === '' ? 'guardian' : self::text('relationship'),
-                null
+                $started === '' ? null : AssociationDate::fromIso($started)
             );
-            self::redirect('guardian_saved');
-        } catch (\InvalidArgumentException) {
-            self::redirect('invalid');
+            self::redirect('guardian_saved', self::returnArgs());
+        } catch (\InvalidArgumentException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error), self::returnArgs());
         }
     }
 
@@ -201,9 +199,9 @@ final class MembersPage
                 self::text('note'),
                 get_current_user_id()
             );
-            self::redirect('approval_saved');
-        } catch (\InvalidArgumentException) {
-            self::redirect('invalid');
+            self::redirect('approval_saved', self::returnArgs());
+        } catch (\InvalidArgumentException | \RuntimeException) {
+            self::redirect('invalid', self::returnArgs());
         }
     }
 
@@ -227,18 +225,165 @@ final class MembersPage
     {
         self::guardEdit('assoc_end_membership');
 
+        if (! self::confirmed()) {
+            self::redirect('confirm', self::returnArgs());
+        }
+
         try {
-            WordpressPeople::service()->endMembership(
+            $notices = WordpressPeople::service()->endMembership(
                 self::integer('membership_id'),
                 AssociationDate::fromIso(self::text('ended_on'))
             );
-            self::redirect('ended');
-        } catch (BoardRuleException) {
-            self::redirect('assignment');
-        } catch (MembershipRuleException) {
-            self::redirect('already_ended');
-        } catch (\InvalidArgumentException) {
+            self::rememberBoardEffects($notices);
+            self::redirect('ended', self::returnArgs());
+        } catch (BoardRuleException | MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error), self::returnArgs());
+        }
+    }
+
+    public static function endParticipation(): void
+    {
+        self::guardEdit('assoc_end_participation');
+
+        if (! self::confirmed()) {
+            self::redirect('confirm', self::returnArgs());
+        }
+
+        try {
+            $notices = WordpressPeople::service()->endParticipation(
+                self::integer('membership_id'),
+                self::integer('person_id'),
+                AssociationDate::fromIso(self::text('ended_on'))
+            );
+            self::rememberBoardEffects($notices);
+            self::redirect('participation_ended', self::returnArgs());
+        } catch (BoardRuleException | MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error), self::returnArgs());
+        }
+    }
+
+    public static function openExisting(): void
+    {
+        self::guardEdit('assoc_open_membership');
+        $kind = self::text('membership_kind');
+
+        if (! in_array($kind, ['ordinary', 'youth', 'family'], true)) {
             self::redirect('invalid');
+        }
+
+        try {
+            $personId = self::integer('person_id');
+
+            if ($personId < 1) {
+                throw new \InvalidArgumentException('Choose a person.');
+            }
+
+            WordpressPeople::service()->openForExistingPerson(
+                $personId,
+                self::text('membership_number'),
+                $kind,
+                AssociationDate::fromIso(self::text('started_on'))
+            );
+            self::redirect('created', ['assoc_person' => (string) $personId]);
+        } catch (MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error));
+        }
+    }
+
+    public static function updatePerson(): void
+    {
+        self::guardEdit('assoc_update_person');
+        $personId = self::integer('person_id');
+        $birth = self::text('birth_date');
+
+        try {
+            $birthDate = $birth === '' ? null : AssociationDate::fromIso($birth);
+
+            if ($birthDate instanceof AssociationDate && WordpressPeople::identity()->conflictsWithBirthDate($personId, $birthDate)) {
+                self::redirect('birth_mismatch', ['assoc_person' => (string) $personId]);
+            }
+
+            WordpressPeople::service()->updateContact(
+                $personId,
+                self::text('first_name'),
+                self::text('last_name'),
+                self::text('email'),
+                $birthDate,
+                AssociationDate::fromIso(wp_date('Y-m-d'))
+            );
+            self::redirect('person_saved', ['assoc_person' => (string) $personId]);
+        } catch (\InvalidArgumentException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error), ['assoc_person' => (string) $personId]);
+        }
+    }
+
+    public static function addCompanyContact(): void
+    {
+        self::guardEdit('assoc_add_company_contact');
+
+        try {
+            $personId = self::integer('person_id');
+
+            if ($personId < 1) {
+                $personId = WordpressPeople::service()->rememberPerson(
+                    self::text('first_name'),
+                    self::text('last_name'),
+                    self::text('email'),
+                    null,
+                    AssociationDate::fromIso(wp_date('Y-m-d'))
+                );
+            }
+
+            WordpressPeople::service()->addParticipant(
+                self::integer('membership_id'),
+                $personId,
+                \Foreningssystem\Domain\Membership\ParticipantRole::Contact,
+                false,
+                AssociationDate::fromIso(self::text('started_on'))
+            );
+            self::redirect('contact_saved', self::returnArgs());
+        } catch (MembershipRuleException | \InvalidArgumentException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error), self::returnArgs());
+        }
+    }
+
+    public static function endGuardian(): void
+    {
+        self::guardEdit('assoc_end_guardian');
+
+        if (! self::confirmed()) {
+            self::redirect('confirm', self::returnArgs());
+        }
+
+        try {
+            WordpressPeople::guardians()->endRelationship(
+                self::integer('child_person_id'),
+                self::integer('relationship_id'),
+                AssociationDate::fromIso(self::text('ended_on'))
+            );
+            self::redirect('guardian_ended', self::returnArgs());
+        } catch (\InvalidArgumentException | \RuntimeException) {
+            self::redirect('invalid', self::returnArgs());
+        }
+    }
+
+    public static function withdrawGuardianApproval(): void
+    {
+        self::guardEdit('assoc_withdraw_guardian_approval');
+
+        if (! self::confirmed()) {
+            self::redirect('confirm', self::returnArgs());
+        }
+
+        try {
+            WordpressPeople::guardians()->withdraw(
+                self::integer('approval_id'),
+                new \DateTimeImmutable(self::text('withdrawn_on') . ' 00:00:00'),
+                get_current_user_id()
+            );
+            self::redirect('approval_withdrawn', self::returnArgs());
+        } catch (\InvalidArgumentException | \RuntimeException) {
+            self::redirect('invalid', self::returnArgs());
         }
     }
 
@@ -301,16 +446,18 @@ final class MembersPage
     {
         self::guardEdit('assoc_mark_deceased');
 
+        if (! self::confirmed()) {
+            self::redirect('confirm', self::returnArgs());
+        }
+
         try {
             WordpressPeople::service()->markDeceased(
                 self::integer('person_id'),
                 AssociationDate::fromIso(self::text('deceased_on'))
             );
-            self::redirect('deceased');
-        } catch (BoardRuleException) {
-            self::redirect('assignment');
-        } catch (\InvalidArgumentException | MembershipRuleException) {
-            self::redirect('invalid');
+            self::redirect('deceased', self::returnArgs());
+        } catch (BoardRuleException | \InvalidArgumentException | MembershipRuleException | \RuntimeException $error) {
+            self::redirect(self::noticeCode($error), self::returnArgs());
         }
     }
 
@@ -320,197 +467,133 @@ final class MembersPage
             wp_die(esc_html__('You do not have permission to view members.', 'foreningsplugin'));
         }
 
-        $canEdit = current_user_can(Capabilities::EDIT_MEMBERS);
-        $records = WordpressPeople::service()->listPeople();
+        MembersScreen::render(current_user_can(Capabilities::EDIT_MEMBERS));
+    }
 
-        echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('Members', 'foreningsplugin') . '</h1>';
-        self::notice();
+    /**
+     * @param list<BoardCoverageNotice> $notices
+     */
+    public static function rememberBoardEffects(array $notices): void
+    {
+        $roles = [];
 
-        if ($canEdit) {
-            echo '<h2>' . esc_html__('New person', 'foreningsplugin') . '</h2>';
-            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-            echo '<input type="hidden" name="action" value="assoc_register_person">';
-            wp_nonce_field('assoc_register_person');
-            self::field('first_name', __('First name', 'foreningsplugin'), 'text', true);
-            self::field('last_name', __('Last name', 'foreningsplugin'), 'text', true);
-            self::field('email', __('Email', 'foreningsplugin'), 'email', false);
-            self::field('membership_number', __('Membership number', 'foreningsplugin'), 'text', true);
-            echo '<p><label>' . esc_html__('Membership kind', 'foreningsplugin') . ' <select name="membership_kind">';
-            foreach ([
-                'ordinary' => __('Ordinary', 'foreningsplugin'),
-                'youth' => __('Youth', 'foreningsplugin'),
-                'family' => __('Family', 'foreningsplugin'),
-            ] as $slug => $label) {
-                echo '<option value="' . esc_attr($slug) . '">' . esc_html($label) . '</option>';
+        foreach ((new WpdbBoardRoleRepository())->all() as $role) {
+            if ($role->id() !== null) {
+                $roles[$role->id()] = $role->name();
             }
-            echo '</select></label></p>';
-            self::field('birth_date', __('Birth date', 'foreningsplugin'), 'date', false);
-            self::field('started_on', __('Start date', 'foreningsplugin'), 'date', true);
-            submit_button(__('Save person', 'foreningsplugin'));
-            echo '</form>';
-            echo '<h2>' . esc_html__('Import', 'foreningsplugin') . '</h2>';
-            echo '<p>' . esc_html__('The file is UTF-8 and semicolon-separated, with one row per membership period. A membership number that already exists is left unchanged. The import does not link a WordPress account and does not rename a person who already exists.', 'foreningsplugin') . '</p>';
-            echo '<form method="post" enctype="multipart/form-data" action="' . esc_url(admin_url('admin-post.php')) . '">';
-            echo '<input type="hidden" name="action" value="assoc_import_members">';
-            wp_nonce_field('assoc_import_members');
-            echo '<p><input type="file" name="member_csv" accept=".csv,text/csv" required></p>';
-            submit_button(__('Import members', 'foreningsplugin'));
-            echo '</form>';
         }
 
-        if (current_user_can(Capabilities::EXPORT_MEMBERS)) {
-            echo '<h2>' . esc_html__('Export', 'foreningsplugin') . '</h2>';
-            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-            echo '<input type="hidden" name="action" value="assoc_export_members">';
-            wp_nonce_field('assoc_export_members');
-            submit_button(__('Export members', 'foreningsplugin'));
-            echo '</form>';
-            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-            echo '<input type="hidden" name="action" value="assoc_export_member_structure">';
-            wp_nonce_field('assoc_export_member_structure');
-            echo '<p>' . esc_html__('The structured file can describe memberships, periods, participants and organizations. It does not contain personal identity numbers.', 'foreningsplugin') . '</p>';
-            submit_button(__('Export membership structure', 'foreningsplugin'));
-            echo '</form>';
-        }
+        $lines = [];
 
-        if ($canEdit) {
-            echo '<h2>' . esc_html__('Company membership', 'foreningsplugin') . '</h2>';
-            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-            echo '<input type="hidden" name="action" value="assoc_register_company">';
-            wp_nonce_field('assoc_register_company');
-            self::field('organization_name', __('Organization name', 'foreningsplugin'), 'text', true);
-            self::field('organization_number', __('Organization number', 'foreningsplugin'), 'text', false);
-            echo '<p>' . esc_html__('The organization number is checked for format and checksum only. It is not checked against a company register.', 'foreningsplugin') . '</p>';
-            self::field('email', __('Email', 'foreningsplugin'), 'email', false);
-            self::field('postal_address', __('Postal address', 'foreningsplugin'), 'text', false);
-            self::field('membership_number', __('Membership number', 'foreningsplugin'), 'text', true);
-            self::field('started_on', __('Start date', 'foreningsplugin'), 'date', true);
-            submit_button(__('Save company membership', 'foreningsplugin'));
-            echo '</form>';
-            echo '<h2>' . esc_html__('Family participant', 'foreningsplugin') . '</h2>';
-            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-            echo '<input type="hidden" name="action" value="assoc_add_family_participant">';
-            wp_nonce_field('assoc_add_family_participant');
-            echo '<p>' . esc_html__('Choose an existing person, or leave that choice empty and enter a new person. The plugin does not merge people automatically.', 'foreningsplugin') . '</p>';
-            echo '<p><label>' . esc_html__('Existing person', 'foreningsplugin') . ' <select name="person_id">';
-            echo '<option value="0">' . esc_html__('New person', 'foreningsplugin') . '</option>';
+        foreach ($notices as $notice) {
+            $role = $roles[$notice->roleId()] ?? '';
 
-            foreach ($records as $record) {
-                $existing = $record->person();
-                $existingId = (int) $existing->id();
-                $label = $existing->firstName() . ' ' . $existing->lastName();
-                $number = $record->membershipNumber();
-
-                if ($number !== '') {
-                    $label .= ' (' . $number . ')';
-                }
-
-                echo '<option value="' . esc_attr((string) $existingId) . '">' . esc_html($label) . '</option>';
+            if ($notice->remainsActive()) {
+                $lines[] = $role === ''
+                    ? __('Board assignment remains active because the person has continuous membership coverage.', 'foreningsplugin')
+                    : sprintf(
+                        /* translators: %s: board role name */
+                        __('%s assignment remains active because the person has continuous membership coverage.', 'foreningsplugin'),
+                        $role
+                    );
+                continue;
             }
 
-            echo '</select></label></p>';
-            self::field('membership_id', __('Membership id', 'foreningsplugin'), 'number', true);
-            self::field('started_on', __('Start date', 'foreningsplugin'), 'date', true);
-            self::field('first_name', __('First name', 'foreningsplugin'), 'text', false);
-            self::field('last_name', __('Last name', 'foreningsplugin'), 'text', false);
-            self::field('email', __('Email', 'foreningsplugin'), 'email', false);
-            self::field('birth_date', __('Birth date', 'foreningsplugin'), 'date', false);
-            submit_button(__('Add participant', 'foreningsplugin'));
-            echo '</form>';
+            $lines[] = $role === ''
+                ? sprintf(
+                    /* translators: %s: end date */
+                    __('A board assignment now ends %s.', 'foreningsplugin'),
+                    (string) $notice->endedOn()
+                )
+                : sprintf(
+                    /* translators: 1: board role name, 2: end date */
+                    __('%1$s assignment now ends %2$s.', 'foreningsplugin'),
+                    $role,
+                    (string) $notice->endedOn()
+                );
         }
 
-        echo '<h2>' . esc_html__('People', 'foreningsplugin') . '</h2>';
-        echo '<table class="widefat striped"><thead><tr>';
-        foreach ([__('Name', 'foreningsplugin'), __('Email', 'foreningsplugin'), __('Membership number', 'foreningsplugin'), __('Status', 'foreningsplugin'), __('Period', 'foreningsplugin')] as $heading) {
-            echo '<th>' . esc_html($heading) . '</th>';
+        if ($lines !== []) {
+            set_transient('assoc_board_effect_' . get_current_user_id(), $lines, MINUTE_IN_SECONDS);
         }
-        if ($canEdit) {
-            echo '<th>' . esc_html__('Action', 'foreningsplugin') . '</th>';
-        }
-        echo '</tr></thead><tbody>';
+    }
 
-        if ($records === []) {
-            echo '<tr><td colspan="6">' . esc_html__('No people yet.', 'foreningsplugin') . '</td></tr>';
+    /**
+     * @return list<string>
+     */
+    public static function boardEffectLines(): array
+    {
+        $stored = get_transient('assoc_board_effect_' . get_current_user_id());
+        delete_transient('assoc_board_effect_' . get_current_user_id());
+
+        if (! is_array($stored)) {
+            return [];
         }
 
-        foreach ($records as $record) {
-            $person = $record->person();
-            $membership = $record->membership();
-            $personId = (int) $person->id();
-            echo '<tr>';
-            echo '<td>' . esc_html($person->firstName() . ' ' . $person->lastName());
-            $mask = WordpressPeople::identity()->masked($personId);
-            if ($mask !== null) {
-                echo '<br><code>' . esc_html($mask) . '</code>';
+        $lines = [];
+
+        foreach ($stored as $line) {
+            if (is_string($line) && $line !== '') {
+                $lines[] = $line;
             }
-            echo '</td>';
-            echo '<td>' . esc_html($person->email()) . '</td>';
-            echo '<td>' . esc_html($record->membershipNumber()) . '</td>';
-            echo '<td>' . esc_html(self::statusLabel($person->status()->value, $membership?->status())) . '</td>';
-            $period = $membership === null ? '' : $membership->startedOn()->iso();
-            if ($membership !== null && $membership->endedOn() !== null) {
-                $period .= ' – ' . $membership->endedOn()->iso();
-            }
-            echo '<td>' . esc_html($period) . '</td>';
-
-            if ($canEdit) {
-                echo '<td>';
-                if ($membership !== null && $membership->status() !== MembershipStatus::Ended) {
-                    echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-                    echo '<input type="hidden" name="action" value="assoc_end_membership">';
-                    echo '<input type="hidden" name="membership_id" value="' . esc_attr((string) $membership->id()) . '">';
-                    wp_nonce_field('assoc_end_membership');
-                    echo '<input type="date" name="ended_on" required> ';
-                    submit_button(__('End membership', 'foreningsplugin'), 'secondary', 'submit', false);
-                    echo '</form>';
-                }
-                if ($person->status() !== PersonStatus::Deceased && $record->account() !== null && $membership !== null && $membership->status() === MembershipStatus::Ended) {
-                    echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-                    echo '<input type="hidden" name="action" value="assoc_add_membership">';
-                    echo '<input type="hidden" name="membership_id" value="' . esc_attr((string) $record->account()->id()) . '">';
-                    wp_nonce_field('assoc_add_membership');
-                    echo '<input type="date" name="started_on" required> ';
-                    submit_button(__('New period', 'foreningsplugin'), 'secondary', 'submit', false);
-                    echo '</form>';
-                }
-                if ($person->status() !== PersonStatus::Deceased) {
-                    echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-                    echo '<input type="hidden" name="action" value="assoc_mark_deceased">';
-                    echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
-                    wp_nonce_field('assoc_mark_deceased');
-                    echo '<input type="date" name="deceased_on" required> ';
-                    submit_button(__('Mark as deceased', 'foreningsplugin'), 'delete', 'submit', false);
-                    echo '</form>';
-                }
-                if (current_user_can(Capabilities::EDIT_PERSONAL_IDENTITY_NUMBERS)) {
-                    echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-                    echo '<input type="hidden" name="action" value="assoc_store_identity">';
-                    echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
-                    wp_nonce_field('assoc_store_identity');
-                    echo '<input type="text" name="personal_identity_number" placeholder="' . esc_attr__('Personal identity number', 'foreningsplugin') . '" autocomplete="off"> ';
-                    echo '<span class="description">' . esc_html__('Checked for format and checksum only, including coordination numbers. Not checked against an external register.', 'foreningsplugin') . '</span> ';
-                    echo '<input type="text" name="purpose" placeholder="' . esc_attr__('Purpose', 'foreningsplugin') . '" required> ';
-                    echo '<input type="text" name="basis_note" placeholder="' . esc_attr__('Basis note', 'foreningsplugin') . '"> ';
-                    echo '<input type="date" name="collected_on" required> ';
-                    submit_button(__('Save identity record', 'foreningsplugin'), 'secondary', 'submit', false);
-                    echo '</form>';
-                }
-                echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-                echo '<input type="hidden" name="action" value="assoc_add_guardian">';
-                echo '<input type="hidden" name="child_person_id" value="' . esc_attr((string) $personId) . '">';
-                wp_nonce_field('assoc_add_guardian');
-                echo '<input type="text" name="guardian_first_name" placeholder="' . esc_attr__('Guardian first name', 'foreningsplugin') . '"> ';
-                echo '<input type="text" name="guardian_last_name" placeholder="' . esc_attr__('Guardian last name', 'foreningsplugin') . '"> ';
-                echo '<input type="text" name="relationship" placeholder="' . esc_attr__('Relationship', 'foreningsplugin') . '"> ';
-                submit_button(__('Add guardian', 'foreningsplugin'), 'secondary', 'submit', false);
-                echo '</form>';
-                echo '</td>';
-            }
-            echo '</tr>';
         }
 
-        echo '</tbody></table></div>';
+        return $lines;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function returnArgs(): array
+    {
+        $args = [];
+        $personId = self::integer('return_person');
+
+        if ($personId < 1) {
+            $personId = self::integer('person_id');
+        }
+
+        if ($personId < 1) {
+            $personId = self::integer('child_person_id');
+        }
+
+        if ($personId > 0) {
+            $args['assoc_person'] = (string) $personId;
+        }
+
+        $number = self::text('return_number');
+
+        if ($number !== '') {
+            $args['assoc_number'] = $number;
+        }
+
+        return $args;
+    }
+
+    private static function confirmed(): bool
+    {
+        return self::text('confirm') === '1';
+    }
+
+    private static function noticeCode(\Throwable $error): string
+    {
+        return match ($error->getMessage()) {
+            'Membership number is already used.' => 'duplicate_number',
+            'The organization number is already used.' => 'duplicate_organization',
+            'Membership periods cannot overlap.', 'The person already participates in this membership.' => 'overlap',
+            'A company contact is not an individual member.' => 'company_contact',
+            'A deceased person cannot start a membership.', 'A deceased person cannot receive a new membership period.' => 'deceased_period',
+            'The membership does not cover this assignment.', 'An assignment cannot end before it starts.', 'An open board assignment does not fit the date, so nothing changed.' => 'assignment',
+            'A membership cannot end before it starts.', 'Participation cannot end before it starts.', 'The assignment cannot end before the start date.' => 'before_start',
+            'The membership is already ended.', 'Membership is already ended.' => 'already_ended',
+            'The personal identity number does not match the birth date.' => 'birth_mismatch',
+            'Person was not found.', 'Membership was not found.', 'The guardian relationship was not found.' => 'not_found',
+            'The person has no open participation in this membership.' => 'no_open',
+            'Choose a person.' => 'choose_person',
+            'A family participant is a member.' => 'family_role',
+            'This guardian relationship already covers that time.' => 'guardian_overlap',
+            default => 'invalid',
+        };
     }
 
     private static function guardEdit(string $nonce): void
@@ -534,23 +617,39 @@ final class MembersPage
         exit;
     }
 
-    private static function notice(): void
+    public static function notice(): void
     {
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
         $messages = [
-            'created' => __('The person is saved.', 'foreningsplugin'),
+            'created' => __('The membership is saved.', 'foreningsplugin'),
+            'company_saved' => __('The company membership is saved. A company contact is not an individual member.', 'foreningsplugin'),
             'renewed' => __('A new membership period is saved. The earlier period remains.', 'foreningsplugin'),
+            'person_saved' => __('The person is saved.', 'foreningsplugin'),
             'identity_saved' => __('The personal identity record is saved.', 'foreningsplugin'),
             'identity_removed' => __('The personal identity record is removed. Membership history remains.', 'foreningsplugin'),
-            'guardian_saved' => __('The guardian relationship is saved.', 'foreningsplugin'),
-            'approval_saved' => __('The guardian approval is saved. It records what the association says occurred.', 'foreningsplugin'),
-            'participant_saved' => __('The participant is saved on the existing membership.', 'foreningsplugin'),
-            'ended' => __('The membership is ended. The person remains.', 'foreningsplugin'),
-            'deceased' => __('The person is marked as deceased and open memberships are ended.', 'foreningsplugin'),
-            'duplicate_number' => __('The membership number is already used.', 'foreningsplugin'),
-            'overlap' => __('The membership periods overlap.', 'foreningsplugin'),
+            'guardian_saved' => __('The guardian relationship is saved. It is not inferred from name, family or address.', 'foreningsplugin'),
+            'guardian_ended' => __('The guardian relationship is ended. The earlier record remains.', 'foreningsplugin'),
+            'approval_saved' => __('The guardian approval is saved. It records what the association says occurred. It does not prove legal validity.', 'foreningsplugin'),
+            'approval_withdrawn' => __('The guardian approval is marked as withdrawn. The record remains.', 'foreningsplugin'),
+            'participant_saved' => __('The participant is saved. The earlier participation history remains.', 'foreningsplugin'),
+            'contact_saved' => __('The company contact is saved. This does not make the person an individual member.', 'foreningsplugin'),
+            'ended' => __('The membership is ended. Membership history is retained.', 'foreningsplugin'),
+            'participation_ended' => __('The participation is ended. The earlier participation history remains.', 'foreningsplugin'),
+            'deceased' => __('The person is marked as deceased and open memberships are ended. The history remains.', 'foreningsplugin'),
+            'duplicate_number' => __('That membership number is already in use.', 'foreningsplugin'),
+            'duplicate_organization' => __('That organization number is already in use.', 'foreningsplugin'),
+            'overlap' => __('This person already has overlapping active membership coverage.', 'foreningsplugin'),
+            'company_contact' => __('A company contact is not an individual member.', 'foreningsplugin'),
             'already_ended' => __('The membership is already ended.', 'foreningsplugin'),
-            'assignment' => __('An open board assignment does not fit the date, so nothing changed.', 'foreningsplugin'),
+            'assignment' => __('The date does not cover a board assignment, so nothing changed.', 'foreningsplugin'),
+            'before_start' => __('The end date cannot be before the start date.', 'foreningsplugin'),
+            'birth_mismatch' => __('The birth date does not match the recorded personal identity number.', 'foreningsplugin'),
+            'not_found' => __('That person or membership could not be found.', 'foreningsplugin'),
+            'no_open' => __('There is no open participation to end.', 'foreningsplugin'),
+            'choose_person' => __('Choose an existing person.', 'foreningsplugin'),
+            'family_role' => __('A family participant is a member.', 'foreningsplugin'),
+            'guardian_overlap' => __('This guardian relationship already covers that time.', 'foreningsplugin'),
+            'confirm' => __('Confirm the action before it is saved.', 'foreningsplugin'),
             'invalid' => __('Check the details and try again.', 'foreningsplugin'),
             'deceased_period' => __('A deceased person cannot receive a new membership period.', 'foreningsplugin'),
             'import_invalid' => __('The file must be UTF-8 with the expected columns, separated by semicolons.', 'foreningsplugin'),
@@ -584,15 +683,31 @@ final class MembersPage
             return;
         }
 
-        $class = in_array($notice, ['created', 'ended', 'deceased', 'renewed', 'identity_saved', 'identity_removed', 'guardian_saved', 'approval_saved', 'participant_saved'], true) ? 'notice-success' : 'notice-error';
-        echo '<div class="notice ' . esc_attr($class) . '"><p>' . esc_html($messages[$notice]) . '</p></div>';
-    }
+        $success = [
+            'created',
+            'company_saved',
+            'ended',
+            'participation_ended',
+            'deceased',
+            'renewed',
+            'person_saved',
+            'identity_saved',
+            'identity_removed',
+            'guardian_saved',
+            'guardian_ended',
+            'approval_saved',
+            'approval_withdrawn',
+            'participant_saved',
+            'contact_saved',
+        ];
+        $class = in_array($notice, $success, true) ? 'notice-success' : 'notice-error';
+        echo '<div class="notice ' . esc_attr($class) . '"><p>' . esc_html($messages[$notice]) . '</p>';
 
-    private static function field(string $name, string $label, string $type, bool $required): void
-    {
-        echo '<p><label>' . esc_html($label) . ' ';
-        echo '<input class="regular-text" type="' . esc_attr($type) . '" name="' . esc_attr($name) . '"' . ($required ? ' required' : '') . '>';
-        echo '</label></p>';
+        foreach (self::boardEffectLines() as $line) {
+            echo '<p>' . esc_html($line) . '</p>';
+        }
+
+        echo '</div>';
     }
 
     private static function text(string $key): string
@@ -607,20 +722,5 @@ final class MembersPage
         $value = $_POST[$key] ?? 0;
 
         return is_numeric($value) ? (int) $value : 0;
-    }
-
-    private static function statusLabel(string $personStatus, ?MembershipStatus $membershipStatus): string
-    {
-        if ($personStatus === PersonStatus::Deceased->value) {
-            return __('Deceased', 'foreningsplugin');
-        }
-
-        return match ($membershipStatus) {
-            MembershipStatus::Active => __('Active', 'foreningsplugin'),
-            MembershipStatus::Pending => __('Pending', 'foreningsplugin'),
-            MembershipStatus::Dormant => __('Dormant', 'foreningsplugin'),
-            MembershipStatus::Ended => __('Ended', 'foreningsplugin'),
-            default => __('No membership', 'foreningsplugin'),
-        };
     }
 }

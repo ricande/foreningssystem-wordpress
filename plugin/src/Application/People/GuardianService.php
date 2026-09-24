@@ -84,6 +84,50 @@ final class GuardianService
         return $id;
     }
 
+    /**
+     * @return list<GuardianRelationship>
+     */
+    public function relationshipsFor(int $childPersonId): array
+    {
+        $this->require(Capabilities::VIEW_MEMBERS);
+        $this->requirePerson($childPersonId);
+
+        return $this->guardians->relationshipsForChild($childPersonId);
+    }
+
+    /**
+     * @return list<GuardianApproval>
+     */
+    public function approvalsFor(int $childPersonId): array
+    {
+        $this->require(Capabilities::VIEW_MEMBERS);
+        $this->requirePerson($childPersonId);
+
+        return $this->guardians->approvalsForChild($childPersonId);
+    }
+
+    public function endRelationship(int $childPersonId, int $relationshipId, AssociationDate $on): void
+    {
+        $this->require(Capabilities::EDIT_MEMBERS);
+        $this->requirePerson($childPersonId);
+
+        foreach ($this->guardians->relationshipsForChild($childPersonId) as $relationship) {
+            if ($relationship->id() !== $relationshipId) {
+                continue;
+            }
+
+            if ($relationship->endedOn() instanceof AssociationDate) {
+                throw new InvalidArgumentException('The guardian relationship is already ended.');
+            }
+
+            $this->guardians->saveRelationship($relationship->ended($on));
+
+            return;
+        }
+
+        throw new InvalidArgumentException('The guardian relationship was not found.');
+    }
+
     public function withdraw(int $approvalId, DateTimeImmutable $at, int $actorUserId): void
     {
         $this->require(Capabilities::EDIT_MEMBERS);

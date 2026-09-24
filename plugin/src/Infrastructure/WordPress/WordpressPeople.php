@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Application\People\Authorizer;
+use Foreningssystem\Application\People\MemberDirectory;
 use Foreningssystem\Application\People\MemberExchange;
 use Foreningssystem\Application\People\PeopleService;
 use Foreningssystem\Application\People\Transaction;
@@ -42,6 +43,15 @@ final class WordpressPeople
                 }
             },
             self::transaction(),
+            new WpdbOrganizationRepository()
+        );
+    }
+
+    public static function directory(): MemberDirectory
+    {
+        return new MemberDirectory(
+            new WpdbPersonRepository(),
+            new WpdbMembershipRepository(),
             new WpdbOrganizationRepository()
         );
     }

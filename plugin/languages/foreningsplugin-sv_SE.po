@@ -1236,9 +1236,294 @@ msgstr "Välj en befintlig person, eller lämna valet tomt och ange en ny person
 msgid "Existing person"
 msgstr "Befintlig person"
 
-msgid "New person"
-msgstr "Ny person"
-
 msgid "Checked for format and checksum only, including coordination numbers. Not checked against an external register."
 msgstr "Kontrolleras bara till form och kontrollsiffra, inklusive samordningsnummer. Slås inte upp i ett externt register."
 
+
+msgid "That person or membership could not be found."
+msgstr "Den personen eller det medlemskapet kunde inte hittas."
+
+msgid "Add ordinary member"
+msgstr "Lägg till ordinarie medlem"
+
+msgid "Add youth member"
+msgstr "Lägg till ungdomsmedlem"
+
+msgid "Add family membership"
+msgstr "Lägg till familjemedlemskap"
+
+msgid "Add company membership"
+msgstr "Lägg till företagsmedlemskap"
+
+msgid "Search"
+msgstr "Sök"
+
+msgid "All types"
+msgstr "Alla typer"
+
+msgid "All states"
+msgstr "Alla statusar"
+
+msgid "Inactive"
+msgstr "Inaktiv"
+
+msgid "History"
+msgstr "Historik"
+
+msgid "Filter"
+msgstr "Filtrera"
+
+msgid "Dates"
+msgstr "Datum"
+
+msgid "Context"
+msgstr "Sammanhang"
+
+msgid "No members yet. Add the association's first member."
+msgstr "Inga medlemmar ännu. Lägg till föreningens första medlem."
+
+msgid "No members match this search."
+msgstr "Inga medlemmar matchar den här sökningen."
+
+msgid "Back to members"
+msgstr "Tillbaka till medlemmar"
+
+msgid "Person"
+msgstr "Person"
+
+msgid "Currently an individual member."
+msgstr "Är enskild medlem just nu."
+
+msgid "Not currently an individual member."
+msgstr "Är inte enskild medlem just nu."
+
+msgid "No membership is recorded for this person."
+msgstr "Inget medlemskap är registrerat för den här personen."
+
+msgid "Actions"
+msgstr "Åtgärder"
+
+msgid "Mark this person as deceased? Open memberships end on that date and the history is retained."
+msgstr "Markera personen som avliden? Öppna medlemskap avslutas det datumet och historiken behålls."
+
+msgid "Mark person deceased"
+msgstr "Markera personen som avliden"
+
+msgid "Company contacts are not individual members."
+msgstr "Företagskontakter är inte enskilda medlemmar."
+
+msgid "No previous membership periods."
+msgstr "Inga tidigare medlemsperioder."
+
+msgid "Contacts"
+msgstr "Kontakter"
+
+msgid "No participants are recorded."
+msgstr "Inga deltagare är registrerade."
+
+msgid "Primary contact"
+msgstr "Primär kontakt"
+
+msgid "End membership on this date? Membership history is retained. Current board assignments may be shortened if no other membership coverage remains."
+msgstr "Avsluta medlemskapet det här datumet? Medlemshistoriken behålls. Pågående styrelseuppdrag kan kortas om inget annat medlemskap täcker dem."
+
+msgid "Start new membership period"
+msgstr "Starta ny medlemsperiod"
+
+msgid "Add family participant"
+msgstr "Lägg till familjedeltagare"
+
+msgid "Add company contact"
+msgstr "Lägg till företagskontakt"
+
+msgid "A company contact is not an individual member."
+msgstr "En företagskontakt är inte en enskild medlem."
+
+msgid "End this participation? Earlier participation history is retained. A board assignment may be shortened if no other membership coverage remains."
+msgstr "Avsluta det här deltagandet? Tidigare deltagarhistorik behålls. Ett styrelseuppdrag kan kortas om inget annat medlemskap täcker personen."
+
+msgid "End participation"
+msgstr "Avsluta deltagande"
+
+msgid "Guardians"
+msgstr "Vårdnadshavare"
+
+msgid "Guardian relationships are recorded only when someone adds them. The plugin does not infer a guardian from a shared name, family membership or address."
+msgstr "Vårdnadshavarrelationer registreras bara när någon lägger till dem. Pluginet härleder inte en vårdnadshavare från ett gemensamt namn, familjemedlemskap eller adress."
+
+msgid "No guardian relationships recorded."
+msgstr "Inga vårdnadshavarrelationer är registrerade."
+
+msgid "End this guardian relationship? The earlier record remains."
+msgstr "Avsluta den här vårdnadshavarrelationen? Den tidigare posten finns kvar."
+
+msgid "End guardian relationship"
+msgstr "Avsluta vårdnadshavarrelation"
+
+msgid "Guardian approvals"
+msgstr "Vårdnadshavargodkännanden"
+
+msgid "An approval record says what the association recorded. It does not prove that the approval was legally valid."
+msgstr "En godkännandepost beskriver vad föreningen har registrerat. Den bevisar inte att godkännandet var juridiskt giltigt."
+
+msgid "No guardian approvals recorded."
+msgstr "Inga vårdnadshavargodkännanden är registrerade."
+
+msgid "Withdrawn"
+msgstr "Återkallat"
+
+msgid "Withdrawal date"
+msgstr "Datum för återkallelse"
+
+msgid "Mark this guardian approval as withdrawn? The record remains."
+msgstr "Markera det här vårdnadshavargodkännandet som återkallat? Posten finns kvar."
+
+msgid "Withdraw guardian approval"
+msgstr "Återkalla vårdnadshavargodkännande"
+
+msgid "Existing guardian"
+msgstr "Befintlig vårdnadshavare"
+
+msgid "Approval date"
+msgstr "Godkännandedatum"
+
+msgid "Method"
+msgstr "Metod"
+
+msgid "Notice version"
+msgstr "Versionsnummer för informationen"
+
+msgid "Record guardian approval"
+msgstr "Registrera vårdnadshavargodkännande"
+
+msgid "Protected identity data"
+msgstr "Skyddade identitetsuppgifter"
+
+msgid "No personal identity number is recorded. A membership does not require one."
+msgstr "Inget personnummer är registrerat. Ett medlemskap kräver inte ett."
+
+msgid "Personal identity number: Recorded"
+msgstr "Personnummer: Registrerat"
+
+msgid "Collected"
+msgstr "Inhämtat"
+
+msgid "Checked for format and checksum only, including coordination numbers. Not checked against an external register. Not stored encrypted."
+msgstr "Kontrolleras bara för format och kontrollsiffra, även samordningsnummer. Kontrolleras inte mot ett externt register. Lagras inte krypterat."
+
+msgid "Remove the personal identity number? Membership history is retained."
+msgstr "Ta bort personnumret? Medlemshistoriken behålls."
+
+msgid "Remove personal identity number"
+msgstr "Ta bort personnummer"
+
+msgid "A company contact is not an individual member. You can add contacts after the membership is saved."
+msgstr "En företagskontakt är inte en enskild medlem. Du kan lägga till kontakter efter att medlemskapet har sparats."
+
+msgid "A personal identity number is not required. Guardian approval is not required just because a person is under 18. The association can record a guardian and an approval where it needs that record."
+msgstr "Ett personnummer krävs inte. Vårdnadshavargodkännande krävs inte bara för att en person är under 18. Föreningen kan registrera en vårdnadshavare och ett godkännande när den behöver den posten."
+
+msgid "A family membership is one membership shared by the people who take part. Add the primary contact here, then add the other participants."
+msgstr "Ett familjemedlemskap är ett medlemskap som delas av personerna som ingår. Lägg till den primära kontakten här och lägg sedan till de andra deltagarna."
+
+msgid "Add member"
+msgstr "Lägg till medlem"
+
+msgid "Choosing a person here is explicit. People are not merged because they share an email address."
+msgstr "Att välja en person här är ett aktivt val. Personer slås inte ihop för att de har samma e-postadress."
+
+msgid "Add membership for this person"
+msgstr "Lägg till medlemskap för den här personen"
+
+msgid "Company"
+msgstr "Företag"
+
+msgid "Previous membership"
+msgstr "Tidigare medlemskap"
+
+msgid "Company contact"
+msgstr "Företagskontakt"
+
+msgid "No current membership"
+msgstr "Inget pågående medlemskap"
+
+msgid "present"
+msgstr "pågår"
+
+msgid "Board assignment remains active because the person has continuous membership coverage."
+msgstr "Styrelseuppdraget är fortsatt aktivt eftersom personen har sammanhängande medlemstäckning."
+
+msgid "%s assignment remains active because the person has continuous membership coverage."
+msgstr "Uppdraget som %s är fortsatt aktivt eftersom personen har sammanhängande medlemstäckning."
+
+msgid "A board assignment now ends %s."
+msgstr "Ett styrelseuppdrag slutar nu %s."
+
+msgid "%1$s assignment now ends %2$s."
+msgstr "Uppdraget som %1$s slutar nu %2$s."
+
+msgid "The membership is saved."
+msgstr "Medlemskapet är sparat."
+
+msgid "The company membership is saved. A company contact is not an individual member."
+msgstr "Företagsmedlemskapet är sparat. En företagskontakt är inte en enskild medlem."
+
+msgid "The guardian relationship is saved. It is not inferred from name, family or address."
+msgstr "Vårdnadshavarrelationen är sparad. Den härleds inte från namn, familj eller adress."
+
+msgid "The guardian relationship is ended. The earlier record remains."
+msgstr "Vårdnadshavarrelationen är avslutad. Den tidigare posten finns kvar."
+
+msgid "The guardian approval is saved. It records what the association says occurred. It does not prove legal validity."
+msgstr "Vårdnadshavargodkännandet är sparat. Det registrerar vad föreningen uppger har skett. Det bevisar inte juridisk giltighet."
+
+msgid "The guardian approval is marked as withdrawn. The record remains."
+msgstr "Vårdnadshavargodkännandet är markerat som återkallat. Posten finns kvar."
+
+msgid "The participant is saved. The earlier participation history remains."
+msgstr "Deltagaren är sparad. Den tidigare deltagarhistoriken finns kvar."
+
+msgid "The company contact is saved. This does not make the person an individual member."
+msgstr "Företagskontakten är sparad. Det gör inte personen till enskild medlem."
+
+msgid "The membership is ended. Membership history is retained."
+msgstr "Medlemskapet är avslutat. Medlemshistoriken behålls."
+
+msgid "The participation is ended. The earlier participation history remains."
+msgstr "Deltagandet är avslutat. Den tidigare deltagarhistoriken finns kvar."
+
+msgid "The person is marked as deceased and open memberships are ended. The history remains."
+msgstr "Personen är markerad som avliden och öppna medlemskap är avslutade. Historiken finns kvar."
+
+msgid "That membership number is already in use."
+msgstr "Det medlemsnumret används redan."
+
+msgid "That organization number is already in use."
+msgstr "Det organisationsnumret används redan."
+
+msgid "This person already has overlapping active membership coverage."
+msgstr "Personen har redan överlappande aktivt medlemskap."
+
+msgid "The date does not cover a board assignment, so nothing changed."
+msgstr "Datumet täcker inte ett styrelseuppdrag, så inget ändrades."
+
+msgid "The end date cannot be before the start date."
+msgstr "Slutdatumet kan inte ligga före startdatumet."
+
+msgid "The birth date does not match the recorded personal identity number."
+msgstr "Födelsedatumet stämmer inte med det registrerade personnumret."
+
+msgid "There is no open participation to end."
+msgstr "Det finns inget pågående deltagande att avsluta."
+
+msgid "Choose an existing person."
+msgstr "Välj en befintlig person."
+
+msgid "A family participant is a member."
+msgstr "En familjedeltagare är en medlem."
+
+msgid "This guardian relationship already covers that time."
+msgstr "Den här vårdnadshavarrelationen täcker redan den tiden."
+
+msgid "Confirm the action before it is saved."
+msgstr "Bekräfta åtgärden innan den sparas."

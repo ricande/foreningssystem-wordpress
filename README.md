@@ -18,18 +18,21 @@ Kärnflödet är:
 
 ## Viktig status
 
-Projektet är fortfarande i **produkt- och arkitekturfas**.
+Implementationen är igång. Aktuellt databasschema är version 16.
 
-Det finns ännu inga låsta implementationstekniska beslut om exempelvis:
-- exakt databasschema
-- vilka objekt som ska vara egna tabeller
-- vilka objekt som eventuellt ska vara Custom Post Types
-- protokolleditorns tekniska lösning
-- PDF-bibliotek
-- REST-API-struktur
-- frontend/admin-JS-stack
+Det som finns i pluginet nu:
 
-Cursor får inte välja sådant permanent enbart för att komma igång snabbt.
+- föreningsprofil
+- personer och medlemskap, inklusive ordinarie, ungdom, familj och företag
+- styrelse och täckningsregeln mot medlemskap
+- möten, dagordning, anteckningar, beslut, protokoll, PDF, signerad kopia och publicering
+- dokument och privat lagring
+- publika block
+- integritetsexport, radering och kvarhållning
+- migreringar till schema 16
+- medlemsadmin: lista, detalj, flöden per medlemstyp, vårdnadshavare, skyddade identitetsuppgifter och historik
+
+Flera tidiga designfrågor är fortfarande öppna, bland annat migrationspolicyn och kryptering av personnummer. Schema 16 är det schema som koden använder nu. Det betyder inte att varje tidigare förslag är låst.
 
 ## Läsordning
 
@@ -54,9 +57,7 @@ Cursor får inte välja sådant permanent enbart för att komma igång snabbt.
 
 ## Första uppgiften för Cursor
 
-Cursor ska **inte börja implementera pluginet direkt**.
-
-Första leveransen ska vara ett granskningsbart designpaket:
+Den första leveransen var ett granskningsbart designpaket:
 
 - färdig terminologi
 - domänmodell
@@ -69,7 +70,7 @@ Första leveransen ska vara ett granskningsbart designpaket:
 - teststrategi
 - implementation roadmap
 
-Efter det kan implementation starta från en uttryckligen godkänd bas.
+Implementationen har därefter startat från den basen. Aktuellt schema är 16.
 
 ## Referenser
 

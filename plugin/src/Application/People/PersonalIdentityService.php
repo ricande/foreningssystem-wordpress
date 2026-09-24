@@ -78,6 +78,38 @@ final class PersonalIdentityService
         $this->audit->record('personal_identity', $existing->id(), 'identity_removed', $actorUserId);
     }
 
+    public function isRecorded(int $personId): bool
+    {
+        return $this->identities->findForPerson($personId) instanceof PersonalIdentityRecord;
+    }
+
+    public function conflictsWithBirthDate(int $personId, AssociationDate $birthDate): bool
+    {
+        $record = $this->identities->findForPerson($personId);
+
+        return $record instanceof PersonalIdentityRecord && $record->number()->civilBirthDate()->iso() !== $birthDate->iso();
+    }
+
+    /**
+     * @return array{number: string, purpose: string, basis_note: string, collected_on: string}|null
+     */
+    public function authorizedRecord(int $personId): ?array
+    {
+        $this->require(Capabilities::VIEW_PERSONAL_IDENTITY_NUMBERS);
+        $record = $this->identities->findForPerson($personId);
+
+        if (! $record instanceof PersonalIdentityRecord) {
+            return null;
+        }
+
+        return [
+            'number' => $record->number()->canonical(),
+            'purpose' => $record->purpose(),
+            'basis_note' => $record->basisNote(),
+            'collected_on' => $record->collectedOn()->iso(),
+        ];
+    }
+
     public function reveal(int $personId): ?string
     {
         $this->require(Capabilities::VIEW_PERSONAL_IDENTITY_NUMBERS);

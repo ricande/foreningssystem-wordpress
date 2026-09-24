@@ -146,13 +146,16 @@ final class PeopleService
         });
     }
 
-    public function endParticipation(int $membershipId, int $personId, AssociationDate $on): void
+    /**
+     * @return list<BoardCoverageNotice>
+     */
+    public function endParticipation(int $membershipId, int $personId, AssociationDate $on): array
     {
         $this->require(Capabilities::EDIT_MEMBERS);
         $this->requireAccount($membershipId);
         $this->requirePerson($personId);
 
-        $this->transaction->run(function () use ($membershipId, $personId, $on): void {
+        return $this->transaction->run(function () use ($membershipId, $personId, $on): array {
             $open = null;
 
             foreach ($this->memberships->participantsForMembership($membershipId) as $participant) {
@@ -166,12 +169,15 @@ final class PeopleService
             }
 
             $ended = $open->ended($on);
+            $notices = [];
 
             if ($open->role()->countsAsMember()) {
-                $this->preserveBoardCoverage($personId, $this->participantsReplacing($open, $ended), $this->memberships->all());
+                $notices = $this->preserveBoardCoverage($personId, $this->participantsReplacing($open, $ended), $this->memberships->all());
             }
 
             $this->memberships->saveParticipant($ended);
+
+            return $notices;
         });
     }
 
@@ -210,21 +216,43 @@ final class PeopleService
         });
     }
 
-    public function endMembership(int $periodId, AssociationDate $on): void
+    /**
+     * @return list<BoardCoverageNotice>
+     */
+    public function endMembership(int $periodId, AssociationDate $on): array
     {
         $this->require(Capabilities::EDIT_MEMBERS);
         $period = $this->requirePeriod($periodId);
 
-        $this->transaction->run(function () use ($period, $on): void {
+        return $this->transaction->run(function () use ($period, $on): array {
             $ended = $this->ledger->end($period, $on);
             $periods = $this->periodsReplacing($period, $ended);
+            $notices = [];
 
             foreach ($this->memberParticipants($period->membershipId()) as $participant) {
-                $this->preserveBoardCoverage($participant->personId(), $this->memberships->allParticipants(), $periods);
+                $notices = array_merge(
+                    $notices,
+                    $this->preserveBoardCoverage($participant->personId(), $this->memberships->allParticipants(), $periods)
+                );
             }
 
             $this->memberships->save($ended);
+
+            return $notices;
         });
+    }
+
+    public function updateContact(
+        int $personId,
+        string $firstName,
+        string $lastName,
+        string $email,
+        ?AssociationDate $birthDate,
+        AssociationDate $today,
+    ): void {
+        $this->require(Capabilities::EDIT_MEMBERS);
+        $person = $this->requirePerson($personId);
+        $this->people->save($person->withContact($firstName, $lastName, $email, $this->birthDate($birthDate, $today)));
     }
 
     public function markDeceased(int $personId, AssociationDate $on): void
@@ -426,10 +454,12 @@ final class PeopleService
     /**
      * @param list<MembershipParticipant> $participants
      * @param list<MembershipPeriod> $periods
+     * @return list<BoardCoverageNotice>
      */
-    private function preserveBoardCoverage(int $personId, array $participants, array $periods): void
+    private function preserveBoardCoverage(int $personId, array $participants, array $periods): array
     {
         $changes = [];
+        $notices = [];
 
         foreach ($this->openAssignments->assignmentsFor($personId) as $assignment) {
             $span = MemberCoverage::continuousCoverageFrom($personId, $assignment->startedOn(), $participants, $periods);
@@ -443,6 +473,10 @@ final class PeopleService
             }
 
             if ($span->isOpenEnded()) {
+                if (! $assignment->endedOn() instanceof AssociationDate) {
+                    $notices[] = new BoardCoverageNotice($personId, $assignment->roleId(), true, null);
+                }
+
                 continue;
             }
 
@@ -463,7 +497,10 @@ final class PeopleService
 
         foreach ($changes as [$assignment, $end]) {
             $this->openAssignments->endAssignment($assignment, $end);
+            $notices[] = new BoardCoverageNotice($personId, $assignment->roleId(), false, $end->iso());
         }
+
+        return $notices;
     }
 
     /**

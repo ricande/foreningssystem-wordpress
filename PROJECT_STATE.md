@@ -43,3 +43,21 @@ A local Docker lab exists and is inventoried in `docs/16_LAB_INVENTORY.md`. `plu
 A proposed design baseline now exists under `docs/` and `adr/`. On 2026-09-24 the owner locked five points: board assignments require membership, the signed copy is the archival original, finalizing minutes is a setting, retention defaults to 5 years, and the license is GPL-2.0-or-later.
 
 The rest of the baseline stands as the accepted working design. Feature implementation has not started.
+
+## Update after implementation — 2026-09-24
+
+Implementation has started. The current database schema version is 16.
+
+Implemented areas:
+
+- association profile
+- membership and person model, including ordinary, youth, family and company memberships
+- board assignments and membership-coverage rules
+- meetings, agenda, notes, decisions, minutes, PDF, signed copy and publication
+- documents and private storage
+- public blocks
+- privacy export, erase and retention
+- schema migrations through version 16
+- members admin: list, detail, typed create flows, guardians, protected identity display and membership history
+
+Some product decisions remain provisional, including the migration policy and personal-identity encryption. Schema 16 is the current schema, not a claim that every earlier design note is locked.
