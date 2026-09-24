@@ -3,8 +3,9 @@
  * Plugin Name:       Föreningsplugin
  * Description:       Grund för föreningsplugin till WordPress.
  * Version:           0.1.0
- * Requires at least: 6.4
- * Requires PHP:      8.2
+ * Requires at least: 7.1
+ * Requires PHP:      8.3
+ * Tested up to:      7.1
  * Author:            Föreningsplugin
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html

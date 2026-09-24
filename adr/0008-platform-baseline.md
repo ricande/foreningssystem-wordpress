@@ -38,7 +38,9 @@ Cons:
 
 ## Decision
 
-Propose option B as the minimum. Develop on the lab's newer versions. Declare the minimum in the plugin header when implementation starts. Do not claim support that the test matrix does not cover.
+Option B stays a proposal. It is not approved, and the project does not test PHP 8.2 or WordPress 6.7.
+
+Until the owner locks a floor, the plugin header, Composer, and the test run name only the runtime they actually use: PHP 8.3 and WordPress 7.1 in the lab. That header is a tested-runtime marker, not a decision that older WordPress is unsupported forever. A compatibility job for any lower pair waits until the owner approves the floor. Do not claim support that the test matrix does not cover.
 
 ## Consequences
 

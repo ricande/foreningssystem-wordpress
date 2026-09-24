@@ -23,7 +23,7 @@ A use case receives already-authorized input or checks an authorization port. Te
 
 ## Recommended platform baseline
 
-Propose PHP 8.2 and WordPress 6.7 as the minimum, because the domain code wants typed properties and the lab already runs newer versions. ADR 0008 records this as a proposal. The lab's WordPress 7.1.2 and PHP 8.3 are the current development target, not the compatibility floor.
+ADR 0008 proposes PHP 8.2 and WordPress 6.7, and that proposal is not approved. The plugin header follows the tested lab runtime, PHP 8.3 and WordPress 7.1, until the owner locks a lower floor.
 
 ## Admin experience
 

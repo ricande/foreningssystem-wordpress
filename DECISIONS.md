@@ -48,8 +48,8 @@ Status terminology:
 
 ## Technical decisions not yet locked
 
-- PHP minimum version
-- WordPress minimum version
+- PHP minimum version. The plugin header and Composer require PHP 8.3 because that is the version the lab and PHPUnit run. This is not an approved lower floor.
+- WordPress minimum version. The plugin header says 7.1 because that is the lab version under test. ADR-0008 still proposes PHP 8.2 and WordPress 6.7, and that pair is not tested. Do not treat 6.4 or 6.7 as supported.
 - DB engine baseline beyond normal WordPress support
 - persistence choice per domain object
 - admin application architecture
