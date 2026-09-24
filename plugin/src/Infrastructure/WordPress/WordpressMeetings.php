@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Application\Meeting\MeetingRecord;
+use Foreningssystem\Application\Meeting\MeetingTemplates;
 use Foreningssystem\Application\Meeting\MinutesComposer;
 use Foreningssystem\Application\Meeting\MinutesDrafts;
 use Foreningssystem\Application\Meeting\MinutesPdf;
@@ -228,6 +229,43 @@ final class WordpressMeetings
             new WpSignedCopyRepository(),
             new WpSignedFileStore(),
             new WpAuditLog(),
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return current_user_can($capability);
+                }
+            },
+            new class implements Transaction {
+                public function run(callable $callback): mixed
+                {
+                    global $wpdb;
+
+                    $wpdb->query('START TRANSACTION');
+
+                    try {
+                        $result = $callback();
+                        $wpdb->query('COMMIT');
+
+                        return $result;
+                    } catch (\Throwable $error) {
+                        $wpdb->query('ROLLBACK');
+
+                        throw $error;
+                    }
+                }
+            }
+        );
+    }
+
+    public static function templates(): MeetingTemplates
+    {
+        return new MeetingTemplates(
+            new WpdbMeetingTypeRepository(),
+            new WpdbMeetingRepository(),
+            new WpdbAgendaRepository(),
+            new WpdbMeetingTemplateRepository(),
+            new WpdbMeetingTemplateItemRepository(),
+            new AgendaOrder(),
             new class implements Authorizer {
                 public function allows(string $capability): bool
                 {
