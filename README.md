@@ -94,6 +94,7 @@ make install
 make snap name=ren-install
 make restore name=ren-install
 make wp plugin list
+make test
 ```
 
 Webbplatsen körs på `http://localhost:8088` när containrarna är igång. Mailpit tar emot all utgående post på `http://localhost:8025`. Lokala lösenord ligger i `.env`, som inte ska committas.

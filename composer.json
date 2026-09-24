@@ -1,0 +1,15 @@
+{
+  "name": "foreningssystem/wordpress",
+  "description": "Self-hosted WordPress association system.",
+  "license": "GPL-2.0-or-later",
+  "type": "wordpress-plugin",
+  "require": {
+    "php": ">=8.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.5"
+  },
+  "scripts": {
+    "test": "phpunit"
+  }
+}
