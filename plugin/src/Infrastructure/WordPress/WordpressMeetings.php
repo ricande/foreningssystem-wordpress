@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Application\Meeting\MeetingRecord;
+use Foreningssystem\Application\Meeting\MinutesComposer;
+use Foreningssystem\Application\Meeting\MinutesDrafts;
 use Foreningssystem\Application\Meeting\MeetingService;
 use Foreningssystem\Application\Meeting\MeetingWorkspace;
 use Foreningssystem\Application\People\Authorizer;
@@ -95,6 +97,47 @@ final class WordpressMeetings
             new WpdbMeetingNoteRepository(),
             new WpdbDecisionRepository(),
             new WpdbActionItemRepository(),
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return current_user_can($capability);
+                }
+            },
+            new class implements Transaction {
+                public function run(callable $callback): mixed
+                {
+                    global $wpdb;
+
+                    $wpdb->query('START TRANSACTION');
+
+                    try {
+                        $result = $callback();
+                        $wpdb->query('COMMIT');
+
+                        return $result;
+                    } catch (\Throwable $error) {
+                        $wpdb->query('ROLLBACK');
+
+                        throw $error;
+                    }
+                }
+            }
+        );
+    }
+
+    public static function minutes(): MinutesDrafts
+    {
+        return new MinutesDrafts(
+            new WpdbMeetingRepository(),
+            new WpdbPersonRepository(),
+            new WpdbParticipantRepository(),
+            new WpdbAgendaRepository(),
+            new WpdbMeetingNoteRepository(),
+            new WpdbDecisionRepository(),
+            new WpdbActionItemRepository(),
+            new WpdbMinutesRepository(),
+            new MinutesComposer(),
+            new AgendaOrder(),
             new class implements Authorizer {
                 public function allows(string $capability): bool
                 {

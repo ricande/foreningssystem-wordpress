@@ -10,6 +10,7 @@ use Foreningssystem\Domain\Meeting\DecisionFollowUp;
 use Foreningssystem\Domain\Meeting\Meeting;
 use Foreningssystem\Domain\Meeting\MeetingDuty;
 use Foreningssystem\Domain\Meeting\MeetingRuleException;
+use Foreningssystem\Domain\Meeting\MeetingStatus;
 use Foreningssystem\Domain\Meeting\Presence;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Person\PersonStatus;
@@ -223,6 +224,49 @@ final class MeetingDetailPage
         }
     }
 
+    public static function createMinutesDraft(): void
+    {
+        self::guardRecord('assoc_create_minutes_draft');
+        $meetingId = self::integer('meeting_id');
+
+        try {
+            WordpressMeetings::minutes()->create($meetingId);
+            self::redirect($meetingId, 'draft_created');
+        } catch (MeetingRuleException) {
+            self::redirect($meetingId, 'draft_blocked');
+        } catch (\RuntimeException) {
+            self::redirect($meetingId, 'invalid');
+        }
+    }
+
+    public static function replaceMinutesBody(): void
+    {
+        self::guardRecord('assoc_replace_minutes_body');
+        $meetingId = self::integer('meeting_id');
+
+        try {
+            WordpressMeetings::minutes()->replaceBody(self::integer('revision_id'), self::textarea('body'));
+            self::redirect($meetingId, 'draft_saved');
+        } catch (\InvalidArgumentException | \RuntimeException) {
+            self::redirect($meetingId, 'invalid');
+        }
+    }
+
+    public static function regenerateMinutesDraft(): void
+    {
+        self::guardRecord('assoc_regenerate_minutes_draft');
+        $meetingId = self::integer('meeting_id');
+
+        try {
+            WordpressMeetings::minutes()->regenerate(self::integer('revision_id'), self::text('confirmed') === '1');
+            self::redirect($meetingId, 'draft_regenerated');
+        } catch (MeetingRuleException) {
+            self::redirect($meetingId, 'confirm_regenerate');
+        } catch (\RuntimeException) {
+            self::redirect($meetingId, 'invalid');
+        }
+    }
+
     public static function render(int $meetingId): void
     {
         $meeting = self::meeting($meetingId);
@@ -381,7 +425,78 @@ final class MeetingDetailPage
             echo '</td></tr>';
         }
 
-        echo '</tbody></table></div>';
+        echo '</tbody></table>';
+        self::renderMinutes($meeting, $canRecord);
+        echo '</div>';
+    }
+
+    private static function renderMinutes(Meeting $meeting, bool $canRecord): void
+    {
+        $meetingId = (int) $meeting->id();
+        echo '<h2>' . esc_html__('Protokollutkast', 'foreningsplugin') . '</h2>';
+        echo '<p>' . esc_html__('Utkastet är en kopia av mötet, närvaron, dagordningen, markerade anteckningar, beslut och uppgifter. Senare ändringar i de raderna skriver inte om kopian.', 'foreningsplugin') . '</p>';
+
+        if ($meeting->status() !== MeetingStatus::Held) {
+            echo '<p>' . esc_html__('Utkastet skapas när mötet är hållet.', 'foreningsplugin') . '</p>';
+
+            return;
+        }
+
+        $drafts = WordpressMeetings::minutes();
+        $draft = $drafts->current($meetingId);
+
+        if (! $draft instanceof \Foreningssystem\Domain\Meeting\MinutesRevision) {
+            if (! $canRecord) {
+                echo '<p>' . esc_html__('Inget utkast ännu.', 'foreningsplugin') . '</p>';
+
+                return;
+            }
+
+            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+            echo '<input type="hidden" name="action" value="assoc_create_minutes_draft">';
+            echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
+            wp_nonce_field('assoc_create_minutes_draft');
+            submit_button(__('Skapa protokollutkast', 'foreningsplugin'), 'secondary');
+            echo '</form>';
+
+            return;
+        }
+
+        if ($drafts->isStale($meetingId)) {
+            echo '<p>' . esc_html__('Mötesuppgifterna har ändrats efter utkastet. Skapa om utkastet om den nya texten ska med.', 'foreningsplugin') . '</p>';
+        }
+
+        if ($draft->handEdited()) {
+            echo '<p>' . esc_html__('Texten är ändrad för hand. Källkopian finns kvar tills utkastet skapas om.', 'foreningsplugin') . '</p>';
+        }
+
+        if (! $canRecord) {
+            echo '<pre>' . esc_html($draft->body()) . '</pre>';
+
+            return;
+        }
+
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<input type="hidden" name="action" value="assoc_replace_minutes_body">';
+        echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
+        echo '<input type="hidden" name="revision_id" value="' . esc_attr((string) $draft->id()) . '">';
+        wp_nonce_field('assoc_replace_minutes_body');
+        echo '<p><label>' . esc_html__('Text', 'foreningsplugin') . '<br><textarea class="large-text" name="body" rows="16" required>' . esc_textarea($draft->body()) . '</textarea></label></p>';
+        submit_button(__('Spara utkastets text', 'foreningsplugin'), 'secondary');
+        echo '</form>';
+
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<input type="hidden" name="action" value="assoc_regenerate_minutes_draft">';
+        echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
+        echo '<input type="hidden" name="revision_id" value="' . esc_attr((string) $draft->id()) . '">';
+        wp_nonce_field('assoc_regenerate_minutes_draft');
+
+        if ($draft->handEdited()) {
+            echo '<p><label><input type="checkbox" name="confirmed" value="1"> ' . esc_html__('Ersätt den ändrade texten', 'foreningsplugin') . '</label></p>';
+        }
+
+        submit_button(__('Skapa om från mötesuppgifterna', 'foreningsplugin'), 'secondary');
+        echo '</form>';
     }
 
     private static function meeting(int $meetingId): ?Meeting
@@ -451,6 +566,11 @@ final class MeetingDetailPage
             'action_added' => __('Uppgiften är sparad.', 'foreningsplugin'),
             'action_status' => __('Uppgiftens status är ändrad. Texten är densamma.', 'foreningsplugin'),
             'action_removed' => __('Uppgiften är borttagen.', 'foreningsplugin'),
+            'draft_created' => __('Protokollutkastet är skapat från mötesuppgifterna.', 'foreningsplugin'),
+            'draft_saved' => __('Utkastets text är sparad. Källuppgifterna är oförändrade.', 'foreningsplugin'),
+            'draft_regenerated' => __('Utkastet är skapat om från mötesuppgifterna.', 'foreningsplugin'),
+            'draft_blocked' => __('Utkastet skapas när mötet är hållet, och bara en gång.', 'foreningsplugin'),
+            'confirm_regenerate' => __('Bekräfta om den ändrade texten ska ersättas.', 'foreningsplugin'),
             'wrong_item' => __('Punkten hör inte till det här mötet.', 'foreningsplugin'),
             'invalid' => __('Kontrollera uppgifterna och försök igen.', 'foreningsplugin'),
         ];
@@ -459,7 +579,7 @@ final class MeetingDetailPage
             return;
         }
 
-        $class = in_array($notice, ['participant_added', 'participant_removed', 'agenda_added', 'agenda_moved', 'agenda_removed', 'note_added', 'note_removed', 'decision_added', 'follow_up', 'decision_removed', 'action_added', 'action_status', 'action_removed'], true)
+        $class = in_array($notice, ['participant_added', 'participant_removed', 'agenda_added', 'agenda_moved', 'agenda_removed', 'note_added', 'note_removed', 'decision_added', 'follow_up', 'decision_removed', 'action_added', 'action_status', 'action_removed', 'draft_created', 'draft_saved', 'draft_regenerated'], true)
             ? 'notice-success'
             : 'notice-error';
         echo '<div class="notice ' . esc_attr($class) . '"><p>' . esc_html($messages[$notice]) . '</p></div>';
