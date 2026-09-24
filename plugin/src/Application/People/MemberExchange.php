@@ -466,7 +466,9 @@ final class MemberExchange
             ParticipantAdmission::assertRole(
                 $membership->kind(),
                 $role,
-                $person->status() === PersonStatus::Deceased
+                $person->status() === PersonStatus::Deceased,
+                $this->memberships->participantsForMembership($membership->id()),
+                $personId
             );
             ParticipantAdmission::assertNoOverlap(
                 $participant,

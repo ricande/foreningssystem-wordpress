@@ -125,7 +125,8 @@ final class CoverageInvariantTest extends TestCase
     {
         [$service, $memberships, $assignments] = $this->world();
         $personId = $service->register('Lisa', 'Andersson', 'lisa-contact@example.test', 'M-1', 'ordinary', AssociationDate::fromIso('2026-01-01'));
-        $contact = $memberships->addMembership(new Membership(null, 'K-1', MembershipKind::Ordinary, null));
+        $contact = $memberships->addMembership(new Membership(null, 'K-1', MembershipKind::Company, 1));
+        $memberships->add(new MembershipPeriod(null, (int) $contact->id(), MembershipStatus::Active, AssociationDate::fromIso('2026-01-01'), null, 'company'));
         $service->addParticipant((int) $contact->id(), $personId, ParticipantRole::Contact, false, AssociationDate::fromIso('2026-01-01'));
         $assignment = $assignments->add(new BoardAssignment(null, $personId, 1, AssociationDate::fromIso('2026-03-01'), null, '', ''));
 
@@ -227,7 +228,7 @@ final class CoverageInvariantTest extends TestCase
     {
         [$service, $memberships, $assignments] = $this->world();
         $personId = $service->register('Lisa', 'Andersson', 'lisa-contact-period@example.test', 'M-1', 'ordinary', AssociationDate::fromIso('2024-01-01'));
-        $contact = $memberships->addMembership(new Membership(null, 'K-1', MembershipKind::Ordinary, null));
+        $contact = $memberships->addMembership(new Membership(null, 'K-1', MembershipKind::Company, 1));
         $contactPeriod = $memberships->add(new MembershipPeriod(
             null,
             (int) $contact->id(),

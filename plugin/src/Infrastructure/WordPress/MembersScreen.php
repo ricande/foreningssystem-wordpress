@@ -102,12 +102,13 @@ final class MembersScreen
                 ? ['assoc_person' => (string) $row['person_id']]
                 : ['assoc_number' => $row['membership_number']];
             [$started, $ended] = array_pad(explode('|', $row['dates'], 2), 2, '');
+            $datesOpen = ($row['dates_open'] ?? false) === true;
             echo '<tr>';
             echo '<td><a href="' . esc_url(self::url($args)) . '">' . esc_html($row['title']) . '</a></td>';
             echo '<td>' . esc_html($row['number']) . '</td>';
             echo '<td>' . esc_html(self::kindLabel($row['kind'])) . '</td>';
             echo '<td>' . esc_html(self::stateLabel($row['state'])) . '</td>';
-            echo '<td>' . esc_html(self::span($started, $ended)) . '</td>';
+            echo '<td>' . esc_html($datesOpen ? self::span($started, $ended === '' ? null : $ended) : ($ended === '' ? $started : self::span($started, $ended))) . '</td>';
             echo '<td>' . esc_html($row['context']) . '</td>';
             echo '</tr>';
         }
@@ -289,7 +290,7 @@ final class MembersScreen
             }
         }
 
-        if (! $hasOpen && $kind !== MembershipKind::Company->value) {
+        if (! $hasOpen) {
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_add_membership">';
             echo '<input type="hidden" name="membership_id" value="' . esc_attr((string) $membership['membership_id']) . '">';
@@ -563,6 +564,9 @@ final class MembersScreen
         echo '<input type="hidden" name="membership_kind" value="' . esc_attr($kind) . '">';
         wp_nonce_field('assoc_open_membership');
         self::personSelect($directory, 'person_id', __('Existing person', 'foreningsplugin'));
+        if ($kind === 'youth') {
+            echo '<p>' . esc_html__('A youth membership needs a birth date on the person. Add that date on the person first. A personal identity number is not used to fill it in.', 'foreningsplugin') . '</p>';
+        }
         self::input('membership_number', __('Membership number', 'foreningsplugin'), 'text', true, '');
         self::input('started_on', __('Start date', 'foreningsplugin'), 'date', true, '');
         submit_button(__('Add membership for this person', 'foreningsplugin'));

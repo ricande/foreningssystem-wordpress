@@ -229,6 +229,55 @@ remove_all_filters('wp_die_handler');
 wp_set_current_user(1);
 clean_user_cache(1);
 
+$ordinaryMembershipId = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT id FROM {$wpdb->prefix}assoc_membership WHERE membership_number = %s",
+    'LAB-UX-1042'
+));
+$familyMembershipId = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT id FROM {$wpdb->prefix}assoc_membership WHERE membership_number = %s",
+    'LAB-UX-F100'
+));
+$redirectTo = static function (string $action, array $post): string {
+    $_POST = $post;
+    $_REQUEST = $post;
+    $_REQUEST['_wpnonce'] = wp_create_nonce($action);
+    $location = '';
+    $filter = static function (string $target) use (&$location): string {
+        $location = $target;
+        throw new \RuntimeException('redirect');
+    };
+    add_filter('wp_redirect', $filter, 1);
+
+    try {
+        if ($action === 'assoc_add_family_participant') {
+            MembersPage::addFamilyParticipant();
+        } else {
+            MembersPage::addCompanyContact();
+        }
+    } catch (\RuntimeException $error) {
+        if ($error->getMessage() !== 'redirect') {
+            remove_filter('wp_redirect', $filter, 1);
+            throw $error;
+        }
+    }
+
+    remove_filter('wp_redirect', $filter, 1);
+
+    return $location;
+};
+$familyOnOrdinary = $redirectTo('assoc_add_family_participant', [
+    'membership_id' => (string) $ordinaryMembershipId,
+    'person_id' => (string) $lisa,
+    'participant_role' => 'member',
+    'started_on' => '2026-09-24',
+]);
+$contactOnFamily = $redirectTo('assoc_add_company_contact', [
+    'membership_id' => (string) $familyMembershipId,
+    'person_id' => (string) $lisa,
+    'started_on' => '2026-09-24',
+]);
+$_POST = [];
+$_REQUEST = [];
 $checks = [
     'overlap' => $overlap === true,
     'duplicate' => $duplicate === true,
@@ -259,6 +308,8 @@ $checks = [
     'overlap notice' => str_contains($overlapNotice, 'Personen har redan överlappande aktivt medlemskap.'),
     'secretary identity hidden' => ! str_contains($secretaryList, $identifier) && ! str_contains($secretaryLisa, $identifier) && str_contains($secretaryLisa, 'Personnummer: Registrerat'),
     'board outcome' => str_contains($ended, 'UX office') && str_contains($ended, '2026-09-24') && str_contains($ended, 'Medlemskapet är avslutat. Medlemshistoriken behålls.'),
+    'crafted family handler' => str_contains($familyOnOrdinary, 'assoc_notice=family_only'),
+    'crafted company handler' => str_contains($contactOnFamily, 'assoc_notice=company_only'),
 ];
 $failed = array_keys(array_filter($checks, static fn (bool $passed): bool => $passed !== true));
 

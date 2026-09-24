@@ -118,6 +118,45 @@ final class MemberCoverage
         return $hasMembership ? $latest : null;
     }
 
+    /**
+     * One row per overlapping participation and period.
+     * The end is null only when that intersection is still open.
+     *
+     * @param list<MembershipParticipant> $participants
+     * @param list<MembershipPeriod> $periods
+     * @return list<EffectiveCoverage>
+     */
+    public static function effectiveMemberCoverages(int $personId, array $participants, array $periods): array
+    {
+        $coverages = [];
+
+        foreach ($participants as $participant) {
+            if ($participant->personId() !== $personId || ! $participant->role()->countsAsMember()) {
+                continue;
+            }
+
+            foreach ($periods as $period) {
+                if (! self::participationOverlapsPeriod($participant, $period)) {
+                    continue;
+                }
+
+                $coverages[] = new EffectiveCoverage(
+                    $period->membershipId(),
+                    self::later($participant->startedOn(), $period->startedOn()),
+                    self::coverageEnd($participant, $period)
+                );
+            }
+        }
+
+        usort(
+            $coverages,
+            static fn (EffectiveCoverage $left, EffectiveCoverage $right): int => [$left->startedOn()->iso(), $left->membershipId()]
+                <=> [$right->startedOn()->iso(), $right->membershipId()]
+        );
+
+        return $coverages;
+    }
+
     public static function participationOverlapsPeriod(MembershipParticipant $participant, MembershipPeriod $period): bool
     {
         if ($participant->membershipId() !== $period->membershipId() || ! self::coversDates($period)) {

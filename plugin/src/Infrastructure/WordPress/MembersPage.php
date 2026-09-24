@@ -9,6 +9,7 @@ use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Board\BoardRuleException;
 use Foreningssystem\Domain\Membership\AssociationDate;
+use Foreningssystem\Domain\Membership\MembershipKind;
 use Foreningssystem\Domain\Membership\MembershipRuleException;
 
 final class MembersPage
@@ -76,6 +77,7 @@ final class MembersPage
         self::guardEdit('assoc_add_family_participant');
 
         try {
+            WordpressPeople::service()->requireKind(self::integer('membership_id'), MembershipKind::Family);
             $startedOn = AssociationDate::fromIso(self::text('started_on'));
             $personId = self::integer('person_id');
 
@@ -322,6 +324,7 @@ final class MembersPage
         self::guardEdit('assoc_add_company_contact');
 
         try {
+            WordpressPeople::service()->requireKind(self::integer('membership_id'), MembershipKind::Company);
             $personId = self::integer('person_id');
 
             if ($personId < 1) {
@@ -592,6 +595,10 @@ final class MembersPage
             'Choose a person.' => 'choose_person',
             'A family participant is a member.' => 'family_role',
             'This guardian relationship already covers that time.' => 'guardian_overlap',
+            'This action is only available for family memberships.' => 'family_only',
+            'Company contacts can only be added to company memberships.' => 'company_only',
+            'An ordinary or youth membership has one member.' => 'single_member',
+            'Add a birth date before starting a youth membership.' => 'youth_birth',
             default => 'invalid',
         };
     }
@@ -649,6 +656,10 @@ final class MembersPage
             'choose_person' => __('Choose an existing person.', 'foreningsplugin'),
             'family_role' => __('A family participant is a member.', 'foreningsplugin'),
             'guardian_overlap' => __('This guardian relationship already covers that time.', 'foreningsplugin'),
+            'family_only' => __('This action is only available for family memberships.', 'foreningsplugin'),
+            'company_only' => __('Company contacts can only be added to company memberships.', 'foreningsplugin'),
+            'single_member' => __('An ordinary or youth membership has one member.', 'foreningsplugin'),
+            'youth_birth' => __('Add a birth date before starting a youth membership.', 'foreningsplugin'),
             'confirm' => __('Confirm the action before it is saved.', 'foreningsplugin'),
             'invalid' => __('Check the details and try again.', 'foreningsplugin'),
             'deceased_period' => __('A deceased person cannot receive a new membership period.', 'foreningsplugin'),

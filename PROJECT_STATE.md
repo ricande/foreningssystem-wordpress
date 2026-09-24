@@ -2,7 +2,9 @@
 
 ## Current phase
 
-Product definition and architecture design. No implementation has been approved yet.
+Implementation and product hardening. This is not a claim that the plugin is production-ready.
+
+The sections below keep the original handoff. A later update records what has since been implemented.
 
 ## Current product shape
 
@@ -32,6 +34,8 @@ Annual-meeting templates must be configurable according to the association's own
 
 ## Implementation gate
 
+Original handoff instruction:
+
 Cursor's first job is to complete the design baseline described in `CURSOR_START_PROMPT.md`.
 
 Do not start broad feature implementation until that baseline has been reviewed/approved.
@@ -42,7 +46,7 @@ A local Docker lab exists and is inventoried in `docs/16_LAB_INVENTORY.md`. `plu
 
 A proposed design baseline now exists under `docs/` and `adr/`. On 2026-09-24 the owner locked five points: board assignments require membership, the signed copy is the archival original, finalizing minutes is a setting, retention defaults to 5 years, and the license is GPL-2.0-or-later.
 
-The rest of the baseline stands as the accepted working design. Feature implementation has not started.
+The rest of the baseline stands as the accepted working design. At this point in the handoff, feature implementation had not started.
 
 ## Update after implementation — 2026-09-24
 

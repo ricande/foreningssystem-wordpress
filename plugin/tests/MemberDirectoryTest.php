@@ -104,6 +104,88 @@ final class MemberDirectoryTest extends TestCase
         self::assertNotNull($people->find($anna));
     }
 
+    public function test_the_list_uses_effective_coverage_rather_than_an_open_participant_row(): void
+    {
+        [$service, , $memberships, $organizations, $directory] = $this->world();
+        $today = AssociationDate::fromIso('2026-09-24');
+        $anna = $service->register('Anna', 'Andersson', 'anna-cover@example.test', 'OLD-100', 'family', AssociationDate::fromIso('2024-01-01'));
+        $oldPeriod = (int) $memberships->periodsForMembership((int) $memberships->findMembershipByNumber('OLD-100')?->id())[0]->id();
+        $service->endMembership($oldPeriod, AssociationDate::fromIso('2025-12-31'));
+        $ended = $directory->listRows('anna-cover@example.test', '', '', $today)[0];
+
+        self::assertSame('history', $ended['state']);
+        self::assertSame('family', $ended['kind']);
+        self::assertSame('OLD-100', $ended['number']);
+        self::assertSame('2024-01-01|2025-12-31', $ended['dates']);
+        self::assertFalse($ended['dates_open']);
+
+        $service->openForExistingPerson($anna, 'NEW-200', 'ordinary', AssociationDate::fromIso('2026-01-01'));
+        $current = $directory->listRows('anna-cover@example.test', '', '', $today)[0];
+        $ordinary = $directory->listRows('anna-cover@example.test', 'ordinary', 'active', $today);
+        $family = $directory->listRows('anna-cover@example.test', 'family', '', $today);
+
+        self::assertSame('active', $current['state']);
+        self::assertSame('ordinary', $current['kind']);
+        self::assertSame('NEW-200', $current['number']);
+        self::assertSame('2026-01-01|', $current['dates']);
+        self::assertTrue($current['dates_open']);
+        self::assertSame('NEW-200', $ordinary[0]['number']);
+        self::assertSame([], $family);
+
+        $service->endMembership((int) $memberships->periodsForMembership((int) $memberships->findMembershipByNumber('NEW-200')?->id())[0]->id(), AssociationDate::fromIso('2026-06-30'));
+        $latest = $directory->listRows('anna-cover@example.test', '', 'history', $today)[0];
+
+        self::assertSame('NEW-200', $latest['number']);
+        self::assertSame('2026-01-01|2026-06-30', $latest['dates']);
+        self::assertFalse($latest['dates_open']);
+
+        $service->addPeriod((int) $memberships->findMembershipByNumber('NEW-200')?->id(), AssociationDate::fromIso('2026-08-01'));
+        $returned = $directory->listRows('anna-cover@example.test', 'ordinary', 'active', $today)[0];
+
+        self::assertSame('2026-08-01|', $returned['dates']);
+        self::assertTrue($returned['dates_open']);
+
+        $organization = $organizations->add(new Organization(null, 'Exempel AB', OrganizationNumber::parse('556012-3456'), '', ''));
+        $company = $memberships->addMembership(new Membership(null, 'C-KEEP', MembershipKind::Company, $organization->id()));
+        $memberships->add(new MembershipPeriod(null, (int) $company->id(), MembershipStatus::Active, AssociationDate::fromIso('2026-08-01'), null, 'company'));
+        $service->addParticipant((int) $company->id(), $anna, ParticipantRole::Contact, false, AssociationDate::fromIso('2026-08-01'));
+        $withContact = $directory->listRows('anna-cover@example.test', 'ordinary', '', $today)[0];
+
+        self::assertSame('NEW-200', $withContact['number']);
+        self::assertSame('ordinary', $withContact['kind']);
+        self::assertSame('Exempel AB', $withContact['context']);
+    }
+
+    public function test_a_company_period_that_has_not_started_is_not_active(): void
+    {
+        [, , $memberships, $organizations, $directory] = $this->world();
+        $today = AssociationDate::fromIso('2026-09-24');
+        $organization = $organizations->add(new Organization(null, 'Framtida AB', OrganizationNumber::parse('556012-3456'), '', ''));
+        $company = $memberships->addMembership(new Membership(null, 'C-FUTURE', MembershipKind::Company, $organization->id()));
+        $memberships->add(new MembershipPeriod(null, (int) $company->id(), MembershipStatus::Active, AssociationDate::fromIso('2027-01-01'), null, 'company'));
+        $row = $directory->listRows('C-FUTURE', 'company', '', $today)[0];
+
+        self::assertNotSame('active', $row['state']);
+        self::assertFalse($row['dates_open']);
+        self::assertSame('2027-01-01|', $row['dates']);
+    }
+
+    public function test_a_pending_period_can_still_be_ended(): void
+    {
+        [, , $memberships, , $directory] = $this->world();
+        $membership = $memberships->addMembership(new Membership(null, 'PEND-1', MembershipKind::Ordinary, null));
+        $memberships->add(new MembershipPeriod(null, (int) $membership->id(), MembershipStatus::Pending, AssociationDate::fromIso('2026-01-01'), null, 'ordinary'));
+        $detail = $directory->membershipDetail('PEND-1');
+
+        self::assertIsArray($detail);
+        self::assertTrue($detail['periods'][0]['open']);
+        $ended = (new \Foreningssystem\Domain\Membership\MembershipLedger())->end(
+            $memberships->periodsForMembership((int) $membership->id())[0],
+            AssociationDate::fromIso('2026-09-24')
+        );
+        self::assertSame(MembershipStatus::Ended, $ended->status());
+    }
+
     /**
      * @return array{0: PeopleService, 1: MemoryPersonRepository, 2: MemoryMembershipRepository, 3: MemoryOrganizationRepository, 4: MemberDirectory}
      */

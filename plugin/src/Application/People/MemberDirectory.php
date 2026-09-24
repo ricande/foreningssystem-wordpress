@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Application\People;
 
 use Foreningssystem\Domain\Membership\AssociationDate;
+use Foreningssystem\Domain\Membership\EffectiveCoverage;
 use Foreningssystem\Domain\Membership\MemberCoverage;
 use Foreningssystem\Domain\Membership\Membership;
 use Foreningssystem\Domain\Membership\MembershipKind;
@@ -206,34 +207,48 @@ final class MemberDirectory
         $personId = (int) $person->id();
         $links = $snapshot['participantsByPerson'][$personId] ?? [];
         $activeMember = MemberCoverage::isActiveMember($personId, $today, $snapshot['participants'], $snapshot['periods']);
-        $primary = null;
         $context = [];
         $hasHistory = false;
+        $coverages = MemberCoverage::effectiveMemberCoverages($personId, $snapshot['participants'], $snapshot['periods']);
+        $current = [];
+        $past = [];
+
+        foreach ($coverages as $coverage) {
+            if ($coverage->includes($today)) {
+                $current[] = $coverage;
+                continue;
+            }
+
+            if ($coverage->endedOn() instanceof AssociationDate && ! $today->isBefore($coverage->startedOn())) {
+                $past[] = $coverage;
+                $hasHistory = true;
+            }
+        }
+
+        usort(
+            $current,
+            static fn (EffectiveCoverage $left, EffectiveCoverage $right): int => [$right->startedOn()->iso(), $right->membershipId()]
+                <=> [$left->startedOn()->iso(), $left->membershipId()]
+        );
+        usort(
+            $past,
+            static fn (EffectiveCoverage $left, EffectiveCoverage $right): int => [
+                $right->endedOn()?->iso() ?? '',
+                $right->startedOn()->iso(),
+                $right->membershipId(),
+            ] <=> [
+                $left->endedOn()?->iso() ?? '',
+                $left->startedOn()->iso(),
+                $left->membershipId(),
+            ]
+        );
+        $chosen = $current[0] ?? $past[0] ?? null;
 
         foreach ($links as $participant) {
             $membership = $snapshot['memberships'][$participant->membershipId()] ?? null;
 
             if (! $membership instanceof Membership) {
                 continue;
-            }
-
-            if ($participant->role()->countsAsMember() && $participant->endedOn() instanceof AssociationDate) {
-                $hasHistory = true;
-            }
-
-            foreach ($snapshot['periodsByMembership'][$membership->id()] ?? [] as $period) {
-                if ($period->status() === MembershipStatus::Ended && MemberCoverage::participationOverlapsPeriod($participant, $period)) {
-                    $hasHistory = true;
-                }
-            }
-
-            if ($participant->role()->countsAsMember()) {
-                $open = ! $participant->endedOn() instanceof AssociationDate;
-                $primaryIsClosed = is_array($primary) && $primary[0]->endedOn() instanceof AssociationDate;
-
-                if ($primary === null || ($open && $primaryIsClosed)) {
-                    $primary = [$participant, $membership];
-                }
             }
 
             if (! $participant->role()->countsAsMember() && $membership->kind() === MembershipKind::Company) {
@@ -258,11 +273,18 @@ final class MemberDirectory
         $kind = '';
         $dates = '';
 
-        if (is_array($primary)) {
-            [$participant, $membership] = $primary;
-            $number = $membership->number();
-            $kind = $membership->kind()->value;
-            $dates = $this->dateSpan($participant->startedOn()->iso(), $participant->endedOn()?->iso());
+        $datesOpen = false;
+
+        if ($chosen instanceof EffectiveCoverage) {
+            $membership = $snapshot['memberships'][$chosen->membershipId()] ?? null;
+
+            if ($membership instanceof Membership) {
+                $number = $membership->number();
+                $kind = $membership->kind()->value;
+            }
+
+            $datesOpen = $chosen->includes($today) && ! $chosen->endedOn() instanceof AssociationDate;
+            $dates = $this->dateSpan($chosen->startedOn()->iso(), $datesOpen ? null : $chosen->endedOn()?->iso());
         }
 
         return [
@@ -271,6 +293,7 @@ final class MemberDirectory
             'kind' => $kind,
             'state' => $state,
             'dates' => $dates,
+            'dates_open' => $datesOpen,
             'context' => implode(', ', $context),
             'email' => $person->email(),
             'person_id' => $personId,
@@ -286,37 +309,43 @@ final class MemberDirectory
     private function companyRow(Membership $membership, array $snapshot, AssociationDate $today): array
     {
         $organization = $snapshot['organizations'][$membership->organizationId()] ?? null;
-        $open = null;
-
-        foreach ($snapshot['periodsByMembership'][(int) $membership->id()] ?? [] as $period) {
-            if ($period->status() !== MembershipStatus::Ended) {
-                $open = $period;
-            }
-        }
-
-        $latest = $open;
-
-        if (! $latest instanceof MembershipPeriod) {
-            foreach ($snapshot['periodsByMembership'][(int) $membership->id()] ?? [] as $period) {
-                $latest = $period;
-            }
-        }
-
-        $active = MemberCoverage::membershipIsActive((int) $membership->id(), $today, $snapshot['periods']);
+        $covering = null;
+        $future = null;
+        $latestEnded = null;
         $hasHistory = false;
 
         foreach ($snapshot['periodsByMembership'][(int) $membership->id()] ?? [] as $period) {
+            if ($period->isActiveOn($today)) {
+                $covering = $period;
+            } elseif ($today->isBefore($period->startedOn()) && $period->status() !== MembershipStatus::Ended) {
+                if (! $future instanceof MembershipPeriod || $period->startedOn()->isBefore($future->startedOn())) {
+                    $future = $period;
+                }
+            }
+
             if ($period->status() === MembershipStatus::Ended) {
                 $hasHistory = true;
+
+                $periodEnd = $period->endedOn();
+                $latestEnd = $latestEnded?->endedOn();
+
+                if (! $latestEnded instanceof MembershipPeriod || ($periodEnd instanceof AssociationDate && (! $latestEnd instanceof AssociationDate || $periodEnd->isAfter($latestEnd)))) {
+                    $latestEnded = $period;
+                }
             }
         }
+
+        $shown = $covering ?? $latestEnded ?? $future;
+        $active = MemberCoverage::membershipIsActive((int) $membership->id(), $today, $snapshot['periods']);
+        $datesOpen = $active && $shown instanceof MembershipPeriod && ! $shown->endedOn() instanceof AssociationDate;
 
         return [
             'title' => $organization instanceof Organization ? $organization->name() : $membership->number(),
             'number' => $membership->number(),
             'kind' => MembershipKind::Company->value,
-            'state' => $active ? 'active' : 'history',
-            'dates' => $latest instanceof MembershipPeriod ? $this->dateSpan($latest->startedOn()->iso(), $latest->endedOn()?->iso()) : '',
+            'state' => $active ? 'active' : ($hasHistory ? 'history' : 'inactive'),
+            'dates' => $shown instanceof MembershipPeriod ? $this->dateSpan($shown->startedOn()->iso(), $datesOpen ? null : $shown->endedOn()?->iso()) : '',
+            'dates_open' => $datesOpen,
             'context' => $organization instanceof Organization ? ($organization->number()?->canonical() ?? '') : '',
             'email' => '',
             'person_id' => 0,
@@ -340,6 +369,7 @@ final class MemberDirectory
                 'started_on' => $period->startedOn()->iso(),
                 'ended_on' => $period->endedOn()?->iso(),
                 'status' => $period->status()->value,
+                // Active, pending and dormant can all be ended. Only an ended period is closed.
                 'open' => $period->status() !== MembershipStatus::Ended,
             ];
         }

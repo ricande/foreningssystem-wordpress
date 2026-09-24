@@ -10,14 +10,48 @@ namespace Foreningssystem\Domain\Membership;
  */
 final class ParticipantAdmission
 {
-    public static function assertRole(MembershipKind $kind, ParticipantRole $role, bool $deceased): void
-    {
-        if ($kind === MembershipKind::Company && $role->countsAsMember()) {
-            throw new MembershipRuleException('A company contact is not an individual member.');
+    /**
+     * Ordinary, youth and family memberships take members.
+     * A company membership takes contacts.
+     * Ordinary and youth memberships belong to one person; a later interval for that same person is still allowed.
+     *
+     * @param list<MembershipParticipant> $existing
+     */
+    public static function assertRole(
+        MembershipKind $kind,
+        ParticipantRole $role,
+        bool $deceased,
+        array $existing = [],
+        ?int $incomingPersonId = null,
+    ): void {
+        $allowed = $kind === MembershipKind::Company ? ParticipantRole::Contact : ParticipantRole::Member;
+
+        if ($role !== $allowed) {
+            if ($kind === MembershipKind::Company) {
+                throw new MembershipRuleException('A company contact is not an individual member.');
+            }
+
+            throw new MembershipRuleException('Company contacts can only be added to company memberships.');
         }
 
         if ($deceased && $role->countsAsMember()) {
             throw new MembershipRuleException('A deceased person cannot start a membership.');
+        }
+
+        if ($kind !== MembershipKind::Ordinary && $kind !== MembershipKind::Youth) {
+            return;
+        }
+
+        foreach ($existing as $participant) {
+            if (! $participant->role()->countsAsMember()) {
+                continue;
+            }
+
+            if ($incomingPersonId !== null && $participant->personId() === $incomingPersonId) {
+                continue;
+            }
+
+            throw new MembershipRuleException('An ordinary or youth membership has one member.');
         }
     }
 

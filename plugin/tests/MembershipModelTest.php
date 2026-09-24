@@ -59,12 +59,14 @@ final class MembershipModelTest extends TestCase
         $accountId = (int) $service->listPeople()[0]->account()?->id();
         $child = $service->addPersonToMembership($accountId, 'Lisa', 'Andersson', 'lisa@example.test', AssociationDate::fromIso('2012-04-17'), AssociationDate::fromIso('2026-09-24'), ParticipantRole::Member, false);
         $contact = $people->add(new \Foreningssystem\Domain\Person\Person(null, 'Ekonomi', 'Kontor', 'ekonomi@example.test', \Foreningssystem\Domain\Person\PersonStatus::Known, null));
-        $service->addParticipant($accountId, (int) $contact->id(), ParticipantRole::Contact, false, AssociationDate::fromIso('2026-09-24'));
+        $company = $memberships->addMembership(new \Foreningssystem\Domain\Membership\Membership(null, 'C-1', \Foreningssystem\Domain\Membership\MembershipKind::Company, 1));
+        $memberships->add(new \Foreningssystem\Domain\Membership\MembershipPeriod(null, (int) $company->id(), \Foreningssystem\Domain\Membership\MembershipStatus::Active, AssociationDate::fromIso('2026-01-01'), null, 'company'));
+        $service->addParticipant((int) $company->id(), (int) $contact->id(), ParticipantRole::Contact, false, AssociationDate::fromIso('2026-09-24'));
 
         self::assertNotSame($primary, $child);
-        self::assertSame(1, $service->activeMembershipCount(AssociationDate::fromIso('2026-09-24')));
+        self::assertSame(2, $service->activeMembershipCount(AssociationDate::fromIso('2026-09-24')));
         self::assertSame(2, $service->activeMemberCount(AssociationDate::fromIso('2026-09-24')));
-        self::assertCount(1, $memberships->allMemberships());
+        self::assertCount(2, $memberships->allMemberships());
         self::assertCount(3, $people->all());
     }
 

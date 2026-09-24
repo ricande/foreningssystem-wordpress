@@ -46,6 +46,11 @@ final class PeopleService
         ?AssociationDate $today = null,
     ): int {
         $this->require(Capabilities::EDIT_MEMBERS);
+        $kind = MembershipKind::knownSlug($membershipType) ? MembershipKind::fromSlug($membershipType) : MembershipKind::Ordinary;
+
+        if ($kind === MembershipKind::Youth && ! $birthDate instanceof AssociationDate) {
+            throw new MembershipRuleException('Add a birth date before starting a youth membership.');
+        }
 
         return $this->transaction->run(function () use ($firstName, $lastName, $email, $membershipNumber, $membershipType, $startedOn, $birthDate, $today): int {
             $person = $this->people->add(new Person(
@@ -106,7 +111,12 @@ final class PeopleService
         return $this->transaction->run(function () use ($membershipId, $firstName, $lastName, $email, $birthDate, $startedOn, $role, $primary, $today): int {
             $membership = $this->requireAccount($membershipId);
 
-            ParticipantAdmission::assertRole($membership->kind(), $role, false);
+            ParticipantAdmission::assertRole(
+                $membership->kind(),
+                $role,
+                false,
+                $this->memberships->participantsForMembership($membershipId)
+            );
 
             $person = $this->people->add(new Person(
                 null,
@@ -137,7 +147,13 @@ final class PeopleService
         $person = $this->requirePerson($personId);
         $membership = $this->requireAccount($membershipId);
 
-        ParticipantAdmission::assertRole($membership->kind(), $role, $person->status() === PersonStatus::Deceased);
+        ParticipantAdmission::assertRole(
+            $membership->kind(),
+            $role,
+            $person->status() === PersonStatus::Deceased,
+            $this->memberships->participantsForMembership($membershipId),
+            $personId
+        );
 
         $this->transaction->run(function () use ($membership, $personId, $role, $primary, $on): void {
             $participant = new MembershipParticipant(null, (int) $membership->id(), $personId, $role, $primary, $on, null);
@@ -185,6 +201,11 @@ final class PeopleService
     {
         $this->require(Capabilities::EDIT_MEMBERS);
         $membership = $this->requireAccount($membershipId);
+
+        if ($membership->kind() === MembershipKind::Company) {
+            return $this->addCompanyPeriod($membership, $startedOn);
+        }
+
         $members = $this->memberParticipants($membershipId);
 
         if ($members === []) {
@@ -422,6 +443,12 @@ final class PeopleService
             throw new MembershipRuleException('A deceased person cannot start a membership.');
         }
 
+        $kind = MembershipKind::knownSlug($membershipType) ? MembershipKind::fromSlug($membershipType) : MembershipKind::Ordinary;
+
+        if ($kind === MembershipKind::Youth && ! $person->birthDate() instanceof AssociationDate) {
+            throw new MembershipRuleException('Add a birth date before starting a youth membership.');
+        }
+
         return $this->transaction->run(function () use ($personId, $membershipNumber, $membershipType, $startedOn): int {
             $membership = $this->openMembership($personId, trim($membershipNumber), trim($membershipType), $startedOn, ParticipantRole::Member, true);
 
@@ -559,6 +586,42 @@ final class PeopleService
         }
 
         return $rows;
+    }
+
+    public function requireKind(int $membershipId, MembershipKind $expected): void
+    {
+        $this->require(Capabilities::EDIT_MEMBERS);
+        $membership = $this->requireAccount($membershipId);
+
+        if ($membership->kind() === $expected) {
+            return;
+        }
+
+        throw new MembershipRuleException(match ($expected) {
+            MembershipKind::Family => 'This action is only available for family memberships.',
+            MembershipKind::Company => 'Company contacts can only be added to company memberships.',
+            default => 'That action does not match this membership.',
+        });
+    }
+
+    private function addCompanyPeriod(Membership $membership, AssociationDate $startedOn): int
+    {
+        if ($membership->organizationId() === null || $membership->organizationId() < 1) {
+            throw new MembershipRuleException('A company membership belongs to an organization.');
+        }
+
+        return $this->transaction->run(function () use ($membership, $startedOn): int {
+            $period = new MembershipPeriod(null, (int) $membership->id(), MembershipStatus::Active, $startedOn, null, $membership->kind()->value);
+            $this->ledger->add($this->memberships->periodsForMembership((int) $membership->id()), $period);
+            $saved = $this->memberships->add($period);
+            $periodId = $saved->id();
+
+            if ($periodId === null) {
+                throw new \RuntimeException('The membership was not saved.');
+            }
+
+            return $periodId;
+        });
     }
 
     /**

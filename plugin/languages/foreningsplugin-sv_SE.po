@@ -1527,3 +1527,18 @@ msgstr "Den här vårdnadshavarrelationen täcker redan den tiden."
 
 msgid "Confirm the action before it is saved."
 msgstr "Bekräfta åtgärden innan den sparas."
+
+msgid "This action is only available for family memberships."
+msgstr "Den här åtgärden finns bara för familjemedlemskap."
+
+msgid "Company contacts can only be added to company memberships."
+msgstr "Företagskontakter kan bara läggas till på företagsmedlemskap."
+
+msgid "An ordinary or youth membership has one member."
+msgstr "Ett ordinarie medlemskap eller ungdomsmedlemskap har en medlem."
+
+msgid "Add a birth date before starting a youth membership."
+msgstr "Lägg till ett födelsedatum innan du startar ett ungdomsmedlemskap."
+
+msgid "A youth membership needs a birth date on the person. Add that date on the person first. A personal identity number is not used to fill it in."
+msgstr "Ett ungdomsmedlemskap behöver ett födelsedatum på personen. Lägg till datumet på personen först. Ett personnummer används inte för att fylla i det."
