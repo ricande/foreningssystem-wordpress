@@ -91,12 +91,12 @@ final class PeopleServiceTest extends TestCase
             },
             new RecordingOpenAssignments()
         );
-        $memberships->add(new MembershipPeriod(null, 1, 'M-1', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, 1, 'M-2', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, 2, 'M-3', 'ordinarie', MembershipStatus::Dormant, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, 3, 'M-4', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2024-06-01')));
-        $memberships->add(new MembershipPeriod(null, 4, 'M-5', 'ordinarie', MembershipStatus::Pending, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, 5, 'M-FUTURE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2025-01-01'), null));
+        $memberships->grant(1, 'M-1', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant(1, 'M-2', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null);
+        $memberships->grant(2, 'M-3', 'ordinarie', MembershipStatus::Dormant, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant(3, 'M-4', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2024-06-01'));
+        $memberships->grant(4, 'M-5', 'ordinarie', MembershipStatus::Pending, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant(5, 'M-FUTURE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2025-01-01'), null);
         $on = AssociationDate::fromIso('2024-09-24');
 
         self::assertSame(1, $service->publicMemberCount($on));
@@ -140,7 +140,8 @@ final class PeopleServiceTest extends TestCase
         $service->endMembership($firstId, AssociationDate::fromIso('2021-12-31'));
 
         self::assertSame(0, $service->activeMemberCount($today));
-        $secondId = $service->addMembership($personId, 'M-2', 'ordinarie', AssociationDate::fromIso('2022-01-01'));
+        $accountId = (int) $service->listPeople()[0]->account()?->id();
+        $secondId = $service->addPeriod($accountId, AssociationDate::fromIso('2022-01-01'));
 
         self::assertSame(1, $service->activeMemberCount($today));
         self::assertCount(2, $memberships->all());
@@ -150,7 +151,7 @@ final class PeopleServiceTest extends TestCase
         self::assertSame($personId, $service->listPeople()[0]->person()->id());
 
         try {
-            $service->addMembership($personId, 'M-3', 'ordinarie', AssociationDate::fromIso('2022-06-01'));
+            $service->addPeriod($accountId, AssociationDate::fromIso('2022-06-01'));
             self::fail('An overlapping period should be rejected.');
         } catch (MembershipRuleException) {
             self::assertCount(2, $memberships->all());
@@ -159,7 +160,7 @@ final class PeopleServiceTest extends TestCase
         $service->markDeceased($personId, AssociationDate::fromIso('2024-09-24'));
 
         try {
-            $service->addMembership($personId, 'M-4', 'ordinarie', AssociationDate::fromIso('2025-01-01'));
+            $service->addPeriod($accountId, AssociationDate::fromIso('2025-01-01'));
             self::fail('A deceased person should not receive a new period.');
         } catch (MembershipRuleException) {
             self::assertCount(2, $memberships->all());
@@ -296,6 +297,46 @@ final class CountingMembershipRepository implements MembershipRepository
     {
     }
 
+    public function addMembership(\Foreningssystem\Domain\Membership\Membership $membership): \Foreningssystem\Domain\Membership\Membership
+    {
+        return $this->inner->addMembership($membership);
+    }
+
+    public function findMembership(int $id): ?\Foreningssystem\Domain\Membership\Membership
+    {
+        return $this->inner->findMembership($id);
+    }
+
+    public function findMembershipByNumber(string $number): ?\Foreningssystem\Domain\Membership\Membership
+    {
+        return $this->inner->findMembershipByNumber($number);
+    }
+
+    public function allMemberships(): array
+    {
+        return $this->inner->allMemberships();
+    }
+
+    public function addParticipant(\Foreningssystem\Domain\Membership\MembershipParticipant $participant): \Foreningssystem\Domain\Membership\MembershipParticipant
+    {
+        return $this->inner->addParticipant($participant);
+    }
+
+    public function saveParticipant(\Foreningssystem\Domain\Membership\MembershipParticipant $participant): void
+    {
+        $this->inner->saveParticipant($participant);
+    }
+
+    public function participantsForMembership(int $membershipId): array
+    {
+        return $this->inner->participantsForMembership($membershipId);
+    }
+
+    public function allParticipants(): array
+    {
+        return $this->inner->allParticipants();
+    }
+
     public function add(MembershipPeriod $period): MembershipPeriod
     {
         return $this->inner->add($period);
@@ -311,14 +352,9 @@ final class CountingMembershipRepository implements MembershipRepository
         return $this->inner->find($id);
     }
 
-    public function findByNumber(string $number): ?MembershipPeriod
+    public function periodsForMembership(int $membershipId): array
     {
-        return $this->inner->findByNumber($number);
-    }
-
-    public function forPerson(int $personId): array
-    {
-        return $this->inner->forPerson($personId);
+        return $this->inner->periodsForMembership($membershipId);
     }
 
     public function all(): array
@@ -331,16 +367,140 @@ final class CountingMembershipRepository implements MembershipRepository
 
 final class MemoryMembershipRepository implements MembershipRepository
 {
+    /** @var array<int, \Foreningssystem\Domain\Membership\Membership> */
+    public array $accounts = [];
+
+    /** @var array<int, \Foreningssystem\Domain\Membership\MembershipParticipant> */
+    public array $participants = [];
+
     /** @var array<int, MembershipPeriod> */
     public array $periods = [];
 
-    private int $nextId = 1;
+    private int $nextMembership = 1;
+
+    private int $nextParticipant = 1;
+
+    private int $nextPeriod = 1;
+
+    public function grant(
+        int $personId,
+        string $number,
+        string $historicalClass,
+        MembershipStatus $status,
+        AssociationDate $startedOn,
+        ?AssociationDate $endedOn,
+        \Foreningssystem\Domain\Membership\MembershipKind $kind = \Foreningssystem\Domain\Membership\MembershipKind::Ordinary,
+        \Foreningssystem\Domain\Membership\ParticipantRole $role = \Foreningssystem\Domain\Membership\ParticipantRole::Member,
+    ): MembershipPeriod {
+        $existing = $this->findMembershipByNumber($number);
+        $membership = $existing ?? $this->addMembership(new \Foreningssystem\Domain\Membership\Membership(
+            null,
+            $number,
+            $kind,
+            null
+        ));
+        $membershipId = (int) $membership->id();
+        $linked = false;
+
+        foreach ($this->participantsForMembership($membershipId) as $participant) {
+            if ($participant->personId() === $personId) {
+                $linked = true;
+            }
+        }
+
+        if (! $linked) {
+            $this->addParticipant(new \Foreningssystem\Domain\Membership\MembershipParticipant(
+                null,
+                $membershipId,
+                $personId,
+                $role,
+                true,
+                null
+            ));
+        }
+
+        return $this->add(new MembershipPeriod(null, $membershipId, $status, $startedOn, $endedOn, $historicalClass));
+    }
+
+    public function addMembership(\Foreningssystem\Domain\Membership\Membership $membership): \Foreningssystem\Domain\Membership\Membership
+    {
+        foreach ($this->accounts as $account) {
+            if ($account->number() === $membership->number()) {
+                throw new \Foreningssystem\Domain\Membership\MembershipRuleException('Membership number is already used.');
+            }
+        }
+
+        $saved = $membership->withId($this->nextMembership);
+        $this->accounts[$this->nextMembership] = $saved;
+        $this->nextMembership++;
+
+        return $saved;
+    }
+
+    public function findMembership(int $id): ?\Foreningssystem\Domain\Membership\Membership
+    {
+        return $this->accounts[$id] ?? null;
+    }
+
+    public function findMembershipByNumber(string $number): ?\Foreningssystem\Domain\Membership\Membership
+    {
+        foreach ($this->accounts as $account) {
+            if ($account->number() === $number) {
+                return $account;
+            }
+        }
+
+        return null;
+    }
+
+    public function allMemberships(): array
+    {
+        return array_values($this->accounts);
+    }
+
+    public function addParticipant(\Foreningssystem\Domain\Membership\MembershipParticipant $participant): \Foreningssystem\Domain\Membership\MembershipParticipant
+    {
+        $saved = $participant->withId($this->nextParticipant);
+        $this->participants[$this->nextParticipant] = $saved;
+        $this->nextParticipant++;
+
+        return $saved;
+    }
+
+    public function saveParticipant(\Foreningssystem\Domain\Membership\MembershipParticipant $participant): void
+    {
+        $id = $participant->id();
+
+        if ($id === null || ! isset($this->participants[$id])) {
+            throw new \RuntimeException('Membership participant was not found.');
+        }
+
+        $this->participants[$id] = $participant;
+    }
+
+    public function participantsForMembership(int $membershipId): array
+    {
+        $rows = [];
+
+        foreach ($this->participants as $participant) {
+            if ($participant->membershipId() === $membershipId) {
+                $rows[] = $participant;
+            }
+        }
+
+        return $rows;
+    }
+
+    public function allParticipants(): array
+    {
+        return array_values($this->participants);
+    }
 
     public function add(MembershipPeriod $period): MembershipPeriod
     {
-        $saved = $period->withId($this->nextId);
-        $this->periods[$this->nextId] = $saved;
-        $this->nextId++;
+        $saved = $period->withId($this->nextPeriod);
+        $this->periods[$this->nextPeriod] = $saved;
+        $this->nextPeriod++;
 
         return $saved;
     }
@@ -361,28 +521,17 @@ final class MemoryMembershipRepository implements MembershipRepository
         return $this->periods[$id] ?? null;
     }
 
-    public function findByNumber(string $number): ?MembershipPeriod
+    public function periodsForMembership(int $membershipId): array
     {
+        $rows = [];
+
         foreach ($this->periods as $period) {
-            if ($period->number() === $number) {
-                return $period;
+            if ($period->membershipId() === $membershipId) {
+                $rows[] = $period;
             }
         }
 
-        return null;
-    }
-
-    public function forPerson(int $personId): array
-    {
-        $periods = [];
-
-        foreach ($this->periods as $period) {
-            if ($period->personId() === $personId) {
-                $periods[] = $period;
-            }
-        }
-
-        return $periods;
+        return $rows;
     }
 
     public function all(): array

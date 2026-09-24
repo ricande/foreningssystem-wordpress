@@ -60,8 +60,8 @@ final class PublicBoardTest extends TestCase
         $assignments = new MemoryBoardAssignmentRepository();
         $ada = (int) $people->add(new Person(null, 'Ada', 'Lovelace', 'ada@example.test', PersonStatus::Known, null))->id();
         $grace = (int) $people->add(new Person(null, 'Kim', 'Lab <X>', 'kim@example.test', PersonStatus::Known, null))->id();
-        $memberships->add(new MembershipPeriod(null, $ada, 'M-1', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, $grace, 'M-2', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
+        $memberships->grant($ada, 'M-1', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant($grace, 'M-2', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
         $chair = (int) $roles->add(new BoardRole(null, 'chair', 'Ordförande', false, 10))->id();
         $service = $this->service($people, $memberships, $roles, $assignments, true);
         $service->place($ada, $chair, AssociationDate::fromIso('2024-01-01'), null, 'gammal@example.test', '');

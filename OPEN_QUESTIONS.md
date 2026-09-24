@@ -9,14 +9,23 @@ These must be answered deliberately. Do not silently turn assumptions into imple
 - Who may finalize minutes is an association setting.
 - Personal data and audit events use a retention setting. The default is 5 years.
 - The license is GPL-2.0-or-later.
+- A membership number identifies the membership. A returning membership adds a period. The number is not reused for another membership.
+- Youth, ordinary, family and company memberships are in scope.
+- A personal identity number is optional, separate from birth date, and more protected than ordinary member data.
+- Guardian relationships and approval records are in scope. The product does not claim that every person under 18 requires guardian consent.
 
-## Blocking decision, not yet made
+## Still open for this membership model
 
-Whether a membership number identifies the person across every period, or one membership period only, is not decided.
-
-The current database key is `UNIQUE` on `membership_number`, and the ledger rejects a number that already exists on any period. That behaves as one number per period. Product language can also be read as one number per person. Do not change the key, reuse a number for a returning member, or merge people by number until the owner chooses.
-
-A returning person can receive a new period with a new number. The earlier period stays.
+- Whether associations can add their own membership kinds beyond the built-in slugs.
+- Whether a membership kind may change over time, and where that history would live. The current period stores a historical class string. The membership stores the current kind.
+- Whether every family participant should always count as an individual member. The current rule counts only the `member` role.
+- Whether a youth membership must have at least one guardian. The product does not require one.
+- The retention period for a personal identity number, if it should differ from contact-data retention.
+- Whether personal identity numbers are encrypted at rest, and how the key would be managed. See ADR-0021.
+- The exact words shown for purpose and basis. The stored fields are free text.
+- Whether a protected CSV export of personal identity numbers will exist.
+- Whether an authorized user may search by the full personal identity number.
+- Whether a company membership may contain several organizational units.
 
 ## Identity and membership
 

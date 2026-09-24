@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Application\Document;
 
 use Foreningssystem\Domain\Membership\AssociationDate;
+use Foreningssystem\Domain\Membership\MemberCoverage;
 use Foreningssystem\Domain\Membership\MembershipRepository;
 use Foreningssystem\Domain\Person\PersonRepository;
 
@@ -29,10 +30,11 @@ final class MemberDocumentAccess
                 continue;
             }
 
-            foreach ($this->memberships->all() as $period) {
-                if ($period->personId() === $personId && $period->isActiveOn($on)) {
-                    return true;
-                }
+            $participants = $this->memberships->allParticipants();
+            $periods = $this->memberships->all();
+
+            if (MemberCoverage::isActiveMember($personId, $on, $participants, $periods)) {
+                return true;
             }
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/lab-membership.php';
+
 use Foreningssystem\Domain\Meeting\MeetingDuty;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
 use Foreningssystem\Domain\Meeting\Presence;
@@ -32,7 +34,7 @@ $cleanup = static function () use ($wpdb, $people, $memberships, $assignments, $
             $wpdb->delete($audit, ['object_type' => 'person', 'object_id' => (int) $personId], ['%s', '%d']);
             $wpdb->delete($participants, ['person_id' => (int) $personId], ['%d']);
             $wpdb->delete($assignments, ['person_id' => (int) $personId], ['%d']);
-            $wpdb->delete($memberships, ['person_id' => (int) $personId], ['%d']);
+            lab_delete_person_memberships((int) $personId);
             $wpdb->delete($people, ['id' => (int) $personId], ['%d']);
         }
     }

@@ -17,6 +17,7 @@ use Foreningssystem\Infrastructure\Persistence\SignedCopySchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MeetingRosterSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MeetingSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MeetingTemplateSchemaMigration;
+use Foreningssystem\Infrastructure\Persistence\MembershipAggregateSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MembershipSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MigrationRunner;
 
@@ -44,6 +45,7 @@ final class WordpressMigrations
                 new DocumentSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
                 new MeetingTemplateSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
                 new MinutesRevisionNumberSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
+                new MembershipAggregateSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
             ]
         );
     }

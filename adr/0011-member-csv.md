@@ -1,6 +1,6 @@
 # ADR-0011: Member CSV is one row per membership period
 
-**Status:** Proposed  
+**Status:** Proposed, superseded for new family and company files by ADR-0020  
 **Date:** 2026-09-24
 
 ## Context

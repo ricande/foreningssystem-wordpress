@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonRepository;
 use Foreningssystem\Domain\Person\PersonStatus;
@@ -21,12 +22,20 @@ final class WpdbPersonRepository implements PersonRepository
     {
         global $wpdb;
 
-        $inserted = $wpdb->insert($this->table(), [
+        $data = [
             'first_name' => $person->firstName(),
             'last_name' => $person->lastName(),
             'email' => $person->email(),
             'status' => $person->status()->value,
-        ], ['%s', '%s', '%s', '%s']);
+        ];
+        $format = ['%s', '%s', '%s', '%s'];
+
+        if ($person->birthDate() !== null) {
+            $data['birth_date'] = $person->birthDate()->iso();
+            $format[] = '%s';
+        }
+
+        $inserted = $wpdb->insert($this->table(), $data, $format);
 
         if ($inserted === false) {
             throw new \RuntimeException('The person could not be saved.');
@@ -47,10 +56,16 @@ final class WpdbPersonRepository implements PersonRepository
 
         $userId = $person->wordpressUserId();
         $table = $this->table();
-        $sql = "UPDATE {$table} SET first_name = %s, last_name = %s, email = %s, status = %s, wp_user_id = "
+        $sql = "UPDATE {$table} SET first_name = %s, last_name = %s, email = %s, status = %s, birth_date = "
+            . ($person->birthDate() === null ? 'NULL' : '%s')
+            . ', wp_user_id = '
             . ($userId === null ? 'NULL' : '%d')
             . ' WHERE id = %d';
         $args = [$person->firstName(), $person->lastName(), $person->email(), $person->status()->value];
+
+        if ($person->birthDate() !== null) {
+            $args[] = $person->birthDate()->iso();
+        }
 
         if ($userId !== null) {
             $args[] = $userId;
@@ -99,7 +114,17 @@ final class WpdbPersonRepository implements PersonRepository
             (string) $row['last_name'],
             (string) $row['email'],
             PersonStatus::from((string) $row['status']),
-            is_numeric($wordpressUserId) && (int) $wordpressUserId > 0 ? (int) $wordpressUserId : null
+            is_numeric($wordpressUserId) && (int) $wordpressUserId > 0 ? (int) $wordpressUserId : null,
+            $this->birthDate($row['birth_date'] ?? null)
         );
+    }
+
+    private function birthDate(mixed $value): ?AssociationDate
+    {
+        if (! is_string($value) || $value === '' || $value === '0000-00-00') {
+            return null;
+        }
+
+        return AssociationDate::fromIso($value);
     }
 }

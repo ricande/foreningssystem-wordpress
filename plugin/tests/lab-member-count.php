@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/lab-membership.php';
+
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Infrastructure\WordPress\MemberCountBlock;
 use Foreningssystem\Infrastructure\WordPress\WordpressPeople;
@@ -13,7 +15,7 @@ $cleanup = static function () use ($wpdb, $people, $memberships): void {
     $personId = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$people} WHERE email = %s", 'lab-count@example.test'));
 
     if ($personId) {
-        $wpdb->delete($memberships, ['person_id' => (int) $personId], ['%d']);
+        lab_delete_person_memberships((int) $personId);
         $wpdb->delete($people, ['id' => (int) $personId], ['%d']);
     }
 

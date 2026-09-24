@@ -49,6 +49,13 @@ final class Plugin
         add_action('admin_post_assoc_import_members', [MembersPage::class, 'importMembers']);
         add_action('admin_post_assoc_end_membership', [MembersPage::class, 'endMembership']);
         add_action('admin_post_assoc_add_membership', [MembersPage::class, 'addMembership']);
+        add_action('admin_post_assoc_register_company', [MembersPage::class, 'registerCompany']);
+        add_action('admin_post_assoc_add_family_participant', [MembersPage::class, 'addFamilyParticipant']);
+        add_action('admin_post_assoc_store_identity', [MembersPage::class, 'storeIdentity']);
+        add_action('admin_post_assoc_remove_identity', [MembersPage::class, 'removeIdentity']);
+        add_action('admin_post_assoc_add_guardian', [MembersPage::class, 'addGuardian']);
+        add_action('admin_post_assoc_record_guardian_approval', [MembersPage::class, 'recordGuardianApproval']);
+        add_action('admin_post_assoc_export_member_structure', [MembersPage::class, 'exportStructure']);
         add_action('admin_post_assoc_mark_deceased', [MembersPage::class, 'markDeceased']);
         add_action('admin_post_assoc_place_assignment', [BoardPage::class, 'place']);
         add_action('admin_post_assoc_end_assignment', [BoardPage::class, 'end']);
@@ -215,6 +222,7 @@ final class Plugin
 
         $profile = WordpressAssociationProfile::load();
         $activeMembers = WordpressPeople::service()->activeMemberCount(AssociationDate::fromIso(wp_date('Y-m-d')));
+        $activeMemberships = WordpressPeople::service()->activeMembershipCount(AssociationDate::fromIso(wp_date('Y-m-d')));
         $currentBoard = WordpressBoard::service()->currentCount(AssociationDate::fromIso(wp_date('Y-m-d')));
 
         echo '<div class="wrap">';
@@ -226,9 +234,14 @@ final class Plugin
 
         echo '<p>' . esc_html__('The plugin is active.', 'foreningsplugin') . '</p>';
         echo '<p>' . esc_html(sprintf(
-            /* translators: %d: number of active members */
-            __('Active members: %d', 'foreningsplugin'),
+            /* translators: %d: number of people who are members */
+            __('Active individual members: %d', 'foreningsplugin'),
             $activeMembers
+        )) . '</p>';
+        echo '<p>' . esc_html(sprintf(
+            /* translators: %d: number of memberships with an active period */
+            __('Active memberships: %d', 'foreningsplugin'),
+            $activeMemberships
         )) . '</p>';
         echo '<p>' . esc_html(sprintf(
             /* translators: %d: number of current board assignments */

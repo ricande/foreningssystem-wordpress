@@ -9,6 +9,8 @@ The association has one setting, in years, for how long personal data and audit 
 - Personal contact data is anonymized 5 years after the membership has ended, unless the association changes the setting. An open board assignment cannot outlive the membership, so the clock starts at the end of the membership.
 - Audit events are removed 5 years after the event, unless the association changes the setting.
 - Finalized minutes and signed originals are not deleted by this timer. The signed copy is the archival original. Anonymizing the person record does not rewrite a signed scan or a finalized minutes snapshot. The privacy eraser reports that those records were kept.
+- A personal identity number is removed when that person's contact data is anonymized, and it can also be removed earlier. Membership, board, minutes and decision history stay. A separate retention period for the number is still an open owner decision. Guardian relationships and approval records are not deleted by that removal.
+- A privacy export includes the subject's own personal identity number when one is stored. It does not include another person's number. A guardian export may name the child and the approval purpose. It does not include the child's identity number. A child export may name the guardian. It does not include the guardian's identity number or email.
 
 ## Operations that must stay distinct
 

@@ -12,11 +12,7 @@ final class MembershipLedger
     public function add(array $existing, MembershipPeriod $candidate): void
     {
         foreach ($existing as $period) {
-            if ($period->number() === $candidate->number()) {
-                throw new MembershipRuleException('Membership number is already used.');
-            }
-
-            if ($period->personId() === $candidate->personId() && $period->overlaps($candidate)) {
+            if ($period->membershipId() === $candidate->membershipId() && $period->overlaps($candidate)) {
                 throw new MembershipRuleException('Membership periods cannot overlap.');
             }
         }
@@ -34,12 +30,11 @@ final class MembershipLedger
 
         return new MembershipPeriod(
             $period->id(),
-            $period->personId(),
-            $period->number(),
-            $period->type(),
+            $period->membershipId(),
             MembershipStatus::Ended,
             $period->startedOn(),
-            $on
+            $on,
+            $period->historicalClass()
         );
     }
 

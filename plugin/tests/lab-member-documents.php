@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/lab-membership.php';
+
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Document\DocumentVisibility;
 use Foreningssystem\Domain\Membership\AssociationDate;
@@ -39,11 +41,11 @@ $cleanup = static function () use ($wpdb, $documents, $people, $memberships): vo
     $personId = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$people} WHERE email = %s", 'ada-member-doc@example.test'));
 
     if (! $personId) {
-        $personId = $wpdb->get_var($wpdb->prepare("SELECT person_id FROM {$memberships} WHERE membership_number = %s", 'LAB-MEMBER-1'));
+        $personId = lab_person_id_for_membership_number('LAB-MEMBER-1');
     }
 
     if ($personId) {
-        $wpdb->delete($memberships, ['person_id' => (int) $personId], ['%d']);
+        lab_delete_person_memberships((int) $personId);
         $wpdb->delete($people, ['id' => (int) $personId], ['%d']);
     }
 
@@ -125,7 +127,7 @@ clean_user_cache($userId);
 wp_set_current_user($userId);
 $memberBytes = $archive->read($memberDocument);
 $memberHtml = MemberDocumentsBlock::render();
-$membershipId = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$memberships} WHERE membership_number = %s", 'LAB-MEMBER-1'));
+$membershipId = lab_period_id_for_number('LAB-MEMBER-1');
 wp_set_current_user(1);
 clean_user_cache(1);
 WordpressPeople::service()->endMembership($membershipId, AssociationDate::fromIso('2024-06-01'));

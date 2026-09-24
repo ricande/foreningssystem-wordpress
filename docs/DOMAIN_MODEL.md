@@ -7,32 +7,28 @@ Status: **proposed**. This refines `docs/04_DOMAIN_MODEL_DRAFT.md` and answers t
 ```text
 Association
  ├─ Person
- │   ├─ Membership [0..n]
- │   ├─ WordPress user link [0..1]
- │   ├─ Board assignment [0..n] ── Board role
- │   └─ Meeting participant [0..n]
- │
- ├─ Meeting type
- ├─ Meeting template
- ├─ Meeting
- │   ├─ Meeting participant
- │   ├─ Agenda item
- │   │   ├─ Meeting note
- │   │   ├─ Decision
- │   │   └─ Action item
- │   └─ Minutes
- │       └─ Minutes revision
- │           ├─ Generated document
- │           └─ Signed document
- │
- └─ Document
+ │   ├─ birth date
+ │   ├─ optional personal identity record
+ │   ├─ guardian relationship [0..n]
+ │   └─ WordPress user link [0..1]
+ ├─ Organization
+ │   └─ company membership
+ ├─ Membership
+ │   ├─ membership number
+ │   ├─ kind
+ │   ├─ MembershipParticipant [1..n]
+ │   └─ MembershipPeriod [1..n]
+ ├─ Board assignment
+ └─ Meeting
 ```
+
+A person, a membership and a membership period are different things. The membership number belongs to the membership. A returning membership opens another period on that same membership. Schema 14 rows are not merged: each old row, which already had its own number, becomes its own membership.
 
 ## Recommended answers
 
 | Question | Recommendation | Why |
 |---|---|---|
-| Is the core model Person → Membership? | Yes | A person can be known before they join, after they leave, or without ever joining |
+| Is the core model Person → Membership? | Person, membership and period are separate | The number belongs to the membership. Periods record when it was active |
 | Multiple membership periods? | Yes | Re-entry and history need separate periods |
 | Can a board member, auditor, or election-committee member exist without a current membership? | No. Locked by the owner on 2026-09-24 | Every board role in this model, including auditor and election committee, requires an active membership that covers the assignment dates |
 | Where do contact details live? | Private details on Person. Optional public role contact on Board assignment | Public blocks must not default to a private email or phone |
@@ -41,8 +37,9 @@ Association
 
 ## Invariants
 
-- A Person may have zero or more Membership periods. Periods for the same person must not overlap.
-- Ending a membership sets an end date and a terminal status. It does not delete the Person or past assignments.
+- A Person may have zero or more memberships. Periods on the same membership must not overlap. A person who counts as a member also cannot have overlapping coverage on two memberships.
+- Ending a membership period sets an end date and a terminal status. It does not delete the Person, the membership, or past assignments.
+- Only a participant with role `member` counts as a member for the active-member count and for board eligibility. Role `contact` does not. A company contact is a contact.
 - A Board assignment has a start date and either an open end or an end date. "Who held this role on date D?" is answered from those dates, not from protocol text.
 - The membership period must cover the whole assignment. An assignment cannot be created outside an active membership. Ending a membership ends any open assignment on the same date.
 - A term label, membership year, or source meeting may be stored on an assignment. The dates remain the query source.

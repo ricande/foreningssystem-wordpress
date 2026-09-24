@@ -44,8 +44,8 @@ final class PrivacyEraseTest extends TestCase
         $adaId = (int) $ada->id();
         $graceId = (int) $grace->id();
         $roleId = (int) (new MemoryBoardRoleRepository())->add(new BoardRole(null, 'chair', 'Ordförande', false, 10))->id();
-        $memberships->add(new MembershipPeriod(null, $adaId, 'M-ADA', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, $graceId, 'M-GRACE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
+        $memberships->grant($adaId, 'M-ADA', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant($graceId, 'M-GRACE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
         $adaAssignment = $assignments->add(new BoardAssignment(null, $adaId, $roleId, AssociationDate::fromIso('2024-01-01'), null, 'ada@example.test', '2024'));
         $graceAssignment = $assignments->add(new BoardAssignment(null, $graceId, $roleId, AssociationDate::fromIso('2024-02-01'), null, 'grace-ordf@example.test', ''));
         $meeting = $meetings->add(new Meeting(null, 1, 'Styrelsemöte', MeetingMoment::fromLocal('2024-05-02 18:00'), 'Lokalen', MeetingStatus::Held));
@@ -81,16 +81,11 @@ final class PrivacyEraseTest extends TestCase
         self::assertSame('', $savedAda->email());
         self::assertNull($savedAda->wordpressUserId());
         self::assertSame(PersonStatus::Known, $savedAda->status());
-        $adaPeriod = null;
-
-        foreach ($memberships->all() as $period) {
-            if ($period->personId() === $adaId) {
-                $adaPeriod = $period;
-            }
-        }
+        $adaAccount = $memberships->findMembershipByNumber('M-ADA');
+        $adaPeriod = $adaAccount === null ? null : ($memberships->periodsForMembership((int) $adaAccount->id())[0] ?? null);
 
         self::assertNotNull($adaPeriod);
-        self::assertSame('M-ADA', $adaPeriod->number());
+        self::assertSame('M-ADA', $adaAccount?->number());
         self::assertSame(MembershipStatus::Active, $adaPeriod->status());
         self::assertSame('2024-01-01', $adaPeriod->startedOn()->iso());
         self::assertNotNull($savedAssignment);
@@ -182,7 +177,8 @@ final class PrivacyEraseTest extends TestCase
                 {
                     return $callback();
                 }
-            }
+            },
+            new MemoryPersonalIdentityRepository()
         );
     }
 }

@@ -38,14 +38,14 @@ final class PrivacyExportTest extends TestCase
         $adaId = (int) $ada->id();
         $graceId = (int) $grace->id();
         $roleId = (int) $roles->add(new BoardRole(null, 'chair', 'Ordförande', false, 10))->id();
-        $memberships->add(new MembershipPeriod(null, $adaId, 'M-ADA', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, $graceId, 'M-GRACE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
+        $memberships->grant($adaId, 'M-ADA', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant($graceId, 'M-GRACE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
         $assignments->add(new BoardAssignment(null, $adaId, $roleId, AssociationDate::fromIso('2024-01-01'), null, 'ordf@example.test', ''));
         $assignments->add(new BoardAssignment(null, $graceId, $roleId, AssociationDate::fromIso('2024-01-01'), null, 'grace-ordf@example.test', ''));
         $meeting = $meetings->add(new Meeting(null, 1, 'Styrelsemöte', MeetingMoment::fromLocal('2024-05-02 18:00'), 'Lokalen', MeetingStatus::Held));
         $participants->add(new Participant(null, (int) $meeting->id(), $adaId, Presence::Present, MeetingDuty::None));
         $participants->add(new Participant(null, (int) $meeting->id(), $graceId, Presence::Absent, MeetingDuty::None));
-        $export = new PrivacyExport($people, $memberships, $assignments, $roles, $participants, $meetings, $audit);
+        $export = new PrivacyExport($people, $memberships, $assignments, $roles, $participants, $meetings, $audit, new MemoryPersonalIdentityRepository(), new MemoryGuardianRepository());
 
         $report = $export->collect(' Ada@Example.Test ', null, 7);
         $text = $this->text($report);

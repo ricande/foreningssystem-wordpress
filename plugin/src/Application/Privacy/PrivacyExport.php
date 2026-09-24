@@ -7,6 +7,8 @@ namespace Foreningssystem\Application\Privacy;
 use Foreningssystem\Domain\Board\BoardAssignmentRepository;
 use Foreningssystem\Domain\Board\BoardRole;
 use Foreningssystem\Domain\Board\BoardRoleRepository;
+use Foreningssystem\Domain\Guardian\GuardianRepository;
+use Foreningssystem\Domain\Identity\PersonalIdentityRepository;
 use Foreningssystem\Domain\Meeting\AuditLog;
 use Foreningssystem\Domain\Meeting\Meeting;
 use Foreningssystem\Domain\Meeting\MeetingRepository;
@@ -25,6 +27,8 @@ final class PrivacyExport
         private readonly ParticipantRepository $participants,
         private readonly MeetingRepository $meetings,
         private readonly AuditLog $audit,
+        private readonly PersonalIdentityRepository $identities,
+        private readonly GuardianRepository $guardians,
     ) {
     }
 
@@ -47,7 +51,10 @@ final class PrivacyExport
                 $person->status()->value,
                 $this->membershipsFor($id),
                 $this->assignmentsFor($id),
-                $this->attendanceFor($id)
+                $this->attendanceFor($id),
+                $person->birthDate()?->iso(),
+                $this->identityFor($id, $actorUserId),
+                $this->guardianNotes($id)
             );
 
             if ($actorUserId >= 1) {
@@ -90,26 +97,91 @@ final class PrivacyExport
      */
     private function membershipsFor(int $personId): array
     {
+        $accounts = [];
+
+        foreach ($this->memberships->allMemberships() as $membership) {
+            if ($membership->id() !== null) {
+                $accounts[$membership->id()] = $membership;
+            }
+        }
+
         $rows = [];
 
-        foreach ($this->memberships->all() as $period) {
-            $id = $period->id();
-
-            if ($period->personId() !== $personId || $id === null) {
+        foreach ($this->memberships->allParticipants() as $participant) {
+            if ($participant->personId() !== $personId) {
                 continue;
             }
 
-            $rows[] = new ExportedMembership(
-                $id,
-                $period->number(),
-                $period->type(),
-                $period->status()->value,
-                $period->startedOn()->iso(),
-                $period->endedOn()?->iso()
-            );
+            $account = $accounts[$participant->membershipId()] ?? null;
+
+            if ($account === null) {
+                continue;
+            }
+
+            foreach ($this->memberships->periodsForMembership($participant->membershipId()) as $period) {
+                $id = $period->id();
+
+                if ($id === null) {
+                    continue;
+                }
+
+                $rows[] = new ExportedMembership(
+                    $id,
+                    $account->number(),
+                    $period->historicalClass() !== '' ? $period->historicalClass() : $account->kind()->value,
+                    $period->status()->value,
+                    $period->startedOn()->iso(),
+                    $period->endedOn()?->iso()
+                );
+            }
         }
 
         return $rows;
+    }
+
+    private function identityFor(int $personId, int $actorUserId): ?string
+    {
+        $record = $this->identities->findForPerson($personId);
+
+        if ($record === null) {
+            return null;
+        }
+
+        if ($actorUserId >= 1 && $record->id() !== null) {
+            $this->audit->record('personal_identity', $record->id(), 'export_personal_identity', $actorUserId);
+        }
+
+        return $record->number()->canonical();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function guardianNotes(int $personId): array
+    {
+        $notes = [];
+
+        foreach ($this->guardians->relationshipsForChild($personId) as $relationship) {
+            $guardian = $this->people->find($relationship->guardianPersonId());
+            $name = $guardian === null ? '' : $guardian->firstName() . ' ' . $guardian->lastName();
+            $notes[] = 'Guardian relationship: ' . $relationship->relationship() . ($name === '' ? '' : ' (' . $name . ')');
+        }
+
+        foreach ($this->guardians->relationshipsForGuardian($personId) as $relationship) {
+            $child = $this->people->find($relationship->childPersonId());
+            $name = $child === null ? '' : $child->firstName() . ' ' . $child->lastName();
+            $notes[] = 'Recorded as guardian: ' . $relationship->relationship() . ($name === '' ? '' : ' (' . $name . ')');
+        }
+
+        foreach ($this->guardians->approvalsForChild($personId) as $approval) {
+            $notes[] = 'Guardian approval: ' . $approval->purpose() . ' / ' . $approval->method() . ' / ' . $approval->approvedAt()->format('Y-m-d');
+        }
+
+        foreach ($this->guardians->approvalsForGuardian($personId) as $approval) {
+            $notes[] = 'Guardian approval given: ' . $approval->purpose() . ' / ' . $approval->method() . ' / ' . $approval->approvedAt()->format('Y-m-d');
+        }
+
+        return $notes;
     }
 
     /**

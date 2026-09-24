@@ -10,19 +10,14 @@ final class MembershipPeriod
 {
     public function __construct(
         private readonly ?int $id,
-        private readonly int $personId,
-        private readonly string $number,
-        private readonly string $type,
+        private readonly int $membershipId,
         private readonly MembershipStatus $status,
         private readonly AssociationDate $startedOn,
         private readonly ?AssociationDate $endedOn,
+        private readonly string $historicalClass = '',
     ) {
-        if ($this->personId < 1) {
-            throw new InvalidArgumentException('A membership belongs to a saved person.');
-        }
-
-        if (trim($this->number) === '' || trim($this->type) === '') {
-            throw new InvalidArgumentException('A membership needs a number and a type.');
+        if ($this->membershipId < 1) {
+            throw new InvalidArgumentException('A membership period belongs to a saved membership.');
         }
 
         if ($this->endedOn instanceof AssociationDate && $this->endedOn->isBefore($this->startedOn)) {
@@ -35,19 +30,9 @@ final class MembershipPeriod
         return $this->id;
     }
 
-    public function personId(): int
+    public function membershipId(): int
     {
-        return $this->personId;
-    }
-
-    public function number(): string
-    {
-        return $this->number;
-    }
-
-    public function type(): string
-    {
-        return $this->type;
+        return $this->membershipId;
     }
 
     public function status(): MembershipStatus
@@ -65,9 +50,14 @@ final class MembershipPeriod
         return $this->endedOn;
     }
 
+    public function historicalClass(): string
+    {
+        return $this->historicalClass;
+    }
+
     public function withId(int $id): self
     {
-        return new self($id, $this->personId, $this->number, $this->type, $this->status, $this->startedOn, $this->endedOn);
+        return new self($id, $this->membershipId, $this->status, $this->startedOn, $this->endedOn, $this->historicalClass);
     }
 
     public function overlaps(self $other): bool

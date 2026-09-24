@@ -16,6 +16,7 @@ use Foreningssystem\Domain\Meeting\MinutesRepository;
 use Foreningssystem\Domain\Meeting\ParticipantRepository;
 use Foreningssystem\Domain\Meeting\RevisionState;
 use Foreningssystem\Domain\Meeting\SignedCopyRepository;
+use Foreningssystem\Domain\Identity\PersonalIdentityRepository;
 use Foreningssystem\Domain\Membership\MembershipPeriod;
 use Foreningssystem\Domain\Membership\MembershipRepository;
 use Foreningssystem\Domain\Person\Person;
@@ -34,6 +35,7 @@ final class PrivacyErase
         private readonly AuditLog $audit,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
+        private readonly PersonalIdentityRepository $identities,
     ) {
     }
 
@@ -78,6 +80,12 @@ final class PrivacyErase
 
         $this->transaction->run(function () use ($anonymized, $assignments, $id, $actorUserId, $identifiersCleared, $publicContactCleared): void {
             $this->people->save($anonymized);
+            $identity = $this->identities->findForPerson($id);
+
+            if ($identity !== null && $identity->id() !== null) {
+                $this->identities->remove($id);
+                $this->audit->record('personal_identity', $identity->id(), 'identity_removed', $actorUserId);
+            }
 
             foreach ($assignments as $assignment) {
                 if ($assignment->publicContact() !== '') {
@@ -179,9 +187,15 @@ final class PrivacyErase
     {
         $rows = [];
 
-        foreach ($this->memberships->all() as $period) {
-            if ($period->personId() === $personId && $period->id() !== null) {
-                $rows[] = $period;
+        foreach ($this->memberships->allParticipants() as $participant) {
+            if ($participant->personId() !== $personId) {
+                continue;
+            }
+
+            foreach ($this->memberships->periodsForMembership($participant->membershipId()) as $period) {
+                if ($period->id() !== null) {
+                    $rows[] = $period;
+                }
             }
         }
 

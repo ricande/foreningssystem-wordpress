@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/lab-membership.php';
+
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Meeting\MeetingDuty;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
@@ -34,7 +36,7 @@ foreach ($emails as $email) {
 
     if ($personId) {
         $wpdb->delete($participants, ['person_id' => (int) $personId], ['%d']);
-        $wpdb->delete($memberships, ['person_id' => (int) $personId], ['%d']);
+        lab_delete_person_memberships((int) $personId);
         $wpdb->delete($people, ['id' => (int) $personId], ['%d']);
     }
 }
@@ -175,7 +177,7 @@ foreach ($emails as $email) {
 
     if ($personId) {
         $wpdb->delete($participants, ['person_id' => (int) $personId], ['%d']);
-        $wpdb->delete($memberships, ['person_id' => (int) $personId], ['%d']);
+        lab_delete_person_memberships((int) $personId);
         $wpdb->delete($people, ['id' => (int) $personId], ['%d']);
     }
 }

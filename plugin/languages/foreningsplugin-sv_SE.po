@@ -1128,3 +1128,102 @@ msgstr "Du har inte behörighet att se kvarhållningen."
 msgid "deceased"
 msgstr "avliden"
 
+msgid "Membership kind"
+msgstr "Medlemskapstyp"
+
+msgid "Ordinary"
+msgstr "Ordinarie"
+
+msgid "Youth"
+msgstr "Ungdom"
+
+msgid "Family"
+msgstr "Familj"
+
+msgid "Birth date"
+msgstr "Födelsedatum"
+
+msgid "Active individual members: %d"
+msgstr "Aktiva personer: %d"
+
+msgid "Active memberships: %d"
+msgstr "Aktiva medlemskap: %d"
+
+msgid "Company membership"
+msgstr "Företagsmedlemskap"
+
+msgid "Organization name"
+msgstr "Organisationsnamn"
+
+msgid "Organization number"
+msgstr "Organisationsnummer"
+
+msgid "Postal address"
+msgstr "Postadress"
+
+msgid "Save company membership"
+msgstr "Spara företagsmedlemskap"
+
+msgid "Family participant"
+msgstr "Familjedeltagare"
+
+msgid "Membership id"
+msgstr "Medlemskaps-id"
+
+msgid "Add participant"
+msgstr "Lägg till deltagare"
+
+msgid "Export membership structure"
+msgstr "Exportera medlemskapsstruktur"
+
+msgid "The structured file can describe memberships, periods, participants and organizations. It does not contain personal identity numbers."
+msgstr "Den strukturerade filen kan beskriva medlemskap, perioder, deltagare och organisationer. Den innehåller inte personnummer."
+
+msgid "Personal identity number"
+msgstr "Personnummer"
+
+msgid "Purpose"
+msgstr "Ändamål"
+
+msgid "Basis note"
+msgstr "Grund"
+
+msgid "Save identity record"
+msgstr "Spara identitetsuppgift"
+
+msgid "Guardian first name"
+msgstr "Vårdnadshavares förnamn"
+
+msgid "Guardian last name"
+msgstr "Vårdnadshavares efternamn"
+
+msgid "Relationship"
+msgstr "Relation"
+
+msgid "Add guardian"
+msgstr "Lägg till vårdnadshavare"
+
+msgid "Guardian"
+msgstr "Vårdnadshavare"
+
+msgid "The personal identity record is saved."
+msgstr "Identitetsuppgiften är sparad."
+
+msgid "The personal identity record is removed. Membership history remains."
+msgstr "Identitetsuppgiften är borttagen. Medlemskapshistoriken finns kvar."
+
+msgid "The guardian relationship is saved."
+msgstr "Vårdnadshavarrelationen är sparad."
+
+msgid "The guardian approval is saved. It records what the association says occurred."
+msgstr "Vårdnadshavarens godkännande är sparat. Det återger vad föreningen uppger har skett."
+
+msgid "The participant is saved on the existing membership."
+msgstr "Deltagaren är sparad på det befintliga medlemskapet."
+
+msgid "You do not have permission to change personal identity numbers."
+msgstr "Du har inte behörighet att ändra personnummer."
+
+msgid "Shows how many people are members of a membership that is active today. Company memberships and contact-only people are not included."
+msgstr "Visar hur många personer som är medlemmar i ett medlemskap som är aktivt idag. Företagsmedlemskap och rena kontaktpersoner räknas inte."
+

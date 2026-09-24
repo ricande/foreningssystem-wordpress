@@ -98,7 +98,8 @@ final class WordpressRetention
                         throw $error;
                     }
                 }
-            }
+            },
+            new WpdbPersonalIdentityRepository()
         );
     }
 }

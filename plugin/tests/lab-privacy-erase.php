@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/lab-membership.php';
+
 use Foreningssystem\Domain\Meeting\MeetingDuty;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
 use Foreningssystem\Domain\Meeting\Presence;
@@ -76,7 +78,7 @@ $cleanup = static function () use ($wpdb, $people, $memberships, $assignments, $
     }
 
     foreach ($numbers as $number) {
-        $personId = $wpdb->get_var($wpdb->prepare("SELECT person_id FROM {$memberships} WHERE membership_number = %s", $number));
+        $personId = lab_person_id_for_membership_number((string) $number);
 
         if ($personId) {
             $personIds[] = (int) $personId;
@@ -87,7 +89,7 @@ $cleanup = static function () use ($wpdb, $people, $memberships, $assignments, $
         $wpdb->delete($audit, ['object_type' => 'person', 'object_id' => $personId], ['%s', '%d']);
         $wpdb->delete($participants, ['person_id' => $personId], ['%d']);
         $wpdb->delete($assignments, ['person_id' => $personId], ['%d']);
-        $wpdb->delete($memberships, ['person_id' => $personId], ['%d']);
+        lab_delete_person_memberships((int) $personId);
         $wpdb->delete($people, ['id' => $personId], ['%d']);
     }
 
@@ -161,7 +163,7 @@ $registered = apply_filters('wp_privacy_personal_data_erasers', []);
 $result = WordpressPrivacy::erase('ada-erase@example.test', 1);
 $messages = implode("\n", $result['messages']);
 $saved = $wpdb->get_row($wpdb->prepare("SELECT first_name, last_name, email, status, wp_user_id FROM {$people} WHERE id = %d", $ada), ARRAY_A);
-$period = $wpdb->get_row($wpdb->prepare("SELECT membership_number, status, started_on FROM {$memberships} WHERE person_id = %d", $ada), ARRAY_A);
+$period = lab_period_for_person((int) $ada);
 $assignment = $wpdb->get_row($wpdb->prepare("SELECT started_on, public_contact, term_label FROM {$assignments} WHERE person_id = %d", $ada), ARRAY_A);
 $body = (string) $wpdb->get_var($wpdb->prepare("SELECT body FROM {$revisions} WHERE id = %d", $revisionId));
 $storage = (string) $wpdb->get_var($wpdb->prepare("SELECT storage_name FROM {$copies} WHERE revision_id = %d AND replaced_by IS NULL", $revisionId));

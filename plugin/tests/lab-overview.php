@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/lab-membership.php';
+
 use Foreningssystem\Application\Association\WorkOverview;
 use Foreningssystem\Domain\Meeting\ActionStatus;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
@@ -28,7 +30,7 @@ $cleanup = static function () use ($wpdb, $people, $memberships, $meetings, $act
     $personId = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$people} WHERE email = %s", 'lab-overview@example.test'));
 
     if ($personId) {
-        $wpdb->delete($memberships, ['person_id' => (int) $personId], ['%d']);
+        lab_delete_person_memberships((int) $personId);
         $wpdb->delete($people, ['id' => (int) $personId], ['%d']);
     }
 };

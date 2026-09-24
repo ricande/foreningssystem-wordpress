@@ -7,8 +7,10 @@ namespace Foreningssystem\Application\Privacy;
 use Foreningssystem\Application\People\Transaction;
 use Foreningssystem\Domain\Board\BoardAssignment;
 use Foreningssystem\Domain\Board\BoardAssignmentRepository;
+use Foreningssystem\Domain\Identity\PersonalIdentityRepository;
 use Foreningssystem\Domain\Meeting\AuditLog;
 use Foreningssystem\Domain\Membership\AssociationDate;
+use Foreningssystem\Domain\Membership\MemberCoverage;
 use Foreningssystem\Domain\Membership\MembershipRepository;
 use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonRepository;
@@ -22,6 +24,7 @@ final class Retention
         private readonly BoardAssignmentRepository $assignments,
         private readonly AuditLog $audit,
         private readonly Transaction $transaction,
+        private readonly PersonalIdentityRepository $identities,
     ) {
     }
 
@@ -53,26 +56,9 @@ final class Retention
     private function isDue(Person $person, AssociationDate $today, int $years): bool
     {
         $id = (int) $person->id();
-        $latestEnd = null;
-        $hasPeriod = false;
+        $latestEnd = MemberCoverage::retentionEnd($id, $this->memberships->allParticipants(), $this->memberships->all());
 
-        foreach ($this->memberships->all() as $period) {
-            if ($period->personId() !== $id) {
-                continue;
-            }
-
-            $hasPeriod = true;
-
-            if ($period->endedOn() === null) {
-                return false;
-            }
-
-            if ($latestEnd === null || $period->endedOn()->isAfter($latestEnd)) {
-                $latestEnd = $period->endedOn();
-            }
-        }
-
-        if (! $hasPeriod || $latestEnd === null || $today->isBefore($latestEnd->plusYears($years))) {
+        if (! $latestEnd instanceof AssociationDate || $today->isBefore($latestEnd->plusYears($years))) {
             return false;
         }
 
@@ -88,6 +74,8 @@ final class Retention
             || $person->lastName() !== $clear->lastName()
             || $person->email() !== ''
             || $person->wordpressUserId() !== null
+            || $person->birthDate() !== null
+            || $this->identities->findForPerson((int) $person->id()) !== null
         ) {
             return false;
         }
@@ -105,6 +93,12 @@ final class Retention
     {
         $id = (int) $person->id();
         $this->people->save($person->anonymized());
+        $identity = $this->identities->findForPerson($id);
+
+        if ($identity !== null && $identity->id() !== null) {
+            $this->identities->remove($id);
+            $this->audit->record('personal_identity', $identity->id(), 'identity_removed', $actorUserId);
+        }
 
         foreach ($this->assignmentsFor($id) as $assignment) {
             if ($assignment->publicContact() !== '') {

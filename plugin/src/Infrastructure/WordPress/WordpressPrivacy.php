@@ -102,7 +102,9 @@ final class WordpressPrivacy
             new WpdbBoardRoleRepository(),
             new WpdbParticipantRepository(),
             new WpdbMeetingRepository(),
-            new WpAuditLog()
+            new WpAuditLog(),
+            new WpdbPersonalIdentityRepository(),
+            new WpdbGuardianRepository()
         );
     }
 
@@ -141,7 +143,8 @@ final class WordpressPrivacy
                         throw $error;
                     }
                 }
-            }
+            },
+            new WpdbPersonalIdentityRepository()
         );
     }
 
@@ -159,6 +162,24 @@ final class WordpressPrivacy
                 [__('Email', 'foreningsplugin'), $person->email()],
                 [__('Status', 'foreningsplugin'), self::personStatus($person->status())],
             ]);
+
+            if ($person->birthDate() !== null) {
+                $groups[] = self::item('foreningsplugin-person', __('Person', 'foreningsplugin'), 'birth-' . $person->id(), [
+                    [__('Birth date', 'foreningsplugin'), $person->birthDate()],
+                ]);
+            }
+
+            if ($person->personalIdentityNumber() !== null) {
+                $groups[] = self::item('foreningsplugin-identity', __('Personal identity number', 'foreningsplugin'), 'identity-' . $person->id(), [
+                    [__('Personal identity number', 'foreningsplugin'), $person->personalIdentityNumber()],
+                ]);
+            }
+
+            foreach ($person->guardianNotes() as $index => $note) {
+                $groups[] = self::item('foreningsplugin-guardian', __('Guardian', 'foreningsplugin'), 'guardian-' . $person->id() . '-' . $index, [
+                    [__('Guardian', 'foreningsplugin'), $note],
+                ]);
+            }
 
             foreach ($person->memberships() as $membership) {
                 $fields = [

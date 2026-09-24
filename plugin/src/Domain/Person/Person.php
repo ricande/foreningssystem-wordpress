@@ -19,6 +19,7 @@ final class Person
         private readonly string $email,
         private readonly PersonStatus $status,
         private readonly ?int $wordpressUserId,
+        private readonly ?\Foreningssystem\Domain\Membership\AssociationDate $birthDate = null,
     ) {
         if ($this->firstName === '' || $this->lastName === '') {
             throw new InvalidArgumentException('A person needs a first and last name.');
@@ -59,18 +60,23 @@ final class Person
         return $this->wordpressUserId;
     }
 
+    public function birthDate(): ?\Foreningssystem\Domain\Membership\AssociationDate
+    {
+        return $this->birthDate;
+    }
+
     public function withId(int $id): self
     {
-        return new self($id, $this->firstName, $this->lastName, $this->email, $this->status, $this->wordpressUserId);
+        return new self($id, $this->firstName, $this->lastName, $this->email, $this->status, $this->wordpressUserId, $this->birthDate);
     }
 
     public function markedDeceased(): self
     {
-        return new self($this->id, $this->firstName, $this->lastName, $this->email, PersonStatus::Deceased, $this->wordpressUserId);
+        return new self($this->id, $this->firstName, $this->lastName, $this->email, PersonStatus::Deceased, $this->wordpressUserId, $this->birthDate);
     }
 
     public function anonymized(): self
     {
-        return new self($this->id, self::ANONYMOUS_FIRST_NAME, self::ANONYMOUS_LAST_NAME, '', $this->status, null);
+        return new self($this->id, self::ANONYMOUS_FIRST_NAME, self::ANONYMOUS_LAST_NAME, '', $this->status, null, null);
     }
 }

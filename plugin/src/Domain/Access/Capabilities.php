@@ -36,6 +36,10 @@ final class Capabilities
 
     public const SEND_MEMBER_MAIL = 'send_member_mail';
 
+    public const VIEW_PERSONAL_IDENTITY_NUMBERS = 'view_personal_identity_numbers';
+
+    public const EDIT_PERSONAL_IDENTITY_NUMBERS = 'edit_personal_identity_numbers';
+
     /**
      * @return list<string>
      */
@@ -57,6 +61,8 @@ final class Capabilities
             self::VIEW_BOARD_DOCUMENTS,
             self::MANAGE_FEES,
             self::SEND_MEMBER_MAIL,
+            self::VIEW_PERSONAL_IDENTITY_NUMBERS,
+            self::EDIT_PERSONAL_IDENTITY_NUMBERS,
         ];
     }
 }

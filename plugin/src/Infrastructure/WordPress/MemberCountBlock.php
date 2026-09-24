@@ -13,7 +13,7 @@ final class MemberCountBlock
         register_block_type('foreningsplugin/member-count', [
             'api_version' => 3,
             'title' => __('Member count', 'foreningsplugin'),
-            'description' => __('Shows how many active members the association has, without names.', 'foreningsplugin'),
+            'description' => __('Shows how many people are members of a membership that is active today. Company memberships and contact-only people are not included.', 'foreningsplugin'),
             'category' => 'widgets',
             'icon' => 'groups',
             'textdomain' => 'foreningsplugin',

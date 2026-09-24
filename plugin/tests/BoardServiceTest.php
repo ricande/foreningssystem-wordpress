@@ -33,8 +33,8 @@ final class BoardServiceTest extends TestCase
         [$service, $people, $memberships, $roles, $assignments] = $this->world(true);
         $ada = $this->person($people, 'Ada', 'Lovelace', 'ada@example.test');
         $grace = $this->person($people, 'Grace', 'Hopper', 'grace@example.test');
-        $memberships->add($this->membership($ada, 'M-1', MembershipStatus::Active, '2024-01-01', null));
-        $memberships->add($this->membership($grace, 'M-2', MembershipStatus::Active, '2024-01-01', null));
+        $this->membership($memberships, $ada, 'M-1', MembershipStatus::Active, '2024-01-01', null);
+        $this->membership($memberships, $grace, 'M-2', MembershipStatus::Active, '2024-01-01', null);
         $chair = $roles->add(new BoardRole(null, 'chair', 'Ordförande', false, 10));
         $auditor = $roles->add(new BoardRole(null, 'auditor', 'Revisor', true, 50));
 
@@ -75,7 +75,7 @@ final class BoardServiceTest extends TestCase
         [$service, $people, $memberships, $roles] = $this->world(true);
         $personId = $this->person($people, 'Ada', 'Lovelace', 'ada@example.test');
         $roleId = (int) $roles->add(new BoardRole(null, 'secretary', 'Sekreterare', false, 30))->id();
-        $memberships->add($this->membership($personId, 'M-1', MembershipStatus::Dormant, '2024-01-01', null));
+        $memberships->grant($personId, 'M-1', 'ordinarie', MembershipStatus::Dormant, AssociationDate::fromIso('2024-01-01'), null);
 
         try {
             $service->place($personId, $roleId, AssociationDate::fromIso('2024-02-01'), null, '', '');
@@ -87,12 +87,11 @@ final class BoardServiceTest extends TestCase
         self::assertInstanceOf(MembershipPeriod::class, $existing);
         $memberships->save(new MembershipPeriod(
             $existing->id(),
-            $existing->personId(),
-            $existing->number(),
-            $existing->type(),
+            $existing->membershipId(),
             MembershipStatus::Ended,
             $existing->startedOn(),
-            AssociationDate::fromIso('2024-06-01')
+            AssociationDate::fromIso('2024-06-01'),
+            $existing->historicalClass()
         ));
         $service->place($personId, $roleId, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2024-06-01'), '', '');
 
@@ -108,7 +107,7 @@ final class BoardServiceTest extends TestCase
         [$service, $people, $memberships, $roles] = $this->world(true);
         $person = $people->add(new Person(null, 'Ada', 'Lovelace', 'ada@example.test', PersonStatus::Known, null));
         $personId = (int) $person->id();
-        $memberships->add($this->membership($personId, 'M-1', MembershipStatus::Active, '2024-01-01', null));
+        $this->membership($memberships, $personId, 'M-1', MembershipStatus::Active, '2024-01-01', null);
         $roleId = (int) $roles->add(new BoardRole(null, 'chair', 'Ordförande', false, 10))->id();
         $service->place($personId, $roleId, AssociationDate::fromIso('2024-01-01'), null, '', '');
         $people->save($person->markedDeceased());
@@ -136,7 +135,7 @@ final class BoardServiceTest extends TestCase
         $memberships = new MemoryMembershipRepository();
         $assignments = new MemoryBoardAssignmentRepository();
         $personId = (int) $people->add(new Person(null, 'Ada', 'Lovelace', 'ada@example.test', PersonStatus::Known, null))->id();
-        $period = $memberships->add($this->membership($personId, 'M-1', MembershipStatus::Active, '2024-01-01', null));
+        $period = $this->membership($memberships, $personId, 'M-1', MembershipStatus::Active, '2024-01-01', null);
         $assignments->add(new BoardAssignment(null, $personId, 1, AssociationDate::fromIso('2024-01-01'), null, 'ordf@example.test', ''));
         $assignments->add(new BoardAssignment(null, $personId, 2, AssociationDate::fromIso('2023-01-01'), AssociationDate::fromIso('2023-12-31'), '', ''));
         $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(true), $this->transaction(), new EndOpenBoardAssignments($assignments, new BoardAssignmentLedger()));
@@ -186,10 +185,9 @@ final class BoardServiceTest extends TestCase
         return (int) $people->add(new Person(null, $firstName, $lastName, $email, PersonStatus::Known, null))->id();
     }
 
-    private function membership(int $personId, string $number, MembershipStatus $status, string $startedOn, ?string $endedOn): MembershipPeriod
+    private function membership(MemoryMembershipRepository $memberships, int $personId, string $number, MembershipStatus $status, string $startedOn, ?string $endedOn): MembershipPeriod
     {
-        return new MembershipPeriod(
-            null,
+        return $memberships->grant(
             $personId,
             $number,
             'ordinarie',

@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/lab-membership.php';
+
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Membership\MembershipRuleException;
@@ -10,8 +12,8 @@ use Foreningssystem\Infrastructure\WordPress\WordpressPeople;
 global $wpdb;
 
 $people = $wpdb->prefix . 'assoc_person';
-$memberships = $wpdb->prefix . 'assoc_membership';
-$wpdb->query("DELETE FROM {$memberships} WHERE membership_number IN ('LAB-PERSON-1', 'LAB-PERSON-2', 'LAB-PERSON-3')");
+$periods = $wpdb->prefix . 'assoc_membership_period';
+lab_delete_membership_numbers('LAB-PERSON-%');
 $wpdb->query($wpdb->prepare("DELETE FROM {$people} WHERE email = %s", 'lab-person@example.test'));
 
 $service = WordpressPeople::service();
@@ -63,17 +65,23 @@ if ($ended === null || $ended->membership()?->status() !== MembershipStatus::End
     \WP_CLI::error('Ending the membership removed the person or left the period open.');
 }
 
-$renewedId = $service->addMembership($personId, 'LAB-PERSON-2', 'ordinarie', AssociationDate::fromIso('2024-07-01'));
-$stored = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$memberships} WHERE person_id = %d", $personId));
+$accountId = (int) $ended->account()?->id();
+$renewedId = $service->addPeriod($accountId, AssociationDate::fromIso('2024-07-01'));
+$stored = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM {$periods} period
+     INNER JOIN {$wpdb->prefix}assoc_membership_participant participant ON participant.membership_id = period.membership_id
+     WHERE participant.person_id = %d",
+    $personId
+));
 $overlapRejected = false;
 
 try {
-    $service->addMembership($personId, 'LAB-PERSON-3', 'ordinarie', AssociationDate::fromIso('2024-08-01'));
+    $service->addPeriod($accountId, AssociationDate::fromIso('2024-08-01'));
 } catch (MembershipRuleException) {
     $overlapRejected = true;
 }
 
-if ($renewedId < 1 || $stored !== 2 || ! $overlapRejected || $ended->membership()?->number() !== 'LAB-PERSON-1') {
+if ($renewedId < 1 || $stored !== 2 || ! $overlapRejected || $ended->membershipNumber() !== 'LAB-PERSON-1') {
     \WP_CLI::error('A later membership period did not keep the earlier one.');
 }
 
@@ -114,8 +122,7 @@ if ($deceased->membership()?->status() !== MembershipStatus::Ended) {
     \WP_CLI::error('The membership disappeared when the person was marked deceased.');
 }
 
-$wpdb->query($wpdb->prepare("DELETE FROM {$memberships} WHERE person_id = %d", $personId));
-$wpdb->query("DELETE FROM {$memberships} WHERE membership_number IN ('LAB-PERSON-1', 'LAB-PERSON-2', 'LAB-PERSON-3')");
+lab_delete_person_memberships((int) $personId);
 $wpdb->query($wpdb->prepare("DELETE FROM {$people} WHERE email = %s", 'lab-person@example.test'));
 
 \WP_CLI::success('People and memberships keep their history.');

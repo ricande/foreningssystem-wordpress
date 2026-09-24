@@ -15,6 +15,7 @@ use Foreningssystem\Domain\Board\BoardRole;
 use Foreningssystem\Domain\Board\BoardRoleRepository;
 use Foreningssystem\Domain\Board\BoardRuleException;
 use Foreningssystem\Domain\Membership\AssociationDate;
+use Foreningssystem\Domain\Membership\MemberCoverage;
 use Foreningssystem\Domain\Membership\MembershipRepository;
 use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonRepository;
@@ -73,7 +74,18 @@ final class BoardService
                 trim($publicContact),
                 trim($termLabel)
             );
-            $this->ledger->add($this->forRole($roleId), $role, $candidate, $this->memberships->all());
+            $this->ledger->add(
+                $this->forRole($roleId),
+                $role,
+                $candidate,
+                MemberCoverage::periodsCoveringAssignment(
+                    $personId,
+                    $startedOn,
+                    $endedOn,
+                    $this->memberships->allParticipants(),
+                    $this->memberships->all()
+                )
+            );
             $this->assignments->add($candidate);
 
             return $replaced ? 'replaced' : 'saved';

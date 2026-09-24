@@ -10,6 +10,7 @@ final class ExportedPerson
      * @param list<ExportedMembership> $memberships
      * @param list<ExportedAssignment> $assignments
      * @param list<ExportedAttendance> $attendance
+     * @param list<string> $guardianNotes
      */
     public function __construct(
         private readonly int $id,
@@ -20,6 +21,9 @@ final class ExportedPerson
         private readonly array $memberships,
         private readonly array $assignments,
         private readonly array $attendance,
+        private readonly ?string $birthDate = null,
+        private readonly ?string $personalIdentityNumber = null,
+        private readonly array $guardianNotes = [],
     ) {
     }
 
@@ -70,5 +74,23 @@ final class ExportedPerson
     public function attendance(): array
     {
         return $this->attendance;
+    }
+
+    public function birthDate(): ?string
+    {
+        return $this->birthDate;
+    }
+
+    public function personalIdentityNumber(): ?string
+    {
+        return $this->personalIdentityNumber;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function guardianNotes(): array
+    {
+        return $this->guardianNotes;
     }
 }

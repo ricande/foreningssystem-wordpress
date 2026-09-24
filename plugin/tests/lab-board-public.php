@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/lab-membership.php';
+
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Person\PersonStatus;
 use Foreningssystem\Infrastructure\WordPress\CurrentBoardBlock;
@@ -20,7 +22,7 @@ $cleanup = static function () use ($wpdb, $people, $memberships, $assignments, $
 
         if ($personId) {
             $wpdb->delete($assignments, ['person_id' => (int) $personId], ['%d']);
-            $wpdb->delete($memberships, ['person_id' => (int) $personId], ['%d']);
+            lab_delete_person_memberships((int) $personId);
             $wpdb->delete($people, ['id' => (int) $personId], ['%d']);
         }
     }

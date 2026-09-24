@@ -11,6 +11,9 @@ use Foreningssystem\Domain\Membership\MembershipPeriod;
 use Foreningssystem\Domain\Membership\MembershipRepository;
 use Foreningssystem\Domain\Membership\MembershipRuleException;
 use Foreningssystem\Domain\Membership\MembershipStatus;
+use Foreningssystem\Domain\Organization\Organization;
+use Foreningssystem\Domain\Organization\OrganizationNumber;
+use Foreningssystem\Domain\Organization\OrganizationRepository;
 use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonRepository;
 use Foreningssystem\Domain\Person\PersonStatus;
@@ -36,6 +39,7 @@ final class MemberExchange
         private readonly MembershipLedger $ledger,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
+        private readonly OrganizationRepository $organizations,
     ) {
     }
 
@@ -49,42 +53,57 @@ final class MemberExchange
         }
 
         fputcsv($handle, self::COLUMNS, ';', '"', '\\');
-        $periodsByPerson = [];
+        $accounts = [];
 
-        foreach ($this->memberships->all() as $period) {
-            $periodsByPerson[$period->personId()][] = $period;
+        foreach ($this->memberships->allMemberships() as $membership) {
+            if ($membership->id() !== null) {
+                $accounts[$membership->id()] = $membership;
+            }
         }
 
-        $people = $this->people->all();
-        usort($people, static fn (Person $left, Person $right): int => ((int) $left->id()) <=> ((int) $right->id()));
+        $lines = [];
 
-        foreach ($people as $person) {
-            $personId = $person->id();
-
-            if ($personId === null) {
+        foreach ($this->memberships->allParticipants() as $participant) {
+            if (! $participant->role()->countsAsMember()) {
                 continue;
             }
 
-            $periods = $periodsByPerson[$personId] ?? [];
-            usort($periods, static function (MembershipPeriod $left, MembershipPeriod $right): int {
-                $byDate = $left->startedOn()->iso() <=> $right->startedOn()->iso();
+            $person = $this->people->find($participant->personId());
+            $account = $accounts[$participant->membershipId()] ?? null;
 
-                return $byDate !== 0 ? $byDate : $left->number() <=> $right->number();
-            });
-
-            foreach ($periods as $period) {
-                fputcsv($handle, [
-                    $this->cell($person->firstName()),
-                    $this->cell($person->lastName()),
-                    $this->cell($person->email()),
-                    $person->status()->value,
-                    $this->cell($period->number()),
-                    $this->cell($period->type()),
-                    $period->status()->value,
-                    $period->startedOn()->iso(),
-                    $period->endedOn()?->iso() ?? '',
-                ], ';', '"', '\\');
+            if (! $person instanceof Person || $account === null) {
+                continue;
             }
+
+            foreach ($this->memberships->periodsForMembership($participant->membershipId()) as $period) {
+                $lines[] = [$person, $account, $period];
+            }
+        }
+
+        usort($lines, static function (array $left, array $right): int {
+            $byPerson = ((int) $left[0]->id()) <=> ((int) $right[0]->id());
+
+            if ($byPerson !== 0) {
+                return $byPerson;
+            }
+
+            $byDate = $left[2]->startedOn()->iso() <=> $right[2]->startedOn()->iso();
+
+            return $byDate !== 0 ? $byDate : $left[1]->number() <=> $right[1]->number();
+        });
+
+        foreach ($lines as [$person, $account, $period]) {
+            fputcsv($handle, [
+                $this->cell($person->firstName()),
+                $this->cell($person->lastName()),
+                $this->cell($person->email()),
+                $person->status()->value,
+                $this->cell($account->number()),
+                $this->cell($period->historicalClass() !== '' ? $period->historicalClass() : $account->kind()->value),
+                $period->status()->value,
+                $period->startedOn()->iso(),
+                $period->endedOn()?->iso() ?? '',
+            ], ';', '"', '\\');
         }
 
         rewind($handle);
@@ -101,6 +120,12 @@ final class MemberExchange
     public function import(string $csv): MemberImportResult
     {
         $this->require(Capabilities::EDIT_MEMBERS);
+        $plain = str_starts_with($csv, "\xEF\xBB\xBF") ? substr($csv, 3) : $csv;
+
+        if (str_starts_with($plain, '# foreningsplugin-members 2')) {
+            return $this->importStructure($plain);
+        }
+
         $rows = $this->rows($csv);
         $created = 0;
         $skipped = 0;
@@ -143,7 +168,7 @@ final class MemberExchange
             throw new InvalidArgumentException('A membership needs a number and a type.');
         }
 
-        if ($this->memberships->findByNumber($number) instanceof MembershipPeriod) {
+        if ($this->memberships->findMembershipByNumber($number) instanceof \Foreningssystem\Domain\Membership\Membership) {
             return 'skipped';
         }
 
@@ -192,16 +217,270 @@ final class MemberExchange
             throw new \RuntimeException('The person was not saved.');
         }
 
-        $period = new MembershipPeriod(
+        $kind = \Foreningssystem\Domain\Membership\MembershipKind::knownSlug($row['membership_type'])
+            ? \Foreningssystem\Domain\Membership\MembershipKind::fromSlug($row['membership_type'])
+            : \Foreningssystem\Domain\Membership\MembershipKind::Ordinary;
+
+        if ($kind === \Foreningssystem\Domain\Membership\MembershipKind::Company) {
+            throw new InvalidArgumentException('Company memberships use the structured member file.');
+        }
+
+        $membership = $this->memberships->addMembership(new \Foreningssystem\Domain\Membership\Membership(null, $number, $kind, null));
+        $membershipId = $membership->id();
+
+        if ($membershipId === null) {
+            throw new \RuntimeException('The membership was not saved.');
+        }
+
+        $this->memberships->addParticipant(new \Foreningssystem\Domain\Membership\MembershipParticipant(
             null,
+            $membershipId,
             $personId,
-            $number,
-            $row['membership_type'],
-            $membershipStatus,
-            $startedOn,
-            $endedOn
-        );
-        $this->ledger->add($this->memberships->forPerson($personId), $period);
+            \Foreningssystem\Domain\Membership\ParticipantRole::Member,
+            true,
+            null
+        ));
+        $period = new MembershipPeriod(null, $membershipId, $membershipStatus, $startedOn, $endedOn, $row['membership_type']);
+
+        foreach ($this->memberships->allParticipants() as $participant) {
+            if ($participant->personId() !== $personId || ! $participant->role()->countsAsMember() || $participant->membershipId() === $membershipId) {
+                continue;
+            }
+
+            foreach ($this->memberships->periodsForMembership($participant->membershipId()) as $existing) {
+                if ($existing->overlaps($period)) {
+                    throw new MembershipRuleException('Membership periods cannot overlap.');
+                }
+            }
+        }
+
+        $this->ledger->add([], $period);
+        $this->memberships->add($period);
+
+        return 'created';
+    }
+
+    public function exportStructure(): string
+    {
+        $this->require(Capabilities::EXPORT_MEMBERS);
+        $lines = ['# foreningsplugin-members 2'];
+        $organizations = [];
+
+        foreach ($this->organizations->all() as $organization) {
+            $number = $organization->number()?->canonical() ?? '';
+            $lines[] = implode(';', [
+                'organization',
+                $this->cell($number),
+                $this->cell($organization->name()),
+                $this->cell($organization->email()),
+                $this->cell(str_replace(["\n", "\r", ';'], ' ', $organization->postalAddress())),
+            ]);
+
+            if ($organization->id() !== null) {
+                $organizations[$organization->id()] = $organization;
+            }
+        }
+
+        foreach ($this->memberships->allMemberships() as $membership) {
+            $organization = $membership->organizationId() === null ? null : ($organizations[$membership->organizationId()] ?? null);
+            $lines[] = implode(';', [
+                'membership',
+                $this->cell($membership->number()),
+                $membership->kind()->value,
+                $this->cell($organization?->number()?->canonical() ?? ''),
+            ]);
+
+            foreach ($this->memberships->periodsForMembership((int) $membership->id()) as $period) {
+                $lines[] = implode(';', [
+                    'period',
+                    $this->cell($membership->number()),
+                    $period->status()->value,
+                    $period->startedOn()->iso(),
+                    $period->endedOn()?->iso() ?? '',
+                    $this->cell($period->historicalClass()),
+                ]);
+            }
+
+            foreach ($this->memberships->participantsForMembership((int) $membership->id()) as $participant) {
+                $person = $this->people->find($participant->personId());
+
+                if (! $person instanceof Person) {
+                    continue;
+                }
+
+                $lines[] = implode(';', [
+                    'participant',
+                    $this->cell($membership->number()),
+                    $this->cell($person->firstName()),
+                    $this->cell($person->lastName()),
+                    $this->cell($person->email()),
+                    $person->birthDate()?->iso() ?? '',
+                    $participant->role()->value,
+                    $participant->isPrimary() ? '1' : '0',
+                ]);
+            }
+        }
+
+        return "\xEF\xBB\xBF" . implode("\n", $lines) . "\n";
+    }
+
+    private function importStructure(string $csv): MemberImportResult
+    {
+        if (! mb_check_encoding($csv, 'UTF-8')) {
+            throw new InvalidArgumentException('The file must be UTF-8.');
+        }
+
+        $created = 0;
+        $skipped = 0;
+        $errors = [];
+        $records = ['organization' => [], 'membership' => [], 'participant' => [], 'period' => []];
+        $line = 0;
+
+        foreach (preg_split('/\R/', $csv) ?: [] as $raw) {
+            $line++;
+            $raw = trim($raw);
+
+            if ($raw === '' || str_starts_with($raw, '#')) {
+                continue;
+            }
+
+            $cells = str_getcsv($raw, ';', '"', '\\');
+            $type = $this->cellIn((string) ($cells[0] ?? ''));
+
+            if ($type === 'identity' || $type === 'personal_identity') {
+                throw new InvalidArgumentException('Personal identity numbers are not imported from the member file.');
+            }
+
+            if (! isset($records[$type])) {
+                $errors[] = 'Line ' . $line . ': Unknown record.';
+
+                continue;
+            }
+
+            $records[$type][] = ['line' => $line, 'cells' => $cells];
+        }
+
+        foreach (['organization', 'membership', 'participant', 'period'] as $type) {
+            foreach ($records[$type] as $record) {
+                try {
+                    $outcome = $this->transaction->run(fn (): string => $this->importStructureRow($type, $record['cells']));
+                    $outcome === 'skipped' ? $skipped++ : $created++;
+                } catch (MembershipRuleException | InvalidArgumentException $error) {
+                    $errors[] = 'Line ' . $record['line'] . ': ' . $error->getMessage();
+                }
+            }
+        }
+
+        return new MemberImportResult($created, $skipped, $errors);
+    }
+
+    /**
+     * @param list<string|null> $cells
+     */
+    private function importStructureRow(string $type, array $cells): string
+    {
+        $value = fn (int $index): string => $this->cellIn((string) ($cells[$index] ?? ''));
+
+        if ($type === 'organization') {
+            $number = $value(1) === '' ? null : OrganizationNumber::parse($value(1));
+
+            if ($number instanceof OrganizationNumber && $this->organizations->findByNumber($number->canonical()) instanceof Organization) {
+                return 'skipped';
+            }
+
+            $this->organizations->add(new Organization(null, $value(2), $number, $value(3), $value(4)));
+
+            return 'created';
+        }
+
+        if ($type === 'membership') {
+            if ($this->memberships->findMembershipByNumber($value(1)) instanceof \Foreningssystem\Domain\Membership\Membership) {
+                return 'skipped';
+            }
+
+            $kind = \Foreningssystem\Domain\Membership\MembershipKind::fromSlug($value(2));
+            $organizationId = null;
+
+            if ($kind === \Foreningssystem\Domain\Membership\MembershipKind::Company) {
+                $organization = $this->organizations->findByNumber(OrganizationNumber::parse($value(3))->canonical());
+
+                if (! $organization instanceof Organization || $organization->id() === null) {
+                    throw new InvalidArgumentException('The company membership needs an organization.');
+                }
+
+                $organizationId = $organization->id();
+            }
+
+            $this->memberships->addMembership(new \Foreningssystem\Domain\Membership\Membership(null, $value(1), $kind, $organizationId));
+
+            return 'created';
+        }
+
+        $membership = $this->memberships->findMembershipByNumber($value(1));
+
+        if (! $membership instanceof \Foreningssystem\Domain\Membership\Membership || $membership->id() === null) {
+            throw new InvalidArgumentException('The membership number was not found.');
+        }
+
+        if ($type === 'participant') {
+            $email = $value(4);
+            $person = $this->personFor($email);
+
+            if (! $person instanceof Person) {
+                $birth = $value(5) === '' ? null : AssociationDate::fromIso($value(5));
+                $person = $this->people->add(new Person(null, $value(2), $value(3), $email, PersonStatus::Known, null, $birth));
+            }
+
+            $personId = (int) $person->id();
+
+            foreach ($this->memberships->participantsForMembership($membership->id()) as $existing) {
+                if ($existing->personId() === $personId) {
+                    return 'skipped';
+                }
+            }
+
+            $role = \Foreningssystem\Domain\Membership\ParticipantRole::tryFrom($value(6));
+
+            if (! $role instanceof \Foreningssystem\Domain\Membership\ParticipantRole) {
+                throw new InvalidArgumentException('Unknown participant role.');
+            }
+
+            if ($membership->kind() === \Foreningssystem\Domain\Membership\MembershipKind::Company && $role->countsAsMember()) {
+                throw new MembershipRuleException('A company contact is not an individual member.');
+            }
+
+            $this->memberships->addParticipant(new \Foreningssystem\Domain\Membership\MembershipParticipant(
+                null,
+                $membership->id(),
+                $personId,
+                $role,
+                $value(7) === '1',
+                null
+            ));
+
+            return 'created';
+        }
+
+        $startedOn = AssociationDate::fromIso($value(3));
+        $endedOn = $value(4) === '' ? null : AssociationDate::fromIso($value(4));
+        $status = MembershipStatus::tryFrom($value(2));
+
+        if (! $status instanceof MembershipStatus) {
+            throw new InvalidArgumentException('Unknown membership status.');
+        }
+        $period = new MembershipPeriod(null, $membership->id(), $status, $startedOn, $endedOn, $value(5));
+
+        foreach ($this->memberships->periodsForMembership($membership->id()) as $existing) {
+            if ($existing->startedOn()->iso() === $startedOn->iso() && $existing->endedOn()?->iso() === $endedOn?->iso()) {
+                return 'skipped';
+            }
+
+            if ($existing->overlaps($period)) {
+                throw new MembershipRuleException('Membership periods cannot overlap.');
+            }
+        }
+
+        $this->ledger->add([], $period);
         $this->memberships->add($period);
 
         return 'created';

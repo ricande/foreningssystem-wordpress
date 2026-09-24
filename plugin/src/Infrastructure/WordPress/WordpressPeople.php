@@ -41,8 +41,50 @@ final class WordpressPeople
                     return current_user_can($capability);
                 }
             },
+            self::transaction(),
+            new WpdbOrganizationRepository()
+        );
+    }
+
+    public static function companies(): \Foreningssystem\Application\People\CompanyMemberships
+    {
+        return new \Foreningssystem\Application\People\CompanyMemberships(
+            new WpdbOrganizationRepository(),
+            new WpdbMembershipRepository(),
+            new WpdbPersonRepository(),
+            self::authorizer(),
             self::transaction()
         );
+    }
+
+    public static function identity(): \Foreningssystem\Application\People\PersonalIdentityService
+    {
+        return new \Foreningssystem\Application\People\PersonalIdentityService(
+            new WpdbPersonalIdentityRepository(),
+            new WpdbPersonRepository(),
+            self::authorizer(),
+            new WpAuditLog()
+        );
+    }
+
+    public static function guardians(): \Foreningssystem\Application\People\GuardianService
+    {
+        return new \Foreningssystem\Application\People\GuardianService(
+            new WpdbGuardianRepository(),
+            new WpdbPersonRepository(),
+            self::authorizer(),
+            new WpAuditLog()
+        );
+    }
+
+    private static function authorizer(): Authorizer
+    {
+        return new class implements Authorizer {
+            public function allows(string $capability): bool
+            {
+                return current_user_can($capability);
+            }
+        };
     }
 
     private static function transaction(): Transaction

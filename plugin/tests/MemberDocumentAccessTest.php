@@ -24,15 +24,15 @@ final class MemberDocumentAccessTest extends TestCase
         $dormant = $people->add(new Person(null, 'Noa', 'Vila', 'noa-member@example.test', PersonStatus::Known, 6));
         $closedActive = $people->add(new Person(null, 'Eva', 'Datum', 'eva-member@example.test', PersonStatus::Known, 5));
         $unlinked = $people->add(new Person(null, 'Otto', 'Los', 'otto-member@example.test', PersonStatus::Known, null));
-        $memberships->add(new MembershipPeriod(null, (int) $active->id(), 'M-ACTIVE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, (int) $active->id(), 'M-OLD', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2020-01-01'), AssociationDate::fromIso('2022-01-01')));
-        $memberships->add(new MembershipPeriod(null, (int) $ended->id(), 'M-ENDED', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2020-01-01'), AssociationDate::fromIso('2024-01-01')));
-        $memberships->add(new MembershipPeriod(null, (int) $pending->id(), 'M-PENDING', 'ordinarie', MembershipStatus::Pending, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, (int) $dormant->id(), 'M-DORMANT', 'ordinarie', MembershipStatus::Dormant, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, (int) $closedActive->id(), 'M-CLOSED', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2024-06-01')));
-        $memberships->add(new MembershipPeriod(null, (int) $unlinked->id(), 'M-OPEN', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
+        $memberships->grant((int) $active->id(), 'M-ACTIVE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant((int) $active->id(), 'M-OLD', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2020-01-01'), AssociationDate::fromIso('2022-01-01'));
+        $memberships->grant((int) $ended->id(), 'M-ENDED', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2020-01-01'), AssociationDate::fromIso('2024-01-01'));
+        $memberships->grant((int) $pending->id(), 'M-PENDING', 'ordinarie', MembershipStatus::Pending, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant((int) $dormant->id(), 'M-DORMANT', 'ordinarie', MembershipStatus::Dormant, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant((int) $closedActive->id(), 'M-CLOSED', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2024-06-01'));
+        $memberships->grant((int) $unlinked->id(), 'M-OPEN', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
         $future = $people->add(new Person(null, 'Futura', 'Senare', 'futura-member@example.test', PersonStatus::Known, 3));
-        $memberships->add(new MembershipPeriod(null, (int) $future->id(), 'M-FUTURE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-06-16'), null));
+        $memberships->grant((int) $future->id(), 'M-FUTURE', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-06-16'), null);
         $access = new MemberDocumentAccess($people, $memberships);
         $today = AssociationDate::fromIso('2024-06-15');
 

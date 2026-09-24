@@ -6,13 +6,15 @@ use Foreningssystem\Domain\Membership\MembershipStatus;
 use Foreningssystem\Infrastructure\WordPress\MembersPage;
 use Foreningssystem\Infrastructure\WordPress\WordpressPeople;
 
+require __DIR__ . '/lab-membership.php';
+
 global $wpdb;
 
 $people = $wpdb->prefix . 'assoc_person';
 $memberships = $wpdb->prefix . 'assoc_membership';
 
-$cleanup = static function () use ($wpdb, $people, $memberships): void {
-    $wpdb->query($wpdb->prepare("DELETE FROM {$memberships} WHERE membership_number LIKE %s", 'LAB-CSV-%'));
+$cleanup = static function () use ($wpdb, $people): void {
+    lab_delete_membership_numbers('LAB-CSV-%');
     $wpdb->query($wpdb->prepare("DELETE FROM {$people} WHERE email = %s", 'ada-csv@example.test'));
 };
 
@@ -58,7 +60,10 @@ $repeated = WordpressPeople::exchange()->import(str_replace('2021-12-31', '2099-
 $exported = WordpressPeople::exchange()->export();
 $personCount = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$people} WHERE email = %s", 'ada-csv@example.test'));
 $period = $wpdb->get_row($wpdb->prepare(
-    "SELECT status, ended_on FROM {$memberships} WHERE membership_number = %s",
+    "SELECT period.status, period.ended_on
+     FROM {$wpdb->prefix}assoc_membership_period period
+     INNER JOIN {$memberships} membership ON membership.id = period.membership_id
+     WHERE membership.membership_number = %s",
     'LAB-CSV-1'
 ), ARRAY_A);
 $name = (string) $wpdb->get_var($wpdb->prepare("SELECT first_name FROM {$people} WHERE email = %s", 'ada-csv@example.test'));

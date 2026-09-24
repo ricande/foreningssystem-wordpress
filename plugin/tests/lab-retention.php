@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/lab-membership.php';
+
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Meeting\MeetingDuty;
@@ -80,7 +82,7 @@ $cleanup = static function () use ($wpdb, $people, $memberships, $assignments, $
     }
 
     foreach ($numbers as $number) {
-        $personId = $wpdb->get_var($wpdb->prepare("SELECT person_id FROM {$memberships} WHERE membership_number = %s", $number));
+        $personId = lab_person_id_for_membership_number((string) $number);
 
         if ($personId) {
             $personIds[] = (int) $personId;
@@ -91,7 +93,7 @@ $cleanup = static function () use ($wpdb, $people, $memberships, $assignments, $
         $wpdb->delete($audit, ['object_type' => 'person', 'object_id' => $personId], ['%s', '%d']);
         $wpdb->delete($participants, ['person_id' => $personId], ['%d']);
         $wpdb->delete($assignments, ['person_id' => $personId], ['%d']);
-        $wpdb->delete($memberships, ['person_id' => $personId], ['%d']);
+        lab_delete_person_memberships((int) $personId);
         $wpdb->delete($people, ['id' => $personId], ['%d']);
     }
 
@@ -151,8 +153,8 @@ $revisionId = WordpressMeetings::minutes()->create($meetingId);
 WordpressMeetings::minutes()->submit($revisionId);
 WordpressMeetings::minutes()->finalize($revisionId);
 WordpressMeetings::signedCopies()->attach($revisionId, $pdf, 1);
-$adaMembership = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$memberships} WHERE membership_number = %s", 'LAB-RETAIN-A'));
-$graceMembership = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$memberships} WHERE membership_number = %s", 'LAB-RETAIN-G'));
+$adaMembership = lab_period_id_for_number('LAB-RETAIN-A');
+$graceMembership = lab_period_id_for_number('LAB-RETAIN-G');
 $peopleService->endMembership($adaMembership, $oldEnd);
 $peopleService->endMembership($graceMembership, $recentEnd);
 
@@ -205,13 +207,13 @@ RetentionPage::render();
 $html = (string) ob_get_clean();
 $result = WordpressRetention::applyToday();
 $saved = $wpdb->get_row($wpdb->prepare("SELECT first_name, last_name, email, wp_user_id FROM {$people} WHERE id = %d", $ada), ARRAY_A);
-$period = $wpdb->get_row($wpdb->prepare("SELECT membership_number, status, ended_on FROM {$memberships} WHERE person_id = %d", $ada), ARRAY_A);
+$period = lab_period_for_person((int) $ada);
 $assignment = $wpdb->get_row($wpdb->prepare("SELECT started_on, ended_on, public_contact, term_label FROM {$assignments} WHERE person_id = %d", $ada), ARRAY_A);
 $body = (string) $wpdb->get_var($wpdb->prepare("SELECT body FROM {$revisions} WHERE id = %d", $revisionId));
 $scan = WordpressMeetings::signedCopies()->read($revisionId);
 $savedGrace = $wpdb->get_row($wpdb->prepare("SELECT first_name, email FROM {$people} WHERE id = %d", $grace), ARRAY_A);
 $savedKim = $wpdb->get_row($wpdb->prepare("SELECT first_name, email FROM {$people} WHERE id = %d", $kim), ARRAY_A);
-$kimStatus = (string) $wpdb->get_var($wpdb->prepare("SELECT status FROM {$memberships} WHERE person_id = %d", $kim));
+$kimStatus = (string) (lab_period_for_person((int) $kim)['status'] ?? '');
 $oldAudit = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$audit} WHERE action = %s", 'lab_retain_old'));
 $recentAudit = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$audit} WHERE action = %s AND object_id = %d", 'lab_retain_recent', $grace));
 $anonymizedAudit = (string) $wpdb->get_var($wpdb->prepare(

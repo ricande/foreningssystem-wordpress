@@ -36,13 +36,8 @@ Ada;Lovelace;ada-csv@example.test;known;M-3;ordinarie;active;2024-06-01;
 CSV);
         $person = $people->all()[0] ?? null;
 
-        $endedOn = null;
-
-        foreach ($memberships->all() as $period) {
-            if ($period->number() === 'M-1') {
-                $endedOn = $period->endedOn()?->iso();
-            }
-        }
+        $account = $memberships->findMembershipByNumber('M-1');
+        $endedOn = $account === null ? null : ($memberships->periodsForMembership((int) $account->id())[0]->endedOn()?->iso());
 
         self::assertSame(2, $first->created());
         self::assertSame([], $first->errors());
@@ -164,7 +159,8 @@ CSV);
                 {
                     return $callback();
                 }
-            }
+            },
+            new MemoryOrganizationRepository()
         );
     }
 }

@@ -22,7 +22,7 @@ final class BoardAssignmentLedger
         $covered = false;
 
         foreach ($memberships as $period) {
-            if ($period->personId() === $candidate->personId() && $period->coversAssignment($candidate->startedOn(), $candidate->endedOn())) {
+            if ($period->coversAssignment($candidate->startedOn(), $candidate->endedOn())) {
                 $covered = true;
                 break;
             }

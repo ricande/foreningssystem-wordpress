@@ -34,6 +34,13 @@ Status terminology:
 | When a signed hard copy and the finalized minutes differ, the signed copy is the archival original | LOCKED |
 | Which roles may finalize minutes is an association setting, not a fixed rule | LOCKED |
 | Retention of personal data and audit events is an association setting. Default is 5 years | LOCKED |
+| A membership number belongs to the membership, not to a person and not to one period | LOCKED |
+| Ordinary, youth, family and company memberships are supported | LOCKED |
+| A company membership is an organization, not a person | LOCKED |
+| Family participants are separate people on one membership | LOCKED |
+| Birth date and a Swedish personal identity number are separate. The number is optional | LOCKED |
+| The plugin records guardian relationships and approvals. It does not decide that every minor legally requires consent | LOCKED |
+| Personal identity numbers are never public output | LOCKED |
 
 ## Explicit non-goals for MVP
 

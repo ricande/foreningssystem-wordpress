@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/lab-membership.php';
+
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Meeting\DecisionFollowUp;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
@@ -32,7 +34,7 @@ $personId = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$people} WHERE email 
 
 if ($personId) {
     $wpdb->delete($decisions, ['responsible_person_id' => (int) $personId], ['%d']);
-    $wpdb->delete($memberships, ['person_id' => (int) $personId], ['%d']);
+    lab_delete_person_memberships((int) $personId);
     $wpdb->delete($people, ['id' => (int) $personId], ['%d']);
 }
 
@@ -149,7 +151,7 @@ $wpdb->delete($meetings, ['id' => $meetingId], ['%d']);
 $personId = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$people} WHERE email = %s", 'lab-note-ada@example.test'));
 
 if ($personId) {
-    $wpdb->delete($memberships, ['person_id' => (int) $personId], ['%d']);
+    lab_delete_person_memberships((int) $personId);
     $wpdb->delete($people, ['id' => (int) $personId], ['%d']);
 }
 

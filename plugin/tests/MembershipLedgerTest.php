@@ -91,11 +91,10 @@ final class MembershipLedgerTest extends TestCase
         $period = new MembershipPeriod(
             $id,
             7,
-            'M-' . ($id ?? 'new') . '-' . $start,
-            'ordinarie',
             $status,
             AssociationDate::fromIso($start),
-            $end === null ? null : AssociationDate::fromIso($end)
+            $end === null ? null : AssociationDate::fromIso($end),
+            'ordinarie'
         );
 
         return $period;

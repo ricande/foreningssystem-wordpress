@@ -34,13 +34,13 @@ final class RetentionTest extends TestCase
         $ann = $people->add(new Person(null, 'Ann', 'Dag', 'ann@example.test', PersonStatus::Deceased, null));
         $bea = $people->add(new Person(null, 'Bea', 'Sen', 'bea@example.test', PersonStatus::Known, null));
         $adaId = (int) $ada->id();
-        $memberships->add(new MembershipPeriod(null, $adaId, 'M-ADA', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2018-01-01'), AssociationDate::fromIso('2020-01-01')));
-        $memberships->add(new MembershipPeriod(null, (int) $grace->id(), 'M-GRACE', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2025-09-24')));
-        $memberships->add(new MembershipPeriod(null, (int) $kim->id(), 'M-KIM', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, (int) $nils->id(), 'M-NILS-OLD', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2008-01-01'), AssociationDate::fromIso('2010-01-01')));
-        $memberships->add(new MembershipPeriod(null, (int) $nils->id(), 'M-NILS', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null));
-        $memberships->add(new MembershipPeriod(null, (int) $ann->id(), 'M-ANN', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2019-01-01'), AssociationDate::fromIso('2021-09-24')));
-        $memberships->add(new MembershipPeriod(null, (int) $bea->id(), 'M-BEA', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2019-01-01'), AssociationDate::fromIso('2021-09-25')));
+        $memberships->grant($adaId, 'M-ADA', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2018-01-01'), AssociationDate::fromIso('2020-01-01'));
+        $memberships->grant((int) $grace->id(), 'M-GRACE', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2025-09-24'));
+        $memberships->grant((int) $kim->id(), 'M-KIM', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant((int) $nils->id(), 'M-NILS-OLD', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2008-01-01'), AssociationDate::fromIso('2010-01-01'));
+        $memberships->grant((int) $nils->id(), 'M-NILS', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $memberships->grant((int) $ann->id(), 'M-ANN', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2019-01-01'), AssociationDate::fromIso('2021-09-24'));
+        $memberships->grant((int) $bea->id(), 'M-BEA', 'ordinarie', MembershipStatus::Ended, AssociationDate::fromIso('2019-01-01'), AssociationDate::fromIso('2021-09-25'));
         $adaAssignment = $assignments->add(new BoardAssignment(null, $adaId, $roleId, AssociationDate::fromIso('2018-01-01'), AssociationDate::fromIso('2020-01-01'), 'ada@example.test', '2018'));
         $assignments->add(new BoardAssignment(null, (int) $grace->id(), $roleId, AssociationDate::fromIso('2024-01-01'), AssociationDate::fromIso('2025-09-24'), 'grace-ordf@example.test', ''));
         $audit->recordAt('person', $adaId, 'export_personal_data', 7, '2020-01-01 12:00:00');
@@ -117,19 +117,22 @@ final class RetentionTest extends TestCase
                 {
                     return $callback();
                 }
-            }
+            },
+            new MemoryPersonalIdentityRepository()
         );
     }
 
     private function period(MemoryMembershipRepository $memberships, string $number): ?MembershipPeriod
     {
-        foreach ($memberships->all() as $period) {
-            if ($period->number() === $number) {
-                return $period;
-            }
+        $account = $memberships->findMembershipByNumber($number);
+
+        if ($account === null || $account->id() === null) {
+            return null;
         }
 
-        return null;
+        $periods = $memberships->periodsForMembership($account->id());
+
+        return $periods[0] ?? null;
     }
 
     private function contact(MemoryBoardAssignmentRepository $assignments, int $personId): string
