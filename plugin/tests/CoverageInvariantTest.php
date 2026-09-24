@@ -181,6 +181,114 @@ final class CoverageInvariantTest extends TestCase
         self::assertSame('2024-06-01', $assignments->find((int) $assignment->id())?->endedOn()?->iso());
     }
 
+    public function test_ending_a_membership_keeps_the_assignment_when_the_next_membership_starts_the_following_day(): void
+    {
+        [$service, $memberships, $assignments] = $this->world();
+        $personId = $service->register('Lisa', 'Andersson', 'lisa-period-next@example.test', 'M-1', 'ordinary', AssociationDate::fromIso('2024-01-01'));
+        $membershipId = (int) $memberships->findMembershipByNumber('M-1')?->id();
+        $memberships->grant($personId, 'M-2', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2027-01-01'), null);
+        $assignment = $assignments->add(new BoardAssignment(null, $personId, 1, AssociationDate::fromIso('2026-03-01'), null, '', ''));
+
+        $service->endMembership((int) $memberships->periodsForMembership($membershipId)[0]->id(), AssociationDate::fromIso('2026-12-31'));
+
+        self::assertNull($assignments->find((int) $assignment->id())?->endedOn());
+    }
+
+    public function test_ending_a_membership_truncates_the_assignment_when_the_next_membership_leaves_a_gap(): void
+    {
+        [$service, $memberships, $assignments] = $this->world();
+        $personId = $service->register('Lisa', 'Andersson', 'lisa-period-gap@example.test', 'M-1', 'ordinary', AssociationDate::fromIso('2024-01-01'));
+        $membershipId = (int) $memberships->findMembershipByNumber('M-1')?->id();
+        $memberships->grant($personId, 'M-2', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2027-01-02'), null);
+        $assignment = $assignments->add(new BoardAssignment(null, $personId, 1, AssociationDate::fromIso('2026-03-01'), null, '', ''));
+
+        $service->endMembership((int) $memberships->periodsForMembership($membershipId)[0]->id(), AssociationDate::fromIso('2026-12-31'));
+
+        self::assertSame('2026-12-31', $assignments->find((int) $assignment->id())?->endedOn()?->iso());
+    }
+
+    public function test_ending_a_family_membership_judges_each_person_separately(): void
+    {
+        [$service, $memberships, $assignments] = $this->world();
+        $karinId = $service->register('Karin', 'Berg', 'karin-family@example.test', 'F-1', 'family', AssociationDate::fromIso('2024-01-01'));
+        $familyId = (int) $memberships->findMembershipByNumber('F-1')?->id();
+        $lisaId = $service->addPersonToMembership($familyId, 'Lisa', 'Andersson', 'lisa-family@example.test', null, AssociationDate::fromIso('2024-01-01'), ParticipantRole::Member, false);
+        $memberships->grant($karinId, 'M-1', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2027-01-01'), null);
+        $karinAssignment = $assignments->add(new BoardAssignment(null, $karinId, 1, AssociationDate::fromIso('2026-03-01'), null, '', ''));
+        $lisaAssignment = $assignments->add(new BoardAssignment(null, $lisaId, 1, AssociationDate::fromIso('2026-03-01'), null, '', ''));
+
+        $service->endMembership((int) $memberships->periodsForMembership($familyId)[0]->id(), AssociationDate::fromIso('2026-12-31'));
+
+        self::assertNull($assignments->find((int) $karinAssignment->id())?->endedOn());
+        self::assertSame('2026-12-31', $assignments->find((int) $lisaAssignment->id())?->endedOn()?->iso());
+    }
+
+    public function test_ending_a_membership_with_only_a_contact_does_not_change_the_assignment(): void
+    {
+        [$service, $memberships, $assignments] = $this->world();
+        $personId = $service->register('Lisa', 'Andersson', 'lisa-contact-period@example.test', 'M-1', 'ordinary', AssociationDate::fromIso('2024-01-01'));
+        $contact = $memberships->addMembership(new Membership(null, 'K-1', MembershipKind::Ordinary, null));
+        $contactPeriod = $memberships->add(new MembershipPeriod(
+            null,
+            (int) $contact->id(),
+            MembershipStatus::Active,
+            AssociationDate::fromIso('2026-01-01'),
+            null,
+            'ordinary'
+        ));
+        $service->addParticipant((int) $contact->id(), $personId, ParticipantRole::Contact, false, AssociationDate::fromIso('2026-01-01'));
+        $assignment = $assignments->add(new BoardAssignment(null, $personId, 1, AssociationDate::fromIso('2026-03-01'), null, '', ''));
+
+        $service->endMembership((int) $contactPeriod->id(), AssociationDate::fromIso('2026-12-31'));
+
+        self::assertNull($assignments->find((int) $assignment->id())?->endedOn());
+    }
+
+    public function test_ending_a_membership_leaves_an_assignment_that_already_ends_inside_coverage(): void
+    {
+        [$service, $memberships, $assignments] = $this->world();
+        $personId = $service->register('Lisa', 'Andersson', 'lisa-period-closed@example.test', 'M-1', 'ordinary', AssociationDate::fromIso('2024-01-01'));
+        $membershipId = (int) $memberships->findMembershipByNumber('M-1')?->id();
+        $assignment = $assignments->add(new BoardAssignment(
+            null,
+            $personId,
+            1,
+            AssociationDate::fromIso('2026-01-01'),
+            AssociationDate::fromIso('2026-06-30'),
+            '',
+            ''
+        ));
+
+        $service->endMembership((int) $memberships->periodsForMembership($membershipId)[0]->id(), AssociationDate::fromIso('2026-12-31'));
+
+        self::assertSame('2026-06-30', $assignments->find((int) $assignment->id())?->endedOn()?->iso());
+    }
+
+    public function test_a_future_membership_end_truncates_the_assignment_on_that_date(): void
+    {
+        [$service, $memberships, $assignments] = $this->world();
+        $personId = $service->register('Lisa', 'Andersson', 'lisa-period-future@example.test', 'M-1', 'ordinary', AssociationDate::fromIso('2024-01-01'));
+        $membershipId = (int) $memberships->findMembershipByNumber('M-1')?->id();
+        $assignment = $assignments->add(new BoardAssignment(null, $personId, 1, AssociationDate::fromIso('2026-03-01'), null, '', ''));
+
+        $service->endMembership((int) $memberships->periodsForMembership($membershipId)[0]->id(), AssociationDate::fromIso('2026-12-31'));
+
+        self::assertSame('2026-12-31', $assignments->find((int) $assignment->id())?->endedOn()?->iso());
+    }
+
+    public function test_a_later_period_does_not_reopen_an_assignment_ended_with_the_membership(): void
+    {
+        [$service, $memberships, $assignments] = $this->world();
+        $personId = $service->register('Lisa', 'Andersson', 'lisa-period-rejoin@example.test', 'M-1', 'ordinary', AssociationDate::fromIso('2024-01-01'));
+        $membershipId = (int) $memberships->findMembershipByNumber('M-1')?->id();
+        $assignment = $assignments->add(new BoardAssignment(null, $personId, 1, AssociationDate::fromIso('2026-03-01'), null, '', ''));
+        $service->endMembership((int) $memberships->periodsForMembership($membershipId)[0]->id(), AssociationDate::fromIso('2026-12-31'));
+        $service->addPeriod($membershipId, AssociationDate::fromIso('2027-06-01'));
+
+        self::assertSame('2026-12-31', $assignments->find((int) $assignment->id())?->endedOn()?->iso());
+        self::assertCount(2, $memberships->periodsForMembership($membershipId));
+    }
+
     public function test_participation_and_period_dates_stay_independent_and_coverage_is_their_intersection(): void
     {
         [$service, $memberships] = $this->world();

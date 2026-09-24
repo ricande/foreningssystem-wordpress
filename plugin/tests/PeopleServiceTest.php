@@ -65,7 +65,6 @@ final class PeopleServiceTest extends TestCase
         self::assertSame(MembershipStatus::Ended, $deceased->membership()?->status());
         self::assertSame('2024-09-24', $deceased->membership()?->endedOn()?->iso());
         self::assertSame([
-            [$personId, '2024-06-01'],
             [$secondId, '2024-09-24'],
         ], $closer->calls);
     }

@@ -168,7 +168,7 @@ final class PeopleService
             $ended = $open->ended($on);
 
             if ($open->role()->countsAsMember()) {
-                $this->preserveBoardCoverage($personId, $this->participantsReplacing($open, $ended));
+                $this->preserveBoardCoverage($personId, $this->participantsReplacing($open, $ended), $this->memberships->all());
             }
 
             $this->memberships->saveParticipant($ended);
@@ -216,11 +216,14 @@ final class PeopleService
         $period = $this->requirePeriod($periodId);
 
         $this->transaction->run(function () use ($period, $on): void {
+            $ended = $this->ledger->end($period, $on);
+            $periods = $this->periodsReplacing($period, $ended);
+
             foreach ($this->memberParticipants($period->membershipId()) as $participant) {
-                $this->openAssignments->endOpen($participant->personId(), $on);
+                $this->preserveBoardCoverage($participant->personId(), $this->memberships->allParticipants(), $periods);
             }
 
-            $this->memberships->save($this->ledger->end($period, $on));
+            $this->memberships->save($ended);
         });
     }
 
@@ -422,16 +425,20 @@ final class PeopleService
 
     /**
      * @param list<MembershipParticipant> $participants
+     * @param list<MembershipPeriod> $periods
      */
-    private function preserveBoardCoverage(int $personId, array $participants): void
+    private function preserveBoardCoverage(int $personId, array $participants, array $periods): void
     {
-        $periods = $this->memberships->all();
         $changes = [];
 
         foreach ($this->openAssignments->assignmentsFor($personId) as $assignment) {
             $span = MemberCoverage::continuousCoverageFrom($personId, $assignment->startedOn(), $participants, $periods);
 
             if (! $span instanceof CoverageSpan) {
+                if ($assignment->endedOn() instanceof AssociationDate) {
+                    continue;
+                }
+
                 throw new MembershipRuleException('The membership does not cover this assignment.');
             }
 
@@ -483,6 +490,35 @@ final class PeopleService
 
         if (! $replaced) {
             throw new \RuntimeException('The participation was not saved.');
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return list<MembershipPeriod>
+     */
+    private function periodsReplacing(MembershipPeriod $open, MembershipPeriod $ended): array
+    {
+        if ($open->id() === null) {
+            throw new \RuntimeException('The membership was not saved.');
+        }
+
+        $rows = [];
+        $replaced = false;
+
+        foreach ($this->memberships->all() as $period) {
+            if ($period->id() === $open->id()) {
+                $rows[] = $ended;
+                $replaced = true;
+                continue;
+            }
+
+            $rows[] = $period;
+        }
+
+        if (! $replaced) {
+            throw new \RuntimeException('The membership was not saved.');
         }
 
         return $rows;
