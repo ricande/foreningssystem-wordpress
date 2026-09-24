@@ -11,7 +11,7 @@ global $wpdb;
 
 $people = $wpdb->prefix . 'assoc_person';
 $memberships = $wpdb->prefix . 'assoc_membership';
-$wpdb->query($wpdb->prepare("DELETE FROM {$memberships} WHERE membership_number = %s", 'LAB-PERSON-1'));
+$wpdb->query("DELETE FROM {$memberships} WHERE membership_number IN ('LAB-PERSON-1', 'LAB-PERSON-2', 'LAB-PERSON-3')");
 $wpdb->query($wpdb->prepare("DELETE FROM {$people} WHERE email = %s", 'lab-person@example.test'));
 
 $service = WordpressPeople::service();
@@ -63,6 +63,20 @@ if ($ended === null || $ended->membership()?->status() !== MembershipStatus::End
     \WP_CLI::error('Ending the membership removed the person or left the period open.');
 }
 
+$renewedId = $service->addMembership($personId, 'LAB-PERSON-2', 'ordinarie', AssociationDate::fromIso('2024-07-01'));
+$stored = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$memberships} WHERE person_id = %d", $personId));
+$overlapRejected = false;
+
+try {
+    $service->addMembership($personId, 'LAB-PERSON-3', 'ordinarie', AssociationDate::fromIso('2024-08-01'));
+} catch (MembershipRuleException) {
+    $overlapRejected = true;
+}
+
+if ($renewedId < 1 || $stored !== 2 || ! $overlapRejected || $ended->membership()?->number() !== 'LAB-PERSON-1') {
+    \WP_CLI::error('A later membership period did not keep the earlier one.');
+}
+
 $secretary = get_user_by('login', 'lab-secretary');
 
 if (! $secretary instanceof WP_User) {
@@ -100,7 +114,8 @@ if ($deceased->membership()?->status() !== MembershipStatus::Ended) {
     \WP_CLI::error('The membership disappeared when the person was marked deceased.');
 }
 
-$wpdb->query($wpdb->prepare("DELETE FROM {$memberships} WHERE membership_number = %s", 'LAB-PERSON-1'));
+$wpdb->query($wpdb->prepare("DELETE FROM {$memberships} WHERE person_id = %d", $personId));
+$wpdb->query("DELETE FROM {$memberships} WHERE membership_number IN ('LAB-PERSON-1', 'LAB-PERSON-2', 'LAB-PERSON-3')");
 $wpdb->query($wpdb->prepare("DELETE FROM {$people} WHERE email = %s", 'lab-person@example.test'));
 
 \WP_CLI::success('People and memberships keep their history.');

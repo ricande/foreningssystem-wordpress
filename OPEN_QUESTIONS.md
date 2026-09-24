@@ -10,6 +10,14 @@ These must be answered deliberately. Do not silently turn assumptions into imple
 - Personal data and audit events use a retention setting. The default is 5 years.
 - The license is GPL-2.0-or-later.
 
+## Blocking decision, not yet made
+
+Whether a membership number identifies the person across every period, or one membership period only, is not decided.
+
+The current database key is `UNIQUE` on `membership_number`, and the ledger rejects a number that already exists on any period. That behaves as one number per period. Product language can also be read as one number per person. Do not change the key, reuse a number for a returning member, or merge people by number until the owner chooses.
+
+A returning person can receive a new period with a new number. The earlier period stays.
+
 ## Identity and membership
 
 1. Is the core model `Person -> Membership`?

@@ -75,6 +75,37 @@ final class PeopleService
         });
     }
 
+    public function addMembership(int $personId, string $membershipNumber, string $membershipType, AssociationDate $startedOn): int
+    {
+        $this->require(Capabilities::EDIT_MEMBERS);
+        $person = $this->requirePerson($personId);
+
+        if ($person->status() === PersonStatus::Deceased) {
+            throw new \Foreningssystem\Domain\Membership\MembershipRuleException('A deceased person cannot start a membership.');
+        }
+
+        return $this->transaction->run(function () use ($personId, $membershipNumber, $membershipType, $startedOn): int {
+            $period = new MembershipPeriod(
+                null,
+                $personId,
+                trim($membershipNumber),
+                trim($membershipType),
+                MembershipStatus::Active,
+                $startedOn,
+                null
+            );
+            $this->ledger->add($this->memberships->all(), $period);
+            $saved = $this->memberships->add($period);
+            $membershipId = $saved->id();
+
+            if ($membershipId === null) {
+                throw new \RuntimeException('The membership was not saved.');
+            }
+
+            return $membershipId;
+        });
+    }
+
     public function endMembership(int $membershipId, AssociationDate $on): void
     {
         $this->require(Capabilities::EDIT_MEMBERS);

@@ -35,6 +35,30 @@ final class MembersPage
         }
     }
 
+    public static function addMembership(): void
+    {
+        self::guardEdit('assoc_add_membership');
+
+        try {
+            WordpressPeople::service()->addMembership(
+                self::integer('person_id'),
+                self::text('membership_number'),
+                self::text('membership_type') === '' ? 'ordinarie' : self::text('membership_type'),
+                AssociationDate::fromIso(self::text('started_on'))
+            );
+            self::redirect('renewed');
+        } catch (MembershipRuleException $error) {
+            $message = $error->getMessage();
+            self::redirect(match ($message) {
+                'Membership number is already used.' => 'duplicate_number',
+                'A deceased person cannot start a membership.' => 'deceased_period',
+                default => 'overlap',
+            });
+        } catch (\InvalidArgumentException) {
+            self::redirect('invalid');
+        }
+    }
+
     public static function endMembership(): void
     {
         self::guardEdit('assoc_end_membership');
@@ -211,6 +235,17 @@ final class MembersPage
                     submit_button(__('Avsluta medlemskap', 'foreningsplugin'), 'secondary', 'submit', false);
                     echo '</form>';
                 }
+                if ($person->status() !== PersonStatus::Deceased && ($membership === null || $membership->status() === MembershipStatus::Ended)) {
+                    echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+                    echo '<input type="hidden" name="action" value="assoc_add_membership">';
+                    echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
+                    wp_nonce_field('assoc_add_membership');
+                    echo '<input type="text" name="membership_number" required placeholder="' . esc_attr__('Medlemsnummer', 'foreningsplugin') . '"> ';
+                    echo '<input type="text" name="membership_type" placeholder="' . esc_attr__('Medlemstyp', 'foreningsplugin') . '"> ';
+                    echo '<input type="date" name="started_on" required> ';
+                    submit_button(__('Ny period', 'foreningsplugin'), 'secondary', 'submit', false);
+                    echo '</form>';
+                }
                 if ($person->status() !== PersonStatus::Deceased) {
                     echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
                     echo '<input type="hidden" name="action" value="assoc_mark_deceased">';
@@ -254,6 +289,7 @@ final class MembersPage
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
         $messages = [
             'created' => __('Personen är sparad.', 'foreningsplugin'),
+            'renewed' => __('En ny medlemsperiod är sparad. Den tidigare perioden finns kvar.', 'foreningsplugin'),
             'ended' => __('Medlemskapet är avslutat. Personen finns kvar.', 'foreningsplugin'),
             'deceased' => __('Personen är markerad som avliden och öppna medlemskap är avslutade.', 'foreningsplugin'),
             'duplicate_number' => __('Medlemsnumret används redan.', 'foreningsplugin'),
@@ -261,6 +297,7 @@ final class MembersPage
             'already_ended' => __('Medlemskapet är redan avslutat.', 'foreningsplugin'),
             'assignment' => __('Ett öppet styrelseuppdrag passar inte datumet, så inget ändrades.', 'foreningsplugin'),
             'invalid' => __('Kontrollera uppgifterna och försök igen.', 'foreningsplugin'),
+            'deceased_period' => __('En avliden person kan inte få en ny medlemsperiod.', 'foreningsplugin'),
             'import_invalid' => __('Filen måste vara UTF-8 med de förväntade kolumnerna, separerade med semikolon.', 'foreningsplugin'),
             'import_too_large' => __('Filen är större än 2 MB.', 'foreningsplugin'),
         ];
@@ -292,7 +329,7 @@ final class MembersPage
             return;
         }
 
-        $class = in_array($notice, ['created', 'ended', 'deceased'], true) ? 'notice-success' : 'notice-error';
+        $class = in_array($notice, ['created', 'ended', 'deceased', 'renewed'], true) ? 'notice-success' : 'notice-error';
         echo '<div class="notice ' . esc_attr($class) . '"><p>' . esc_html($messages[$notice]) . '</p></div>';
     }
 

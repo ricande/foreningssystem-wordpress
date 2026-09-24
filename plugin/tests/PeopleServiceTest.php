@@ -112,6 +112,60 @@ final class PeopleServiceTest extends TestCase
         $service->register('Ada', 'Lovelace', '', 'M-1', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
     }
 
+    public function test_a_person_can_return_in_a_new_period_without_losing_the_old_one(): void
+    {
+        $people = new MemoryPersonRepository();
+        $memberships = new MemoryMembershipRepository();
+        $service = new PeopleService(
+            $people,
+            $memberships,
+            new MembershipLedger(),
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return in_array($capability, [Capabilities::EDIT_MEMBERS, Capabilities::VIEW_MEMBERS], true);
+                }
+            },
+            new class implements Transaction {
+                public function run(callable $callback): mixed
+                {
+                    return $callback();
+                }
+            },
+            new RecordingOpenAssignments()
+        );
+        $today = AssociationDate::fromIso('2024-09-24');
+        $personId = $service->register('Ada', 'Lovelace', 'ada@example.test', 'M-1', 'ordinarie', AssociationDate::fromIso('2020-01-01'));
+        $firstId = (int) $service->listPeople()[0]->membership()?->id();
+        $service->endMembership($firstId, AssociationDate::fromIso('2021-12-31'));
+
+        self::assertSame(0, $service->activeMemberCount($today));
+        $secondId = $service->addMembership($personId, 'M-2', 'ordinarie', AssociationDate::fromIso('2022-01-01'));
+
+        self::assertSame(1, $service->activeMemberCount($today));
+        self::assertCount(2, $memberships->all());
+        self::assertSame(MembershipStatus::Ended, $memberships->find($firstId)?->status());
+        self::assertSame('2021-12-31', $memberships->find($firstId)?->endedOn()?->iso());
+        self::assertSame(MembershipStatus::Active, $memberships->find($secondId)?->status());
+        self::assertSame($personId, $service->listPeople()[0]->person()->id());
+
+        try {
+            $service->addMembership($personId, 'M-3', 'ordinarie', AssociationDate::fromIso('2022-06-01'));
+            self::fail('An overlapping period should be rejected.');
+        } catch (MembershipRuleException) {
+            self::assertCount(2, $memberships->all());
+        }
+
+        $service->markDeceased($personId, AssociationDate::fromIso('2024-09-24'));
+
+        try {
+            $service->addMembership($personId, 'M-4', 'ordinarie', AssociationDate::fromIso('2025-01-01'));
+            self::fail('A deceased person should not receive a new period.');
+        } catch (MembershipRuleException) {
+            self::assertCount(2, $memberships->all());
+        }
+    }
+
     public function test_schema_migration_creates_person_and_membership_tables(): void
     {
         $sql = (new MembershipSchemaMigration('wp_', 'DEFAULT CHARSET utf8mb4'))->statements();
