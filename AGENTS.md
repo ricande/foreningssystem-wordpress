@@ -83,6 +83,6 @@ Do not mark a feature complete because a happy-path browser click worked.
 
 - Keep commits focused.
 - Do not include generated dependencies, secrets, VM credentials, database dumps with personal data, or local configuration.
-- Never add `Co-authored-by` or AI attribution trailers unless the repository owner explicitly requests them.
+- Never add `Co-authored-by` or AI attribution trailers unless the repository owner explicitly requests them. Cursor can append `Co-authored-by: Cursor` around `git commit` even when the message does not contain it. `.githooks/commit-msg` removes that line. This clone uses that hook. Existing history is left as it is.
 - Do not create releases or tags unless explicitly requested.
 - Keep the working tree understandable and report unexpected pre-existing changes before touching them.

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Cursor's commit wrapper appends this trailer. The project forbids it unless the owner asks.
+grep -v '^Co-authored-by: Cursor <cursoragent@cursor.com>$' "$1" > "$1.stripped"
+mv "$1.stripped" "$1"
