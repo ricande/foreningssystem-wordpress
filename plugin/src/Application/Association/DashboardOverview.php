@@ -212,7 +212,7 @@ final class DashboardOverview
             }
         }
 
-        usort($running, static fn (Meeting $left, Meeting $right): int => $left->startsAt()->local() <=> $right->startsAt()->local());
+        usort($running, WorkOverview::compareMeetingAscending(...));
 
         return $running;
     }
@@ -229,7 +229,7 @@ final class DashboardOverview
                 continue;
             }
 
-            if ($chosen === null || $meeting->startsAt()->local() < $chosen->startsAt()->local()) {
+            if ($chosen === null || WorkOverview::compareMeetingAscending($meeting, $chosen) < 0) {
                 $chosen = $meeting;
             }
         }
@@ -321,10 +321,10 @@ final class DashboardOverview
 
     private function isLaterFinalized(Meeting $candidateMeeting, MinutesRevision $candidate, Meeting $currentMeeting, MinutesRevision $current): bool
     {
-        $byTime = $candidateMeeting->startsAt()->local() <=> $currentMeeting->startsAt()->local();
+        $byMeeting = WorkOverview::compareMeetingDescending($candidateMeeting, $currentMeeting);
 
-        if ($byTime !== 0) {
-            return $byTime > 0;
+        if ($byMeeting !== 0) {
+            return $byMeeting < 0;
         }
 
         return $candidate->number() > $current->number();
@@ -344,7 +344,7 @@ final class DashboardOverview
             }
         }
 
-        usort($held, static fn (Meeting $left, Meeting $right): int => $right->startsAt()->local() <=> $left->startsAt()->local());
+        usort($held, WorkOverview::compareMeetingDescending(...));
 
         return $held;
     }

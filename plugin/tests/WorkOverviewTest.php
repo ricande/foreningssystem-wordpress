@@ -36,6 +36,12 @@ final class WorkOverviewTest extends TestCase
 
         self::assertSame('Pågår ikväll', $overview->nextPlanned($meetings, $now)?->title());
         self::assertSame('Hållet senare', $overview->lastHeld($meetings)?->title());
+        $sameStart = [
+            $this->meeting(23, 'Higher', '2026-10-15 18:00', MeetingStatus::Held),
+            $this->meeting(17, 'Lower', '2026-10-15 18:00', MeetingStatus::Held),
+        ];
+        self::assertSame(23, $overview->lastHeld($sameStart)?->id());
+        self::assertSame(23, $overview->lastHeld(array_reverse($sameStart))?->id());
         self::assertSame(
             ['Äldre förfallen', 'Förfallen'],
             array_map(static fn (ActionItem $item): string => $item->task(), $overview->overdue($items, AssociationDate::fromIso('2026-09-24')))

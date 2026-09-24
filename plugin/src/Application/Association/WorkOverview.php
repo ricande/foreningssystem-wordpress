@@ -29,7 +29,7 @@ final class WorkOverview
                 continue;
             }
 
-            if ($next === null || $meeting->startsAt()->local() < $next->startsAt()->local()) {
+            if ($next === null || self::compareMeetingAscending($meeting, $next) < 0) {
                 $next = $meeting;
             }
         }
@@ -49,7 +49,7 @@ final class WorkOverview
                 continue;
             }
 
-            if ($last === null || $meeting->startsAt()->local() > $last->startsAt()->local()) {
+            if ($last === null || self::compareMeetingDescending($meeting, $last) < 0) {
                 $last = $meeting;
             }
         }
@@ -82,5 +82,28 @@ final class WorkOverview
         });
 
         return $overdue;
+    }
+
+    /**
+     * Earlier start first. The same start uses the lower meeting id.
+     */
+    public static function compareMeetingAscending(Meeting $left, Meeting $right): int
+    {
+        $byTime = $left->startsAt()->local() <=> $right->startsAt()->local();
+
+        return $byTime !== 0 ? $byTime : self::meetingId($left) <=> self::meetingId($right);
+    }
+
+    /**
+     * Later start first. The same start uses the higher meeting id.
+     */
+    public static function compareMeetingDescending(Meeting $left, Meeting $right): int
+    {
+        return self::compareMeetingAscending($right, $left);
+    }
+
+    private static function meetingId(Meeting $meeting): int
+    {
+        return (int) ($meeting->id() ?? 0);
     }
 }

@@ -200,22 +200,76 @@ final class DashboardOverviewTest extends TestCase
         self::assertSame(['in_progress', 'overdue', 'minutes', 'minutes', 'minutes', 'minutes', 'board_change', 'next_meeting'], array_column($snapshot->attention, 'kind'));
     }
 
-    public function test_latest_finalized_minutes_use_meeting_time_then_revision_number(): void
+    public function test_equal_start_times_choose_the_same_meetings_in_either_input_order(): void
+    {
+        $moment = MeetingMoment::fromLocal('2026-10-15 18:00');
+        $lower = new Meeting(17, 1, 'Lower', $moment, '', MeetingStatus::Planned);
+        $higher = new Meeting(23, 1, 'Higher', $moment, '', MeetingStatus::Planned);
+        $lowerRunning = new Meeting(17, 1, 'Lower running', $moment, '', MeetingStatus::InProgress);
+        $higherRunning = new Meeting(23, 1, 'Higher running', $moment, '', MeetingStatus::InProgress);
+        $lowerHeld = new Meeting(17, 1, 'Lower held', $moment, '', MeetingStatus::Held);
+        $higherHeld = new Meeting(23, 1, 'Higher held', $moment, '', MeetingStatus::Held);
+
+        foreach ([[$higher, $lower], [$lower, $higher]] as $planned) {
+            $snapshot = $this->overview()->snapshot($this->sources(meetings: $planned));
+            self::assertSame(17, $snapshot->nextMeeting?->id());
+        }
+
+        foreach ([[$higherRunning, $lowerRunning], [$lowerRunning, $higherRunning]] as $running) {
+            $snapshot = $this->overview()->snapshot($this->sources(meetings: $running));
+            self::assertSame(17, $snapshot->inProgress?->id());
+        }
+
+        foreach ([[$higherHeld, $lowerHeld], [$lowerHeld, $higherHeld]] as $held) {
+            $snapshot = $this->overview()->snapshot($this->sources(meetings: $held));
+            self::assertSame(23, $snapshot->latestHeld?->id());
+            self::assertSame([23, 17], array_column($snapshot->minutesWork, 'meetingId'));
+        }
+    }
+
+    public function test_latest_finalized_minutes_use_meeting_time_then_meeting_id_then_revision_number(): void
     {
         $earlier = new Meeting(1, 1, 'Earlier', MeetingMoment::fromLocal('2026-01-01 18:00'), '', MeetingStatus::Held);
-        $laterLow = new Meeting(2, 1, 'Later low', MeetingMoment::fromLocal('2026-08-01 18:00'), '', MeetingStatus::Held);
-        $laterHigh = new Meeting(3, 1, 'Later high', MeetingMoment::fromLocal('2026-08-01 18:00'), '', MeetingStatus::Held);
-        $snapshot = $this->overview()->snapshot($this->sources(
-            meetings: [$laterLow, $earlier, $laterHigh],
-            revisions: [
-                new MinutesRevision(1, 1, 1, 3, RevisionState::Finalized, 'Earlier', '{}', false),
-                new MinutesRevision(2, 1, 2, 1, RevisionState::Finalized, 'Low', '{}', false),
-                new MinutesRevision(3, 1, 3, 2, RevisionState::Finalized, 'High', '{}', false),
+        $lower = new Meeting(17, 1, 'Lower', MeetingMoment::fromLocal('2026-10-15 18:00'), '', MeetingStatus::Held);
+        $higher = new Meeting(23, 1, 'Higher', MeetingMoment::fromLocal('2026-10-15 18:00'), '', MeetingStatus::Held);
+        $revisionSets = [
+            [
+                new MinutesRevision(1, 1, 1, 1, RevisionState::Finalized, 'Earlier', '{}', false),
+                new MinutesRevision(2, 1, 17, 4, RevisionState::Finalized, 'Lower', '{}', false),
+                new MinutesRevision(3, 1, 23, 1, RevisionState::Finalized, 'Higher', '{}', false),
             ],
-        ));
+            [
+                new MinutesRevision(3, 1, 23, 1, RevisionState::Finalized, 'Higher', '{}', false),
+                new MinutesRevision(2, 1, 17, 4, RevisionState::Finalized, 'Lower', '{}', false),
+                new MinutesRevision(1, 1, 1, 1, RevisionState::Finalized, 'Earlier', '{}', false),
+            ],
+        ];
 
-        self::assertSame('Later high', $snapshot->latestFinalized['title'] ?? null);
-        self::assertSame(2, $snapshot->latestFinalized['number'] ?? null);
+        foreach ([[$higher, $lower, $earlier], [$earlier, $lower, $higher]] as $meetings) {
+            foreach ($revisionSets as $revisions) {
+                $snapshot = $this->overview()->snapshot($this->sources(meetings: $meetings, revisions: $revisions));
+                self::assertSame(23, $snapshot->latestFinalized['meetingId'] ?? null);
+                self::assertSame(1, $snapshot->latestFinalized['number'] ?? null);
+            }
+        }
+
+        $sameMeeting = new Meeting(23, 1, 'Same', MeetingMoment::fromLocal('2026-10-15 18:00'), '', MeetingStatus::Held);
+        $sameMeetingRevisions = [
+            [
+                new MinutesRevision(1, 1, 23, 1, RevisionState::Finalized, 'First', '{}', false),
+                new MinutesRevision(2, 1, 23, 2, RevisionState::Finalized, 'Second', '{}', false),
+            ],
+            [
+                new MinutesRevision(2, 1, 23, 2, RevisionState::Finalized, 'Second', '{}', false),
+                new MinutesRevision(1, 1, 23, 1, RevisionState::Finalized, 'First', '{}', false),
+            ],
+        ];
+
+        foreach ($sameMeetingRevisions as $revisions) {
+            $snapshot = $this->overview()->snapshot($this->sources(meetings: [$sameMeeting], revisions: $revisions));
+            self::assertSame(23, $snapshot->latestFinalized['meetingId'] ?? null);
+            self::assertSame(2, $snapshot->latestFinalized['number'] ?? null);
+        }
     }
 
     public function test_documents_are_bounded_by_descending_id_and_hidden_without_permission(): void
