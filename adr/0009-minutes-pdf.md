@@ -36,7 +36,7 @@ Pros:
 
 Cons:
 - No CSS layout. A future HTML minutes template would need a different renderer.
-- Characters outside WinAnsi are omitted.
+- Characters outside WinAnsi cannot be drawn with Helvetica. Generation fails instead of dropping them.
 
 ## Decision
 
@@ -47,7 +47,8 @@ The file is stored under `uploads/assoc-private`, with a deny rule for direct we
 ## Consequences
 
 Positive:
-- Swedish minutes text can be exported on ordinary hosting.
+- Swedish and other Windows-1252 text can be exported on ordinary hosting.
+- A name the font cannot draw stops the export instead of producing a shorter document.
 - The locked revision stays the source of the PDF.
 
 Negative/tradeoffs:
@@ -56,4 +57,4 @@ Negative/tradeoffs:
 
 ## Revisit triggers
 
-The minutes body becomes HTML, or WinAnsi cannot represent the association's language.
+The minutes body becomes HTML, or the association needs a font that can draw letters outside Windows-1252. That needs an embedded font, with its license and size recorded before it replaces Helvetica.

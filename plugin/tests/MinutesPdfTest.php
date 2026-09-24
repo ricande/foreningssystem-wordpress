@@ -6,6 +6,7 @@ namespace Foreningssystem\Tests;
 
 use Foreningssystem\Application\Meeting\MinutesPdf;
 use Foreningssystem\Application\Meeting\MinutesPdfDocument;
+use Foreningssystem\Application\Meeting\MinutesPdfException;
 use Foreningssystem\Application\Meeting\MinutesPdfLayout;
 use Foreningssystem\Application\Meeting\MinutesPdfStore;
 use Foreningssystem\Application\People\Authorizer;
@@ -45,7 +46,18 @@ final class MinutesPdfTest extends TestCase
         self::assertIsString($adjuster);
         self::assertStringContainsString($swedish, $pdf);
         self::assertStringContainsString($adjuster, $pdf);
-        self::assertGreaterThanOrEqual(3, substr_count($pdf, '/Type /Page /Parent'));
+        self::assertStringContainsString((string) iconv('UTF-8', 'Windows-1252', 'José Núñez träffar François Müller.'), $this->pdf('José Núñez träffar François Müller.'));
+        $pageCount = substr_count($pdf, '/Type /Page /Parent');
+        self::assertGreaterThanOrEqual(3, $pageCount);
+        self::assertSame($pageCount, preg_match_all('/Sida (\d+) \/ (\d+)/', $pdf, $pages));
+        self::assertSame(range(1, $pageCount), array_map(intval(...), $pages[1]));
+        self::assertSame(array_fill(0, $pageCount, (string) $pageCount), $pages[2]);
+    }
+
+    public function test_text_outside_windows_1252_stops_the_pdf_instead_of_disappearing(): void
+    {
+        $this->expectException(MinutesPdfException::class);
+        $this->pdf('Wojciech Łukasiewicz');
     }
 
     public function test_a_locked_pdf_follows_the_stored_text_and_is_reused(): void
@@ -114,6 +126,11 @@ final class MinutesPdfTest extends TestCase
         self::assertStringContainsString('pdf_storage_name', $sql);
         self::assertStringContainsString('pdf_source_hash', $sql);
         self::assertStringNotContainsString('wp_users', $sql);
+    }
+
+    private function pdf(string $body): string
+    {
+        return (new MinutesPdfDocument())->render($body, 1);
     }
 
     /**

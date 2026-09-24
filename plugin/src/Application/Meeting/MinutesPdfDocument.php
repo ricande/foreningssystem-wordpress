@@ -50,10 +50,14 @@ final class MinutesPdfDocument
 
     private function literal(string $utf8): string
     {
-        $encoded = iconv('UTF-8', 'Windows-1252//IGNORE', $utf8);
+        if (! mb_check_encoding($utf8, 'UTF-8')) {
+            throw new MinutesPdfException('The minutes contain text the PDF font cannot represent.');
+        }
 
-        if ($encoded === false) {
-            $encoded = '';
+        $encoded = @iconv('UTF-8', 'Windows-1252', $utf8);
+
+        if ($encoded === false || iconv('Windows-1252', 'UTF-8', $encoded) !== $utf8) {
+            throw new MinutesPdfException('The minutes contain text the PDF font cannot represent.');
         }
 
         return '(' . str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $encoded) . ')';
