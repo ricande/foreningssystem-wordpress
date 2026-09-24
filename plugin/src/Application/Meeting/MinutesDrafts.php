@@ -18,6 +18,7 @@ use Foreningssystem\Domain\Meeting\MeetingRepository;
 use Foreningssystem\Domain\Meeting\MeetingRuleException;
 use Foreningssystem\Domain\Meeting\MeetingStatus;
 use Foreningssystem\Domain\Meeting\MinutesLifecycle;
+use Foreningssystem\Domain\Meeting\RevisionNumberTaken;
 use Foreningssystem\Domain\Meeting\MinutesRepository;
 use Foreningssystem\Domain\Meeting\MinutesRevision;
 use Foreningssystem\Domain\Meeting\ParticipantRepository;
@@ -51,20 +52,22 @@ final class MinutesDrafts
         $this->requireNoDraft($meetingId);
         $composition = $this->composition($meeting);
 
-        $saved = $this->transaction->run(function () use ($meeting, $composition): MinutesRevision {
-            $this->requireNoDraft((int) $meeting->id());
-            $minutesId = $this->minutes->findDocumentId((int) $meeting->id()) ?? $this->minutes->addDocument((int) $meeting->id());
+        $saved = $this->once(function () use ($meeting, $composition): MinutesRevision {
+            return $this->transaction->run(function () use ($meeting, $composition): MinutesRevision {
+                $this->requireNoDraft((int) $meeting->id());
+                $minutesId = $this->minutes->findDocumentId((int) $meeting->id()) ?? $this->minutes->addDocument((int) $meeting->id());
 
-            return $this->minutes->addRevision(new MinutesRevision(
-                null,
-                $minutesId,
-                (int) $meeting->id(),
-                $this->minutes->nextNumber((int) $meeting->id()),
-                RevisionState::Draft,
-                $composition->body(),
-                $composition->payload(),
-                false
-            ));
+                return $this->minutes->addRevision(new MinutesRevision(
+                    null,
+                    $minutesId,
+                    (int) $meeting->id(),
+                    $this->minutes->nextNumber((int) $meeting->id()),
+                    RevisionState::Draft,
+                    $composition->body(),
+                    $composition->payload(),
+                    false
+                ));
+            });
         });
 
         $id = $saved->id();
@@ -184,15 +187,17 @@ final class MinutesDrafts
         $this->requireNoOpenRevision($meetingId);
         $source = $this->requireCurrentFinalized($meetingId);
 
-        $saved = $this->transaction->run(function () use ($meetingId, $source): MinutesRevision {
-            $this->requireNoOpenRevision($meetingId);
-            $current = $this->minutes->findRevision((int) $source->id());
+        $saved = $this->once(function () use ($meetingId, $source): MinutesRevision {
+            return $this->transaction->run(function () use ($meetingId, $source): MinutesRevision {
+                $this->requireNoOpenRevision($meetingId);
+                $current = $this->minutes->findRevision((int) $source->id());
 
-            if (! $current instanceof MinutesRevision) {
-                throw new \RuntimeException('Minutes revision was not found.');
-            }
+                if (! $current instanceof MinutesRevision) {
+                    throw new \RuntimeException('Minutes revision was not found.');
+                }
 
-            return $this->minutes->addRevision($this->lifecycle->correction($current, $this->minutes->nextNumber($meetingId)));
+                return $this->minutes->addRevision($this->lifecycle->correction($current, $this->minutes->nextNumber($meetingId)));
+            });
         });
 
         $id = $saved->id();
@@ -321,6 +326,20 @@ final class MinutesDrafts
         }
 
         return $revision;
+    }
+
+    /**
+     * @template T
+     * @param callable(): T $operation
+     * @return T
+     */
+    private function once(callable $operation): mixed
+    {
+        try {
+            return $operation();
+        } catch (RevisionNumberTaken) {
+            return $operation();
+        }
     }
 
     private function requireEditable(int $revisionId): MinutesRevision
