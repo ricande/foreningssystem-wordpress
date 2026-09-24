@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Application\Meeting\SignedFileStore;
+use Foreningssystem\Infrastructure\Files\PrivateStorageLocation;
 
 final class WpSignedFileStore implements SignedFileStore
 {
@@ -33,7 +34,7 @@ final class WpSignedFileStore implements SignedFileStore
 
     private function assertName(string $name): void
     {
-        if (basename($name) !== $name || ! preg_match('/^signed-\d+-[a-f0-9]{64}\.(pdf|jpg|png)$/', $name)) {
+        if (! PrivateStorageLocation::isSignedName($name)) {
             throw new \RuntimeException('The signed copy file name is not valid.');
         }
     }

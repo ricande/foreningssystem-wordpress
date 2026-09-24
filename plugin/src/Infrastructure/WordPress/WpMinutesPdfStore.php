@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Application\Meeting\MinutesPdfStore;
+use Foreningssystem\Infrastructure\Files\PrivateStorageLocation;
 
 final class WpMinutesPdfStore implements MinutesPdfStore
 {
@@ -78,7 +79,7 @@ final class WpMinutesPdfStore implements MinutesPdfStore
 
     private function assertName(string $name, int $revisionId): void
     {
-        if (! preg_match('/^revision-' . $revisionId . '-[a-f0-9]{64}\.pdf$/', $name)) {
+        if (! PrivateStorageLocation::isRevisionPdfName($name, $revisionId)) {
             throw new \RuntimeException('The PDF file name is not valid.');
         }
     }

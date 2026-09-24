@@ -1,6 +1,6 @@
 # ADR-0005: Private files are not private because they are attachments
 
-**Status:** Proposed  
+**Status:** Accepted  
 **Date:** 2026-09-24
 
 ## Context
@@ -38,7 +38,9 @@ Cons:
 
 ## Decision
 
-Propose option B where the host allows a directory outside the public web root. When it does not, fall back to a dedicated uploads subdirectory plus the same authenticated handler, and show the administrator a clear warning that direct file access may still be possible. Never treat "unlisted" as the security control.
+Use option B. `FORENINGSPLUGIN_PRIVATE_DIR`, or the `foreningsplugin_private_directory` filter, selects a directory. When that directory can be created outside the WordPress web root, it is the storage path. Otherwise the plugin uses `wp-content/uploads/assoc-private`.
+
+The authenticated download handler is always the authorization boundary. The fallback directory also gets an Apache `.htaccess` deny rule and an `index.php`. That rule does not protect Nginx, and it does not protect Apache when `AllowOverride` is disabled. Site Health and an association admin notice stay visible until an administrator confirms the web server blocks the directory, or the files are moved outside the web root. See `docs/PRIVATE_FILES.md` for the Apache and Nginx examples. Never treat "unlisted" as the security control.
 
 Recommended signed-copy types: PDF, JPEG, PNG.
 

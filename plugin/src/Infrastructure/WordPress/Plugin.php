@@ -39,6 +39,7 @@ final class Plugin
         add_action('init', [MemberDocumentsBlock::class, 'register']);
         add_action('init', [MemberCountBlock::class, 'register']);
         WordpressPrivacy::register();
+        PrivateStorageWarning::register();
         WordpressRetention::register();
         add_action('template_redirect', [DocumentDownload::class, 'maybeSend']);
         add_action('admin_init', [self::class, 'migrateInAdmin']);

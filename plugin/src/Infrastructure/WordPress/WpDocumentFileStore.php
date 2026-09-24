@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Application\Document\DocumentFileStore;
+use Foreningssystem\Infrastructure\Files\PrivateStorageLocation;
 
 final class WpDocumentFileStore implements DocumentFileStore
 {
@@ -33,7 +34,7 @@ final class WpDocumentFileStore implements DocumentFileStore
 
     private function assertName(string $name): void
     {
-        if (basename($name) !== $name || ! preg_match('/^document-[a-f0-9]{64}\.(pdf|jpg|png)$/', $name)) {
+        if (! PrivateStorageLocation::isDocumentName($name)) {
             throw new \RuntimeException('The document file name is not valid.');
         }
     }

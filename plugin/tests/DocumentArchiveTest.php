@@ -137,6 +137,27 @@ final class DocumentArchiveTest extends TestCase
         self::assertSame(2, $files->writes);
     }
 
+    public function test_a_missing_document_is_not_found_and_a_storage_name_cannot_leave_the_directory(): void
+    {
+        $archive = $this->archive([Capabilities::MANAGE_DOCUMENTS], new MemoryDocumentRepository(), new MemoryDocumentFileStore());
+
+        try {
+            $archive->read(404);
+            self::fail('A missing document should not be readable.');
+        } catch (\RuntimeException $error) {
+            self::assertSame('Document was not found.', $error->getMessage());
+        }
+
+        $valid = str_repeat('ab', 32);
+        self::assertTrue(\Foreningssystem\Infrastructure\Files\PrivateStorageLocation::isDocumentName('document-' . $valid . '.pdf'));
+        self::assertFalse(\Foreningssystem\Infrastructure\Files\PrivateStorageLocation::isDocumentName('../document-' . $valid . '.pdf'));
+        self::assertFalse(\Foreningssystem\Infrastructure\Files\PrivateStorageLocation::isDocumentName('document-' . $valid . '.pdf/../../secret'));
+        self::assertFalse(\Foreningssystem\Infrastructure\Files\PrivateStorageLocation::isDocumentName('..\\document-' . $valid . '.pdf'));
+
+        $this->expectException(InvalidArgumentException::class);
+        new AssociationDocument(null, 'Stadgar', DocumentVisibility::Public, 'application/pdf', '../document-' . $valid . '.pdf');
+    }
+
     public function test_schema_migration_stores_document_visibility(): void
     {
         $migration = new DocumentSchemaMigration('wp_', '');
