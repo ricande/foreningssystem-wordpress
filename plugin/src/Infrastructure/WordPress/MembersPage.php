@@ -54,6 +54,61 @@ final class MembersPage
         }
     }
 
+    public static function exportMembers(): void
+    {
+        if (! current_user_can(Capabilities::EXPORT_MEMBERS)) {
+            wp_die(esc_html__('Du har inte behörighet att exportera medlemmar.', 'foreningsplugin'), '', ['response' => 403]);
+        }
+
+        check_admin_referer('assoc_export_members');
+        $csv = WordpressPeople::exchange()->export();
+        nocache_headers();
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="medlemmar.csv"');
+        header('Content-Length: ' . (string) strlen($csv));
+        echo $csv;
+        exit;
+    }
+
+    public static function importMembers(): void
+    {
+        self::guardEdit('assoc_import_members');
+        $file = $_FILES['member_csv'] ?? null;
+
+        if (
+            ! is_array($file)
+            || ! isset($file['tmp_name'], $file['size'])
+            || ! is_string($file['tmp_name'])
+            || ! is_uploaded_file($file['tmp_name'])
+        ) {
+            self::redirect('invalid');
+        }
+
+        if ((int) $file['size'] > 2097152) {
+            self::redirect('import_too_large');
+        }
+
+        $csv = file_get_contents($file['tmp_name']);
+
+        if ($csv === false) {
+            self::redirect('invalid');
+        }
+
+        try {
+            $result = WordpressPeople::exchange()->import($csv);
+        } catch (NotAllowed) {
+            wp_die(esc_html__('Du har inte behörighet att importera medlemmar.', 'foreningsplugin'), '', ['response' => 403]);
+        } catch (\InvalidArgumentException) {
+            self::redirect('import_invalid');
+        }
+
+        set_transient('assoc_member_import_' . get_current_user_id(), $result->errors(), MINUTE_IN_SECONDS);
+        self::redirect('import_done', [
+            'assoc_created' => (string) $result->created(),
+            'assoc_skipped' => (string) $result->skipped(),
+        ]);
+    }
+
     public static function markDeceased(): void
     {
         self::guardEdit('assoc_mark_deceased');
@@ -96,6 +151,23 @@ final class MembersPage
             self::field('membership_type', __('Medlemstyp', 'foreningsplugin'), 'text', false);
             self::field('started_on', __('Startdatum', 'foreningsplugin'), 'date', true);
             submit_button(__('Spara person', 'foreningsplugin'));
+            echo '</form>';
+            echo '<h2>' . esc_html__('Importera', 'foreningsplugin') . '</h2>';
+            echo '<p>' . esc_html__('Filen är UTF-8 och semikolonseparerad, med en rad per medlemsperiod. Ett medlemsnummer som redan finns lämnas orört. Importen kopplar inget WordPress-konto och byter inte namn på en person som redan finns.', 'foreningsplugin') . '</p>';
+            echo '<form method="post" enctype="multipart/form-data" action="' . esc_url(admin_url('admin-post.php')) . '">';
+            echo '<input type="hidden" name="action" value="assoc_import_members">';
+            wp_nonce_field('assoc_import_members');
+            echo '<p><input type="file" name="member_csv" accept=".csv,text/csv" required></p>';
+            submit_button(__('Importera medlemmar', 'foreningsplugin'));
+            echo '</form>';
+        }
+
+        if (current_user_can(Capabilities::EXPORT_MEMBERS)) {
+            echo '<h2>' . esc_html__('Exportera', 'foreningsplugin') . '</h2>';
+            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+            echo '<input type="hidden" name="action" value="assoc_export_members">';
+            wp_nonce_field('assoc_export_members');
+            submit_button(__('Exportera medlemmar', 'foreningsplugin'));
             echo '</form>';
         }
 
@@ -165,12 +237,15 @@ final class MembersPage
         check_admin_referer($nonce);
     }
 
-    private static function redirect(string $notice): void
+    /**
+     * @param array<string, string> $extra
+     */
+    private static function redirect(string $notice, array $extra = []): void
     {
-        wp_safe_redirect(add_query_arg([
+        wp_safe_redirect(add_query_arg(array_merge([
             'page' => 'foreningsplugin-members',
             'assoc_notice' => $notice,
-        ], admin_url('admin.php')));
+        ], $extra), admin_url('admin.php')));
         exit;
     }
 
@@ -186,7 +261,32 @@ final class MembersPage
             'already_ended' => __('Medlemskapet är redan avslutat.', 'foreningsplugin'),
             'assignment' => __('Ett öppet styrelseuppdrag passar inte datumet, så inget ändrades.', 'foreningsplugin'),
             'invalid' => __('Kontrollera uppgifterna och försök igen.', 'foreningsplugin'),
+            'import_invalid' => __('Filen måste vara UTF-8 med de förväntade kolumnerna, separerade med semikolon.', 'foreningsplugin'),
+            'import_too_large' => __('Filen är större än 2 MB.', 'foreningsplugin'),
         ];
+
+        if ($notice === 'import_done') {
+            $created = isset($_GET['assoc_created']) ? absint($_GET['assoc_created']) : 0;
+            $skipped = isset($_GET['assoc_skipped']) ? absint($_GET['assoc_skipped']) : 0;
+            echo '<div class="notice notice-success"><p>' . esc_html(sprintf(
+                /* translators: 1: created memberships, 2: skipped memberships */
+                __('Importen skapade %1$d medlemsperioder och lämnade %2$d orörda.', 'foreningsplugin'),
+                $created,
+                $skipped
+            )) . '</p></div>';
+            $stored = get_transient('assoc_member_import_' . get_current_user_id());
+            delete_transient('assoc_member_import_' . get_current_user_id());
+
+            if (is_array($stored)) {
+                foreach ($stored as $error) {
+                    if (is_string($error)) {
+                        echo '<div class="notice notice-error"><p>' . esc_html($error) . '</p></div>';
+                    }
+                }
+            }
+
+            return;
+        }
 
         if (! isset($messages[$notice])) {
             return;

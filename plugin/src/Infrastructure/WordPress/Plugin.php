@@ -42,6 +42,8 @@ final class Plugin
         add_action('admin_init', [self::class, 'migrateInAdmin']);
         add_action('admin_menu', [self::class, 'registerAdminMenu']);
         add_action('admin_post_assoc_register_person', [MembersPage::class, 'registerPerson']);
+        add_action('admin_post_assoc_export_members', [MembersPage::class, 'exportMembers']);
+        add_action('admin_post_assoc_import_members', [MembersPage::class, 'importMembers']);
         add_action('admin_post_assoc_end_membership', [MembersPage::class, 'endMembership']);
         add_action('admin_post_assoc_mark_deceased', [MembersPage::class, 'markDeceased']);
         add_action('admin_post_assoc_place_assignment', [BoardPage::class, 'place']);
