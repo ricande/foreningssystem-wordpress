@@ -8,6 +8,9 @@ use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Application\People\Transaction;
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Meeting\ActionItem;
+use Foreningssystem\Domain\Meeting\ActionItemRepository;
+use Foreningssystem\Domain\Meeting\ActionStatus;
 use Foreningssystem\Domain\Meeting\AgendaRepository;
 use Foreningssystem\Domain\Meeting\Decision;
 use Foreningssystem\Domain\Meeting\DecisionFollowUp;
@@ -29,6 +32,7 @@ final class MeetingRecord
         private readonly PersonRepository $people,
         private readonly MeetingNoteRepository $notes,
         private readonly DecisionRepository $decisions,
+        private readonly ActionItemRepository $actionItems,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
     ) {
@@ -174,6 +178,91 @@ final class MeetingRecord
         return $count;
     }
 
+    public function addActionItem(
+        int $meetingId,
+        ?int $agendaItemId,
+        string $task,
+        ?int $assigneePersonId,
+        ?AssociationDate $dueOn,
+    ): int {
+        $this->requireRecord();
+        $this->requireMeeting($meetingId);
+        $this->requireAgendaItem($meetingId, $agendaItemId);
+        $this->requirePerson($assigneePersonId);
+
+        $saved = $this->transaction->run(function () use ($meetingId, $agendaItemId, $task, $assigneePersonId, $dueOn): ActionItem {
+            return $this->actionItems->add(new ActionItem(
+                null,
+                $meetingId,
+                $agendaItemId,
+                $task,
+                $assigneePersonId,
+                $dueOn,
+                ActionStatus::Open
+            ));
+        });
+
+        return $this->savedId($saved->id(), 'The action item was not saved.');
+    }
+
+    public function setActionStatus(int $actionItemId, ActionStatus $status): void
+    {
+        $this->requireRecord();
+        $item = $this->requireActionItem($actionItemId);
+
+        $this->transaction->run(function () use ($item, $status): void {
+            $this->actionItems->save($item->withStatus($status));
+        });
+    }
+
+    public function removeActionItem(int $actionItemId): void
+    {
+        $this->requireRecord();
+        $this->requireActionItem($actionItemId);
+
+        $this->transaction->run(function () use ($actionItemId): void {
+            $this->actionItems->remove($actionItemId);
+        });
+    }
+
+    /**
+     * @return list<ActionItemRow>
+     */
+    public function actionItems(int $meetingId): array
+    {
+        $this->require(Capabilities::VIEW_INTERNAL_MEETINGS);
+        $this->requireMeeting($meetingId);
+        $rows = [];
+
+        foreach ($this->actionItems->forMeeting($meetingId) as $item) {
+            $name = null;
+            $personId = $item->assigneePersonId();
+
+            if ($personId !== null) {
+                $person = $this->people->find($personId);
+                $name = $person instanceof Person ? $person->firstName() . ' ' . $person->lastName() : null;
+            }
+
+            $rows[] = new ActionItemRow($item, $name);
+        }
+
+        return $rows;
+    }
+
+    public function openActionCount(): int
+    {
+        $this->require(Capabilities::VIEW_INTERNAL_MEETINGS);
+        $count = 0;
+
+        foreach ($this->actionItems->all() as $item) {
+            if ($item->status() === ActionStatus::Open) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
     private function requireRecord(): void
     {
         $this->require(Capabilities::RECORD_MEETING);
@@ -241,6 +330,17 @@ final class MeetingRecord
         }
 
         return $decision;
+    }
+
+    private function requireActionItem(int $actionItemId): ActionItem
+    {
+        $item = $this->actionItems->find($actionItemId);
+
+        if (! $item instanceof ActionItem) {
+            throw new \RuntimeException('Action item was not found.');
+        }
+
+        return $item;
     }
 
     private function savedId(?int $id, string $message): int

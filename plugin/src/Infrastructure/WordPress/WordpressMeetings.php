@@ -94,6 +94,7 @@ final class WordpressMeetings
             new WpdbPersonRepository(),
             new WpdbMeetingNoteRepository(),
             new WpdbDecisionRepository(),
+            new WpdbActionItemRepository(),
             new class implements Authorizer {
                 public function allows(string $capability): bool
                 {

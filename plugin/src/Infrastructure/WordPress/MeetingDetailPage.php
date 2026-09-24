@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Meeting\ActionStatus;
 use Foreningssystem\Domain\Meeting\DecisionFollowUp;
 use Foreningssystem\Domain\Meeting\Meeting;
 use Foreningssystem\Domain\Meeting\MeetingDuty;
@@ -172,6 +173,56 @@ final class MeetingDetailPage
         }
     }
 
+    public static function addActionItem(): void
+    {
+        self::guardRecord('assoc_add_action_item');
+        $meetingId = self::integer('meeting_id');
+
+        try {
+            WordpressMeetings::record()->addActionItem(
+                $meetingId,
+                self::optionalInteger('agenda_item_id'),
+                self::textarea('task'),
+                self::optionalInteger('assignee_person_id'),
+                self::optionalDate('due_on')
+            );
+            self::redirect($meetingId, 'action_added');
+        } catch (MeetingRuleException) {
+            self::redirect($meetingId, 'wrong_item');
+        } catch (\InvalidArgumentException | \RuntimeException) {
+            self::redirect($meetingId, 'invalid');
+        }
+    }
+
+    public static function setActionStatus(): void
+    {
+        self::guardRecord('assoc_set_action_status');
+        $meetingId = self::integer('meeting_id');
+
+        try {
+            WordpressMeetings::record()->setActionStatus(
+                self::integer('action_item_id'),
+                ActionStatus::from(self::text('status'))
+            );
+            self::redirect($meetingId, 'action_status');
+        } catch (\ValueError | \RuntimeException) {
+            self::redirect($meetingId, 'invalid');
+        }
+    }
+
+    public static function removeActionItem(): void
+    {
+        self::guardRecord('assoc_remove_action_item');
+        $meetingId = self::integer('meeting_id');
+
+        try {
+            WordpressMeetings::record()->removeActionItem(self::integer('action_item_id'));
+            self::redirect($meetingId, 'action_removed');
+        } catch (\RuntimeException) {
+            self::redirect($meetingId, 'invalid');
+        }
+    }
+
     public static function render(int $meetingId): void
     {
         $meeting = self::meeting($meetingId);
@@ -191,6 +242,7 @@ final class MeetingDetailPage
         $record = WordpressMeetings::record();
         $notes = $record->notes($meetingId);
         $decisionRows = $record->decisions($meetingId);
+        $actionRows = $record->actionItems($meetingId);
         $canEdit = current_user_can(Capabilities::MANAGE_MEETINGS) || current_user_can(Capabilities::RECORD_MEETING);
         $canRecord = current_user_can(Capabilities::RECORD_MEETING);
         echo '<p>' . esc_html($meeting->startsAt()->date() . ' ' . $meeting->startsAt()->time()) . '</p>';
@@ -273,7 +325,8 @@ final class MeetingDetailPage
 
         echo '<h2>' . esc_html__('Anteckningar om mötet', 'foreningsplugin') . '</h2>';
         echo '<p>' . esc_html__('Anteckningar är arbetsmaterial, inte protokollet. Markera det som ska tas med senare.', 'foreningsplugin') . '</p>';
-        self::renderCapture($meetingId, null, $notes, $decisionRows, $canRecord);
+        echo '<p>' . esc_html__('En uppgift är något som ska göras, inte ett beslut. Att markera den som klar ändrar inte texten.', 'foreningsplugin') . '</p>';
+        self::renderCapture($meetingId, null, $notes, $decisionRows, $actionRows, $canRecord);
 
         if ($canEdit) {
             echo '<h2>' . esc_html__('Ny punkt', 'foreningsplugin') . '</h2>';
@@ -324,7 +377,7 @@ final class MeetingDetailPage
             }
 
             echo '</tr><tr><td colspan="3">';
-            self::renderCapture($meetingId, $item->id(), $notes, $decisionRows, $canRecord);
+            self::renderCapture($meetingId, $item->id(), $notes, $decisionRows, $actionRows, $canRecord);
             echo '</td></tr>';
         }
 
@@ -395,6 +448,9 @@ final class MeetingDetailPage
             'decision_added' => __('Beslutet är sparat.', 'foreningsplugin'),
             'follow_up' => __('Uppföljningen är ändrad. Beslutets lydelse är densamma.', 'foreningsplugin'),
             'decision_removed' => __('Beslutet är borttaget.', 'foreningsplugin'),
+            'action_added' => __('Uppgiften är sparad.', 'foreningsplugin'),
+            'action_status' => __('Uppgiftens status är ändrad. Texten är densamma.', 'foreningsplugin'),
+            'action_removed' => __('Uppgiften är borttagen.', 'foreningsplugin'),
             'wrong_item' => __('Punkten hör inte till det här mötet.', 'foreningsplugin'),
             'invalid' => __('Kontrollera uppgifterna och försök igen.', 'foreningsplugin'),
         ];
@@ -403,7 +459,7 @@ final class MeetingDetailPage
             return;
         }
 
-        $class = in_array($notice, ['participant_added', 'participant_removed', 'agenda_added', 'agenda_moved', 'agenda_removed', 'note_added', 'note_removed', 'decision_added', 'follow_up', 'decision_removed'], true)
+        $class = in_array($notice, ['participant_added', 'participant_removed', 'agenda_added', 'agenda_moved', 'agenda_removed', 'note_added', 'note_removed', 'decision_added', 'follow_up', 'decision_removed', 'action_added', 'action_status', 'action_removed'], true)
             ? 'notice-success'
             : 'notice-error';
         echo '<div class="notice ' . esc_attr($class) . '"><p>' . esc_html($messages[$notice]) . '</p></div>';
@@ -470,7 +526,7 @@ final class MeetingDetailPage
     private static function guardRecord(string $nonce): void
     {
         if (! current_user_can(Capabilities::RECORD_MEETING)) {
-            wp_die(esc_html__('Du har inte behörighet att föra anteckningar eller beslut.', 'foreningsplugin'), '', ['response' => 403]);
+            wp_die(esc_html__('Du har inte behörighet att föra anteckningar, beslut eller uppgifter.', 'foreningsplugin'), '', ['response' => 403]);
         }
 
         check_admin_referer($nonce);
@@ -479,8 +535,9 @@ final class MeetingDetailPage
     /**
      * @param list<\Foreningssystem\Domain\Meeting\MeetingNote> $notes
      * @param list<\Foreningssystem\Application\Meeting\DecisionRow> $decisionRows
+     * @param list<\Foreningssystem\Application\Meeting\ActionItemRow> $actionRows
      */
-    private static function renderCapture(int $meetingId, ?int $agendaItemId, array $notes, array $decisionRows, bool $canRecord): void
+    private static function renderCapture(int $meetingId, ?int $agendaItemId, array $notes, array $decisionRows, array $actionRows, bool $canRecord): void
     {
         foreach ($notes as $note) {
             if ($note->agendaItemId() !== $agendaItemId) {
@@ -535,6 +592,43 @@ final class MeetingDetailPage
             }
         }
 
+        foreach ($actionRows as $actionRow) {
+            $action = $actionRow->item();
+
+            if ($action->agendaItemId() !== $agendaItemId) {
+                continue;
+            }
+
+            $meta = $action->status() === ActionStatus::Done
+                ? __('Klar', 'foreningsplugin')
+                : __('Öppen', 'foreningsplugin');
+
+            if ($actionRow->assigneeName() !== null) {
+                $meta .= ', ' . $actionRow->assigneeName();
+            }
+
+            if ($action->dueOn() !== null) {
+                $meta .= ', ' . $action->dueOn()->iso();
+            }
+
+            echo '<p><strong>' . esc_html__('Uppgift', 'foreningsplugin') . '</strong> ' . esc_html($meta);
+            echo '<br>' . esc_html($action->task()) . '</p>';
+
+            if ($canRecord) {
+                $next = $action->status() === ActionStatus::Open ? ActionStatus::Done : ActionStatus::Open;
+                $label = $next === ActionStatus::Done
+                    ? __('Markera som klar', 'foreningsplugin')
+                    : __('Återöppna', 'foreningsplugin');
+                self::postForm('assoc_set_action_status', $meetingId, [
+                    'action_item_id' => (string) $action->id(),
+                    'status' => $next->value,
+                ], $label);
+                self::postForm('assoc_remove_action_item', $meetingId, [
+                    'action_item_id' => (string) $action->id(),
+                ], __('Ta bort uppgift', 'foreningsplugin'));
+            }
+        }
+
         if (! $canRecord) {
             return;
         }
@@ -572,6 +666,30 @@ final class MeetingDetailPage
         echo '</select></label></p>';
         echo '<p><label>' . esc_html__('Deadline', 'foreningsplugin') . ' <input type="date" name="deadline"></label></p>';
         submit_button(__('Spara beslut', 'foreningsplugin'), 'secondary');
+        echo '</form>';
+
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<input type="hidden" name="action" value="assoc_add_action_item">';
+        echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
+        echo $itemField;
+        wp_nonce_field('assoc_add_action_item');
+        echo '<p><label>' . esc_html__('Uppgift', 'foreningsplugin') . '<br><textarea class="large-text" name="task" rows="3" required></textarea></label></p>';
+        echo '<p><label>' . esc_html__('Ansvarig', 'foreningsplugin') . ' <select name="assignee_person_id">';
+        echo '<option value="">' . esc_html__('Ingen', 'foreningsplugin') . '</option>';
+
+        foreach (WordpressPeople::service()->listPeople() as $personRecord) {
+            $person = $personRecord->person();
+
+            if ($person->id() === null) {
+                continue;
+            }
+
+            echo '<option value="' . esc_attr((string) $person->id()) . '">' . esc_html($person->firstName() . ' ' . $person->lastName()) . '</option>';
+        }
+
+        echo '</select></label></p>';
+        echo '<p><label>' . esc_html__('Deadline', 'foreningsplugin') . ' <input type="date" name="due_on"></label></p>';
+        submit_button(__('Spara uppgift', 'foreningsplugin'), 'secondary');
         echo '</form>';
     }
 }

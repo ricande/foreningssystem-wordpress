@@ -50,6 +50,9 @@ final class Plugin
         add_action('admin_post_assoc_add_decision', [MeetingDetailPage::class, 'addDecision']);
         add_action('admin_post_assoc_set_decision_follow_up', [MeetingDetailPage::class, 'setDecisionFollowUp']);
         add_action('admin_post_assoc_remove_decision', [MeetingDetailPage::class, 'removeDecision']);
+        add_action('admin_post_assoc_add_action_item', [MeetingDetailPage::class, 'addActionItem']);
+        add_action('admin_post_assoc_set_action_status', [MeetingDetailPage::class, 'setActionStatus']);
+        add_action('admin_post_assoc_remove_action_item', [MeetingDetailPage::class, 'removeActionItem']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();
@@ -154,6 +157,11 @@ final class Plugin
                 /* translators: %d: number of open decisions */
                 __('Öppna beslut: %d', 'foreningsplugin'),
                 WordpressMeetings::record()->openCount()
+            )) . '</p>';
+            echo '<p>' . esc_html(sprintf(
+                /* translators: %d: number of open action items */
+                __('Öppna uppgifter: %d', 'foreningsplugin'),
+                WordpressMeetings::record()->openActionCount()
             )) . '</p>';
         }
         echo '<p>' . esc_html(sprintf(
