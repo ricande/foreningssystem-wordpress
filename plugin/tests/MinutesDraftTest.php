@@ -431,6 +431,19 @@ final class MemoryMinutesRepository implements MinutesRepository
         return $found;
     }
 
+    public function forMeeting(int $meetingId): array
+    {
+        $rows = [];
+
+        foreach ($this->revisions as $revision) {
+            if ($revision->meetingId() === $meetingId) {
+                $rows[] = $revision;
+            }
+        }
+
+        return $rows;
+    }
+
     public function publicRevisions(): array
     {
         $rows = [];

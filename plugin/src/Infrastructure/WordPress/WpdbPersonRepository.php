@@ -45,12 +45,19 @@ final class WpdbPersonRepository implements PersonRepository
             throw new \RuntimeException('Person was not saved.');
         }
 
-        $updated = $wpdb->update($this->table(), [
-            'first_name' => $person->firstName(),
-            'last_name' => $person->lastName(),
-            'email' => $person->email(),
-            'status' => $person->status()->value,
-        ], ['id' => $id], ['%s', '%s', '%s', '%s'], ['%d']);
+        $userId = $person->wordpressUserId();
+        $table = $this->table();
+        $sql = "UPDATE {$table} SET first_name = %s, last_name = %s, email = %s, status = %s, wp_user_id = "
+            . ($userId === null ? 'NULL' : '%d')
+            . ' WHERE id = %d';
+        $args = [$person->firstName(), $person->lastName(), $person->email(), $person->status()->value];
+
+        if ($userId !== null) {
+            $args[] = $userId;
+        }
+
+        $args[] = $id;
+        $updated = $wpdb->query($wpdb->prepare($sql, ...$args));
 
         if ($updated === false) {
             throw new \RuntimeException('The person could not be saved.');

@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\People\Authorizer;
+use Foreningssystem\Application\People\NotAllowed;
+use Foreningssystem\Application\People\Transaction;
+use Foreningssystem\Application\Privacy\EraseOutcome;
 use Foreningssystem\Application\Privacy\PersonalDataReport;
+use Foreningssystem\Application\Privacy\PrivacyErase;
 use Foreningssystem\Application\Privacy\PrivacyExport;
 use Foreningssystem\Domain\Meeting\MeetingDuty;
 use Foreningssystem\Domain\Meeting\Presence;
@@ -16,6 +21,7 @@ final class WordpressPrivacy
     public static function register(): void
     {
         add_filter('wp_privacy_personal_data_exporters', [self::class, 'registerExporter']);
+        add_filter('wp_privacy_personal_data_erasers', [self::class, 'registerEraser']);
     }
 
     /**
@@ -30,6 +36,43 @@ final class WordpressPrivacy
         ];
 
         return $exporters;
+    }
+
+    /**
+     * @param array<string, array{eraser_friendly_name: string, callback: callable}> $erasers
+     * @return array<string, array{eraser_friendly_name: string, callback: callable}>
+     */
+    public static function registerEraser(array $erasers): array
+    {
+        $erasers['foreningsplugin'] = [
+            'eraser_friendly_name' => __('Föreningsplugin', 'foreningsplugin'),
+            'callback' => [self::class, 'erase'],
+        ];
+
+        return $erasers;
+    }
+
+    /**
+     * @return array{items_removed: bool, items_retained: bool, messages: list<string>, done: bool}
+     */
+    public static function erase(string $email, int $page = 1): array
+    {
+        if ($page > 1) {
+            return self::response(false, false, []);
+        }
+
+        $user = get_user_by('email', $email);
+        $linkedUserId = $user instanceof \WP_User ? (int) $user->ID : null;
+
+        try {
+            $outcomes = self::eraser()->erase($email, $linkedUserId, get_current_user_id());
+        } catch (NotAllowed) {
+            return self::response(false, false, [
+                __('Du har inte behörighet att avidentifiera personen.', 'foreningsplugin'),
+            ]);
+        }
+
+        return self::response(self::removed($outcomes), self::retained($outcomes), self::messages($outcomes));
     }
 
     /**
@@ -60,6 +103,45 @@ final class WordpressPrivacy
             new WpdbParticipantRepository(),
             new WpdbMeetingRepository(),
             new WpAuditLog()
+        );
+    }
+
+    public static function eraser(): PrivacyErase
+    {
+        return new PrivacyErase(
+            new WpdbPersonRepository(),
+            new WpdbMembershipRepository(),
+            new WpdbBoardAssignmentRepository(),
+            new WpdbParticipantRepository(),
+            new WpdbMeetingRepository(),
+            new WpdbMinutesRepository(),
+            new WpSignedCopyRepository(),
+            new WpAuditLog(),
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return current_user_can($capability);
+                }
+            },
+            new class implements Transaction {
+                public function run(callable $callback): mixed
+                {
+                    global $wpdb;
+
+                    $wpdb->query('START TRANSACTION');
+
+                    try {
+                        $result = $callback();
+                        $wpdb->query('COMMIT');
+
+                        return $result;
+                    } catch (\Throwable $error) {
+                        $wpdb->query('ROLLBACK');
+
+                        throw $error;
+                    }
+                }
+            }
         );
     }
 
@@ -141,6 +223,85 @@ final class WordpressPrivacy
             'group_label' => $groupLabel,
             'item_id' => $itemId,
             'data' => $data,
+        ];
+    }
+
+    /**
+     * @param list<EraseOutcome> $outcomes
+     */
+    private static function removed(array $outcomes): bool
+    {
+        foreach ($outcomes as $outcome) {
+            if ($outcome->identifiersCleared() || $outcome->publicContactCleared()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param list<EraseOutcome> $outcomes
+     */
+    private static function retained(array $outcomes): bool
+    {
+        foreach ($outcomes as $outcome) {
+            if ($outcome->membershipRetained() || $outcome->assignmentRetained() || $outcome->minutesNameRetained() || $outcome->signedCopyRetained()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param list<EraseOutcome> $outcomes
+     * @return list<string>
+     */
+    private static function messages(array $outcomes): array
+    {
+        $messages = [];
+
+        foreach ($outcomes as $outcome) {
+            if ($outcome->identifiersCleared()) {
+                $messages[] = __('Kontaktuppgifterna är avidentifierade och kontolänken är borttagen.', 'foreningsplugin');
+            }
+
+            if ($outcome->publicContactCleared()) {
+                $messages[] = __('Den offentliga kontaktuppgiften på uppdraget är borttagen.', 'foreningsplugin');
+            }
+
+            if ($outcome->membershipRetained()) {
+                $messages[] = __('Medlemsperioderna behålls.', 'foreningsplugin');
+            }
+
+            if ($outcome->assignmentRetained()) {
+                $messages[] = __('Uppdragsdatum och roller behålls.', 'foreningsplugin');
+            }
+
+            if ($outcome->minutesNameRetained()) {
+                $messages[] = __('Namnet i ett låst protokoll behålls.', 'foreningsplugin');
+            }
+
+            if ($outcome->signedCopyRetained()) {
+                $messages[] = __('Den signerade skanningen behålls.', 'foreningsplugin');
+            }
+        }
+
+        return $messages;
+    }
+
+    /**
+     * @param list<string> $messages
+     * @return array{items_removed: bool, items_retained: bool, messages: list<string>, done: bool}
+     */
+    private static function response(bool $removed, bool $retained, array $messages): array
+    {
+        return [
+            'items_removed' => $removed,
+            'items_retained' => $retained,
+            'messages' => $messages,
+            'done' => true,
         ];
     }
 

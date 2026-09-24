@@ -25,5 +25,10 @@ interface MinutesRepository
     /**
      * @return list<MinutesRevision>
      */
+    public function forMeeting(int $meetingId): array;
+
+    /**
+     * @return list<MinutesRevision>
+     */
     public function publicRevisions(): array;
 }

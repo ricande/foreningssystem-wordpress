@@ -80,6 +80,11 @@ final class BoardAssignment
         return new self($this->id, $this->personId, $this->roleId, $this->startedOn, $on, $this->publicContact, $this->termLabel);
     }
 
+    public function withoutPublicContact(): self
+    {
+        return new self($this->id, $this->personId, $this->roleId, $this->startedOn, $this->endedOn, '', $this->termLabel);
+    }
+
     public function covers(AssociationDate $on): bool
     {
         if ($on->isBefore($this->startedOn)) {

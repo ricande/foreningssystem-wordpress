@@ -160,6 +160,30 @@ final class WpdbMinutesRepository implements MinutesRepository
         return is_array($row) ? $this->map($row) : null;
     }
 
+    public function forMeeting(int $meetingId): array
+    {
+        global $wpdb;
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            'SELECT * FROM ' . $this->revisions() . ' WHERE meeting_id = %d ORDER BY revision_number, id',
+            $meetingId
+        ), ARRAY_A);
+
+        if (! is_array($rows)) {
+            return [];
+        }
+
+        $revisions = [];
+
+        foreach ($rows as $row) {
+            if (is_array($row)) {
+                $revisions[] = $this->map($row);
+            }
+        }
+
+        return $revisions;
+    }
+
     public function publicRevisions(): array
     {
         global $wpdb;

@@ -8,6 +8,10 @@ use InvalidArgumentException;
 
 final class Person
 {
+    public const ANONYMOUS_FIRST_NAME = 'Anonym';
+
+    public const ANONYMOUS_LAST_NAME = 'Medlem';
+
     public function __construct(
         private readonly ?int $id,
         private readonly string $firstName,
@@ -63,5 +67,10 @@ final class Person
     public function markedDeceased(): self
     {
         return new self($this->id, $this->firstName, $this->lastName, $this->email, PersonStatus::Deceased, $this->wordpressUserId);
+    }
+
+    public function anonymized(): self
+    {
+        return new self($this->id, self::ANONYMOUS_FIRST_NAME, self::ANONYMOUS_LAST_NAME, '', $this->status, null);
     }
 }
