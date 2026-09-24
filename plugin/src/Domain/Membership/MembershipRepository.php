@@ -12,6 +12,13 @@ interface MembershipRepository
 
     public function find(int $id): ?MembershipPeriod;
 
+    public function findByNumber(string $number): ?MembershipPeriod;
+
+    /**
+     * @return list<MembershipPeriod>
+     */
+    public function forPerson(int $personId): array;
+
     /**
      * @return list<MembershipPeriod>
      */

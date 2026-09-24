@@ -311,6 +311,16 @@ final class CountingMembershipRepository implements MembershipRepository
         return $this->inner->find($id);
     }
 
+    public function findByNumber(string $number): ?MembershipPeriod
+    {
+        return $this->inner->findByNumber($number);
+    }
+
+    public function forPerson(int $personId): array
+    {
+        return $this->inner->forPerson($personId);
+    }
+
     public function all(): array
     {
         $this->allCalls++;
@@ -349,6 +359,30 @@ final class MemoryMembershipRepository implements MembershipRepository
     public function find(int $id): ?MembershipPeriod
     {
         return $this->periods[$id] ?? null;
+    }
+
+    public function findByNumber(string $number): ?MembershipPeriod
+    {
+        foreach ($this->periods as $period) {
+            if ($period->number() === $number) {
+                return $period;
+            }
+        }
+
+        return null;
+    }
+
+    public function forPerson(int $personId): array
+    {
+        $periods = [];
+
+        foreach ($this->periods as $period) {
+            if ($period->personId() === $personId) {
+                $periods[] = $period;
+            }
+        }
+
+        return $periods;
     }
 
     public function all(): array

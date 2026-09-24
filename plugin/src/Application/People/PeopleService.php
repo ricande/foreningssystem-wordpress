@@ -39,10 +39,8 @@ final class PeopleService
         return $this->transaction->run(function () use ($firstName, $lastName, $email, $membershipNumber, $membershipType, $startedOn): int {
             $number = trim($membershipNumber);
 
-            foreach ($this->memberships->all() as $existing) {
-                if ($existing->number() === $number) {
-                    throw new \Foreningssystem\Domain\Membership\MembershipRuleException('Membership number is already used.');
-                }
+            if ($this->memberships->findByNumber($number) instanceof MembershipPeriod) {
+                throw new \Foreningssystem\Domain\Membership\MembershipRuleException('Membership number is already used.');
             }
 
             $person = $this->people->add(new Person(
@@ -68,7 +66,7 @@ final class PeopleService
                 $startedOn,
                 null
             );
-            $this->ledger->add($this->memberships->all(), $period);
+            $this->ledger->add($this->memberships->forPerson($personId), $period);
             $this->memberships->add($period);
 
             return $personId;
@@ -94,7 +92,11 @@ final class PeopleService
                 $startedOn,
                 null
             );
-            $this->ledger->add($this->memberships->all(), $period);
+            if ($this->memberships->findByNumber(trim($membershipNumber)) instanceof MembershipPeriod) {
+                throw new \Foreningssystem\Domain\Membership\MembershipRuleException('Membership number is already used.');
+            }
+
+            $this->ledger->add($this->memberships->forPerson($personId), $period);
             $saved = $this->memberships->add($period);
             $membershipId = $saved->id();
 
@@ -196,15 +198,8 @@ final class PeopleService
     private function periodsFor(Person $person): array
     {
         $personId = $person->id();
-        $periods = [];
 
-        foreach ($this->memberships->all() as $period) {
-            if ($period->personId() === $personId) {
-                $periods[] = $period;
-            }
-        }
-
-        return $periods;
+        return $personId === null ? [] : $this->memberships->forPerson($personId);
     }
 
     private function countActiveMembers(AssociationDate $on): int

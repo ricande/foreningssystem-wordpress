@@ -143,10 +143,8 @@ final class MemberExchange
             throw new InvalidArgumentException('A membership needs a number and a type.');
         }
 
-        foreach ($this->memberships->all() as $existing) {
-            if ($existing->number() === $number) {
-                return 'skipped';
-            }
+        if ($this->memberships->findByNumber($number) instanceof MembershipPeriod) {
+            return 'skipped';
         }
 
         $personStatus = PersonStatus::tryFrom($row['person_status']);
@@ -203,7 +201,7 @@ final class MemberExchange
             $startedOn,
             $endedOn
         );
-        $this->ledger->add($this->memberships->all(), $period);
+        $this->ledger->add($this->memberships->forPerson($personId), $period);
         $this->memberships->add($period);
 
         return 'created';

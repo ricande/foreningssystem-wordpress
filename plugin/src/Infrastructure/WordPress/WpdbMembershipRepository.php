@@ -7,6 +7,7 @@ namespace Foreningssystem\Infrastructure\WordPress;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Membership\MembershipPeriod;
 use Foreningssystem\Domain\Membership\MembershipRepository;
+use Foreningssystem\Domain\Membership\MembershipRuleException;
 use Foreningssystem\Domain\Membership\MembershipStatus;
 
 final class WpdbMembershipRepository implements MembershipRepository
@@ -39,6 +40,10 @@ final class WpdbMembershipRepository implements MembershipRepository
         $inserted = $wpdb->insert($this->table(), $data, $format);
 
         if ($inserted === false) {
+            if (str_contains(strtolower($wpdb->last_error), 'duplicate')) {
+                throw new MembershipRuleException('Membership number is already used.');
+            }
+
             throw new \RuntimeException('The membership could not be saved.');
         }
 
@@ -83,6 +88,34 @@ final class WpdbMembershipRepository implements MembershipRepository
         $row = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $this->table() . ' WHERE id = %d', $id), ARRAY_A);
 
         return is_array($row) ? $this->map($row) : null;
+    }
+
+    public function findByNumber(string $number): ?MembershipPeriod
+    {
+        global $wpdb;
+
+        $row = $wpdb->get_row($wpdb->prepare(
+            'SELECT * FROM ' . $this->table() . ' WHERE membership_number = %s',
+            $number
+        ), ARRAY_A);
+
+        return is_array($row) ? $this->map($row) : null;
+    }
+
+    public function forPerson(int $personId): array
+    {
+        global $wpdb;
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            'SELECT * FROM ' . $this->table() . ' WHERE person_id = %d ORDER BY started_on, id',
+            $personId
+        ), ARRAY_A);
+
+        if (! is_array($rows)) {
+            return [];
+        }
+
+        return array_map($this->map(...), $rows);
     }
 
     public function all(): array
