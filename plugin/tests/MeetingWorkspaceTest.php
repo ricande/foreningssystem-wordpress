@@ -239,6 +239,19 @@ final class MemoryParticipantRepository implements ParticipantRepository
 
         return $rows;
     }
+
+    public function forPerson(int $personId): array
+    {
+        $rows = [];
+
+        foreach ($this->participants as $participant) {
+            if ($participant->personId() === $personId) {
+                $rows[] = $participant;
+            }
+        }
+
+        return $rows;
+    }
 }
 
 final class MemoryAgendaRepository implements AgendaRepository

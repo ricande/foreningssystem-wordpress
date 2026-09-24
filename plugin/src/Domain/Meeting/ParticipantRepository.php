@@ -16,4 +16,9 @@ interface ParticipantRepository
      * @return list<Participant>
      */
     public function forMeeting(int $meetingId): array;
+
+    /**
+     * @return list<Participant>
+     */
+    public function forPerson(int $personId): array;
 }

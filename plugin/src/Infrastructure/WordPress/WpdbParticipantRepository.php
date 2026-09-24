@@ -72,6 +72,22 @@ final class WpdbParticipantRepository implements ParticipantRepository
         return array_map($this->map(...), $rows);
     }
 
+    public function forPerson(int $personId): array
+    {
+        global $wpdb;
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            'SELECT * FROM ' . $this->table() . ' WHERE person_id = %d ORDER BY id',
+            $personId
+        ), ARRAY_A);
+
+        if (! is_array($rows)) {
+            return [];
+        }
+
+        return array_map($this->map(...), $rows);
+    }
+
     /**
      * @param array<string, mixed> $row
      */
