@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Infrastructure\Persistence\MigrationException;
 
 final class Plugin
@@ -33,6 +34,8 @@ final class Plugin
         add_action('admin_post_assoc_register_person', [MembersPage::class, 'registerPerson']);
         add_action('admin_post_assoc_end_membership', [MembersPage::class, 'endMembership']);
         add_action('admin_post_assoc_mark_deceased', [MembersPage::class, 'markDeceased']);
+        add_action('admin_post_assoc_place_assignment', [BoardPage::class, 'place']);
+        add_action('admin_post_assoc_end_assignment', [BoardPage::class, 'end']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();
@@ -84,6 +87,15 @@ final class Plugin
             'foreningsplugin-members',
             [MembersPage::class, 'render']
         );
+
+        add_submenu_page(
+            'foreningsplugin',
+            __('Styrelse', 'foreningsplugin'),
+            __('Styrelse', 'foreningsplugin'),
+            Capabilities::VIEW_MEMBERS,
+            'foreningsplugin-board',
+            [BoardPage::class, 'render']
+        );
     }
 
     public static function renderAdminPage(): void
@@ -93,6 +105,7 @@ final class Plugin
         }
 
         $activeMembers = WordpressPeople::service()->activeMemberCount();
+        $currentBoard = WordpressBoard::service()->currentCount(AssociationDate::fromIso(wp_date('Y-m-d')));
 
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Föreningsplugin', 'foreningsplugin') . '</h1>';
@@ -101,6 +114,11 @@ final class Plugin
             /* translators: %d: number of active members */
             __('Aktiva medlemmar: %d', 'foreningsplugin'),
             $activeMembers
+        )) . '</p>';
+        echo '<p>' . esc_html(sprintf(
+            /* translators: %d: number of current board assignments */
+            __('Styrelseuppdrag idag: %d', 'foreningsplugin'),
+            $currentBoard
         )) . '</p>';
         echo '<p>' . esc_html(sprintf(
             /* translators: %d: schema version */

@@ -37,4 +37,15 @@ final class AssociationDate
     {
         return $this->iso < $other->iso;
     }
+
+    public function previousDay(): self
+    {
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $this->iso);
+
+        if ($parsed === false) {
+            throw new InvalidArgumentException('Date must use YYYY-MM-DD.');
+        }
+
+        return new self($parsed->modify('-1 day')->format('Y-m-d'));
+    }
 }

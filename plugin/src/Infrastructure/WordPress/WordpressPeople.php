@@ -41,7 +41,8 @@ final class WordpressPeople
                         throw $error;
                     }
                 }
-            }
+            },
+            WordpressBoard::endOpenAssignments()
         );
     }
 }

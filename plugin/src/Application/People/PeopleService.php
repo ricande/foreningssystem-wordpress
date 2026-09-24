@@ -22,6 +22,7 @@ final class PeopleService
         private readonly MembershipLedger $ledger,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
+        private readonly OpenBoardAssignments $openAssignments,
     ) {
     }
 
@@ -80,6 +81,7 @@ final class PeopleService
         $period = $this->requireMembership($membershipId);
 
         $this->transaction->run(function () use ($period, $on): void {
+            $this->openAssignments->endOpen($period->personId(), $on);
             $this->memberships->save($this->ledger->end($period, $on));
         });
     }
@@ -89,14 +91,16 @@ final class PeopleService
         $this->require(Capabilities::EDIT_MEMBERS);
         $person = $this->requirePerson($personId);
 
-        $this->transaction->run(function () use ($person, $on): void {
-            $this->people->save($person->markedDeceased());
+        $this->transaction->run(function () use ($person, $personId, $on): void {
+            $this->openAssignments->endOpen($personId, $on);
 
             foreach ($this->ledger->endOpenPeriods($this->periodsFor($person), $on) as $period) {
                 if ($period->status() === MembershipStatus::Ended) {
                     $this->memberships->save($period);
                 }
             }
+
+            $this->people->save($person->markedDeceased());
         });
     }
 

@@ -6,6 +6,7 @@ namespace Foreningssystem\Tests;
 
 use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\NotAllowed;
+use Foreningssystem\Application\People\OpenBoardAssignments;
 use Foreningssystem\Application\People\PeopleService;
 use Foreningssystem\Application\People\Transaction;
 use Foreningssystem\Domain\Access\Capabilities;
@@ -25,7 +26,8 @@ final class PeopleServiceTest extends TestCase
 {
     public function test_register_end_and_death_follow_the_membership_rules(): void
     {
-        $service = $this->service(true);
+        $closer = new RecordingOpenAssignments();
+        $service = $this->service(true, $closer);
         $personId = $service->register('Ada', 'Lovelace', 'ada@example.test', 'M-1', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
 
         self::assertSame(1, $service->activeMemberCount());
@@ -61,6 +63,10 @@ final class PeopleServiceTest extends TestCase
         self::assertSame(PersonStatus::Deceased, $deceased->person()->status());
         self::assertSame(MembershipStatus::Ended, $deceased->membership()?->status());
         self::assertSame('2024-09-24', $deceased->membership()?->endedOn()?->iso());
+        self::assertSame([
+            [$personId, '2024-06-01'],
+            [$secondId, '2024-09-24'],
+        ], $closer->calls);
     }
 
     public function test_viewing_and_editing_require_capabilities(): void
@@ -82,7 +88,7 @@ final class PeopleServiceTest extends TestCase
         self::assertStringNotContainsString('wp_users', $sql);
     }
 
-    private function service(bool $allowed): PeopleService
+    private function service(bool $allowed, ?RecordingOpenAssignments $closer = null): PeopleService
     {
         return new PeopleService(
             new MemoryPersonRepository(),
@@ -107,8 +113,20 @@ final class PeopleServiceTest extends TestCase
                 {
                     return $callback();
                 }
-            }
+            },
+            $closer ?? new RecordingOpenAssignments()
         );
+    }
+}
+
+final class RecordingOpenAssignments implements OpenBoardAssignments
+{
+    /** @var list<array{0: int, 1: string}> */
+    public array $calls = [];
+
+    public function endOpen(int $personId, AssociationDate $on): void
+    {
+        $this->calls[] = [$personId, $on->iso()];
     }
 }
 

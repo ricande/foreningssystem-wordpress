@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Infrastructure\Persistence\BaselineMigration;
+use Foreningssystem\Infrastructure\Persistence\BoardSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MembershipSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MigrationRunner;
 
@@ -20,6 +21,7 @@ final class WordpressMigrations
             [
                 new BaselineMigration(),
                 new MembershipSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
+                new BoardSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
             ]
         );
     }

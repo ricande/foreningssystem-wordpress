@@ -6,6 +6,7 @@ namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Board\BoardRuleException;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Membership\MembershipRuleException;
 use Foreningssystem\Domain\Membership\MembershipStatus;
@@ -44,6 +45,8 @@ final class MembersPage
                 AssociationDate::fromIso(self::text('ended_on'))
             );
             self::redirect('ended');
+        } catch (BoardRuleException) {
+            self::redirect('assignment');
         } catch (MembershipRuleException) {
             self::redirect('already_ended');
         } catch (\InvalidArgumentException) {
@@ -61,6 +64,8 @@ final class MembersPage
                 AssociationDate::fromIso(self::text('deceased_on'))
             );
             self::redirect('deceased');
+        } catch (BoardRuleException) {
+            self::redirect('assignment');
         } catch (\InvalidArgumentException | MembershipRuleException) {
             self::redirect('invalid');
         }
@@ -179,6 +184,7 @@ final class MembersPage
             'duplicate_number' => __('Medlemsnumret används redan.', 'foreningsplugin'),
             'overlap' => __('Medlemsperioderna överlappar.', 'foreningsplugin'),
             'already_ended' => __('Medlemskapet är redan avslutat.', 'foreningsplugin'),
+            'assignment' => __('Ett öppet styrelseuppdrag passar inte datumet, så inget ändrades.', 'foreningsplugin'),
             'invalid' => __('Kontrollera uppgifterna och försök igen.', 'foreningsplugin'),
         ];
 
