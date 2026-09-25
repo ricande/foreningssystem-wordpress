@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Application\Board\BoardSeat;
+use Foreningssystem\Application\Settings\BuiltinStructure;
 use Foreningssystem\Domain\Board\BoardRole;
 
 final class BoardScreen
@@ -175,15 +176,9 @@ final class BoardScreen
 
     public static function roleLabel(string $slug, string $stored): string
     {
-        return match ($slug) {
-            'chair' => __('Chair', 'foreningsplugin'),
-            'treasurer' => __('Treasurer', 'foreningsplugin'),
-            'secretary' => __('Secretary', 'foreningsplugin'),
-            'alternate' => __('Alternate', 'foreningsplugin'),
-            'auditor' => __('Auditor', 'foreningsplugin'),
-            'election_committee' => __('Election committee', 'foreningsplugin'),
-            default => $stored,
-        };
+        $source = BuiltinStructure::boardSource($slug);
+
+        return $source === null ? $stored : __($source, 'foreningsplugin');
     }
 
     /**

@@ -673,13 +673,39 @@ final class MemoryBoardRoleRepository implements BoardRoleRepository
 
     private int $nextId = 1;
 
+    public bool $failNextWrite = false;
+
     public function add(BoardRole $role): BoardRole
     {
+        $this->guardWrite();
         $saved = $role->withId($this->nextId);
         $this->roles[$this->nextId] = $saved;
         $this->nextId++;
 
         return $saved;
+    }
+
+    public function save(BoardRole $role): void
+    {
+        $this->guardWrite();
+        $id = $role->id();
+
+        if ($id === null || ! isset($this->roles[$id])) {
+            throw new \RuntimeException('The board role could not be saved.');
+        }
+
+        $this->roles[$id] = $role;
+    }
+
+    private function guardWrite(): void
+    {
+        if (! $this->failNextWrite) {
+            return;
+        }
+
+        $this->failNextWrite = false;
+
+        throw new \RuntimeException('The board role could not be saved.');
     }
 
     public function find(int $id): ?BoardRole

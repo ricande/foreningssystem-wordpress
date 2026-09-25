@@ -397,14 +397,7 @@ final class MeetingsPage
 
     private static function typeLabel(MeetingType $type): string
     {
-        return match ($type->slug()) {
-            'board_meeting' => __('Board meeting', 'foreningsplugin'),
-            'annual_meeting' => __('Annual meeting', 'foreningsplugin'),
-            'extraordinary_annual_meeting' => __('Extraordinary annual meeting', 'foreningsplugin'),
-            'member_meeting' => __('Member meeting', 'foreningsplugin'),
-            'working_meeting' => __('Working meeting', 'foreningsplugin'),
-            default => $type->name(),
-        };
+        return MeetingLabels::type($type);
     }
 
     private static function statusLabel(MeetingStatus $status): string

@@ -6,12 +6,12 @@ Status: **proposed**. Names match the candidates in `docs/08_CAPABILITIES.md` an
 
 | Capability | Allows |
 |---|---|
-| `manage_association` | Association profile, role definitions, capability assignment for association officers |
+| `manage_association` | Association profile, board-role and meeting-type definitions, retention, and minutes lock/publication settings |
 | `view_members` | Read person and membership records |
 | `edit_members` | Create and update people and memberships, including ending a membership |
 | `export_members` | Export member data |
 | `erase_member_data` | Anonymize a person and process privacy-eraser decisions that go beyond the core WordPress user |
-| `manage_board` | Create and end board assignments and role definitions |
+| `manage_board` | Create and end board assignments. It does not redefine what a role means |
 | `view_internal_meetings` | Read unpublished meetings, notes, and board-visible documents |
 | `manage_meetings` | Plan meetings, templates, and agenda |
 | `record_meeting` | Notes, decisions, action items, and minutes drafts |

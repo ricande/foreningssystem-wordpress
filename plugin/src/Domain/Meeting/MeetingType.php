@@ -55,4 +55,14 @@ final class MeetingType
     {
         return new self($id, $this->slug, $this->name, $this->sortOrder);
     }
+
+    public function withName(string $name): self
+    {
+        return new self($this->id, $this->slug, trim($name), $this->sortOrder);
+    }
+
+    public function withSortOrder(int $sortOrder): self
+    {
+        return new self($this->id, $this->slug, $this->name, $sortOrder);
+    }
 }

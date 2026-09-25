@@ -107,7 +107,7 @@ final class BoardDirectory
         usort($roles, static function (BoardRole $left, BoardRole $right): int {
             $byOrder = $left->sortOrder() <=> $right->sortOrder();
 
-            return $byOrder !== 0 ? $byOrder : strcasecmp($left->name(), $right->name());
+            return $byOrder !== 0 ? $byOrder : (($left->id() ?? 0) <=> ($right->id() ?? 0));
         });
 
         return $roles;

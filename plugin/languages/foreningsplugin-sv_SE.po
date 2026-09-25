@@ -2231,3 +2231,126 @@ msgstr "Föreningens kontakt-e-post och e-postadressen för WordPress-kontot är
 
 msgid "Logged in as"
 msgstr "Inloggad som"
+
+msgid "Settings"
+msgstr "Inställningar"
+
+msgid "Association settings"
+msgstr "Föreningsinställningar"
+
+msgid "Board roles and meeting types describe how this association organizes its work. Built-in entries keep their system meaning. Add a custom entry when the association needs another one."
+msgstr "Styrelseroller och mötestyper beskriver hur föreningen organiserar sitt arbete. Inbyggda poster behåller sin systembetydelse. Lägg till en egen post när föreningen behöver en annan."
+
+msgid "Open association profile"
+msgstr "Öppna föreningsprofil"
+
+msgid "Board roles"
+msgstr "Styrelseroller"
+
+msgid "Holders"
+msgstr "Innehavare"
+
+msgid "Order"
+msgstr "Ordning"
+
+msgid "One holder"
+msgstr "En innehavare"
+
+msgid "Multiple holders"
+msgstr "Flera innehavare"
+
+msgid "This role has been used by a board assignment. Its name and holder rule are now preserved for history. You can still change its display order."
+msgstr "Den här rollen har använts i ett styrelseuppdrag. Namn och innehavarregel bevaras för historiken. Du kan fortfarande ändra visningsordningen."
+
+msgid "Edit %s"
+msgstr "Redigera %s"
+
+msgid "Meeting types"
+msgstr "Mötestyper"
+
+msgid "Meeting type"
+msgstr "Mötestyp"
+
+msgid "This meeting type has been used by a meeting or template. Its name is now preserved for history. You can still change its display order."
+msgstr "Den här mötestypen har använts av ett möte eller en mall. Namnet bevaras för historiken. Du kan fortfarande ändra visningsordningen."
+
+msgid "Move %s up"
+msgstr "Flytta %s uppåt"
+
+msgid "Move %s down"
+msgstr "Flytta %s nedåt"
+
+msgid "Allow several people to hold this role at the same time"
+msgstr "Tillåt att flera personer har rollen samtidigt"
+
+msgid "Add board role"
+msgstr "Lägg till styrelseroll"
+
+msgid "Add role"
+msgstr "Lägg till roll"
+
+msgid "Add meeting type"
+msgstr "Lägg till mötestyp"
+
+msgid "Save role"
+msgstr "Spara roll"
+
+msgid "Save meeting type"
+msgstr "Spara mötestyp"
+
+msgid "Other settings"
+msgstr "Övriga inställningar"
+
+msgid "Association profile"
+msgstr "Föreningsprofil"
+
+msgid "Minutes locking"
+msgstr "Protokollåsning"
+
+msgid "Minutes publication"
+msgstr "Publicering av protokoll"
+
+msgid "You do not have permission to change association settings."
+msgstr "Du har inte behörighet att ändra föreningsinställningar."
+
+msgid "The board role was added."
+msgstr "Styrelserollen lades till."
+
+msgid "The board role was saved."
+msgstr "Styrelserollen sparades."
+
+msgid "The board role order was saved."
+msgstr "Ordningen för styrelseroller sparades."
+
+msgid "A board role with that name already exists."
+msgstr "En styrelseroll med det namnet finns redan."
+
+msgid "A built-in board role keeps its name and holder rule."
+msgstr "En inbyggd styrelseroll behåller sitt namn och sin innehavarregel."
+
+msgid "Enter a board role name."
+msgstr "Ange ett namn på styrelserollen."
+
+msgid "The board role could not be saved."
+msgstr "Styrelserollen kunde inte sparas."
+
+msgid "The meeting type was added."
+msgstr "Mötestypen lades till."
+
+msgid "The meeting type was saved."
+msgstr "Mötestypen sparades."
+
+msgid "The meeting type order was saved."
+msgstr "Ordningen för mötestyper sparades."
+
+msgid "A meeting type with that name already exists."
+msgstr "En mötestyp med det namnet finns redan."
+
+msgid "A built-in meeting type keeps its name."
+msgstr "En inbyggd mötestyp behåller sitt namn."
+
+msgid "Enter a meeting type name."
+msgstr "Ange ett namn på mötestypen."
+
+msgid "The meeting type could not be saved."
+msgstr "Mötestypen kunde inte sparas."

@@ -231,6 +231,7 @@ final class BoardService
 
             $seats[] = new PublicBoardSeat(
                 $person->firstName() . ' ' . $person->lastName(),
+                $role->slug(),
                 $role->name(),
                 $assignment->publicContact(),
                 $role->sortOrder()

@@ -6,6 +6,10 @@ namespace Foreningssystem\Domain\Board;
 
 interface BoardRoleRepository
 {
+    public function add(BoardRole $role): BoardRole;
+
+    public function save(BoardRole $role): void;
+
     public function find(int $id): ?BoardRole;
 
     public function findBySlug(string $slug): ?BoardRole;

@@ -40,7 +40,7 @@ final class CurrentBoardBlock
 
         foreach ($seats as $seat) {
             $html .= '<li><span class="foreningsplugin-board-name">' . esc_html($seat->personName()) . '</span> ';
-            $html .= '<span class="foreningsplugin-board-role">' . esc_html($seat->roleName()) . '</span>';
+            $html .= '<span class="foreningsplugin-board-role">' . esc_html(BoardScreen::roleLabel($seat->roleSlug(), $seat->roleName())) . '</span>';
 
             if ($seat->publicContact() !== '') {
                 $html .= ' <span class="foreningsplugin-board-contact">' . esc_html($seat->publicContact()) . '</span>';

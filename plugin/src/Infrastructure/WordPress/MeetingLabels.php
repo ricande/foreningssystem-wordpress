@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Settings\BuiltinStructure;
 use Foreningssystem\Domain\Meeting\MeetingDuty;
 use Foreningssystem\Domain\Meeting\MeetingStatus;
 use Foreningssystem\Domain\Meeting\MeetingType;
@@ -14,14 +15,9 @@ final class MeetingLabels
 {
     public static function type(MeetingType $type): string
     {
-        return match ($type->slug()) {
-            'board_meeting' => __('Board meeting', 'foreningsplugin'),
-            'annual_meeting' => __('Annual meeting', 'foreningsplugin'),
-            'extraordinary_annual_meeting' => __('Extraordinary annual meeting', 'foreningsplugin'),
-            'member_meeting' => __('Member meeting', 'foreningsplugin'),
-            'working_meeting' => __('Working meeting', 'foreningsplugin'),
-            default => $type->name(),
-        };
+        $source = BuiltinStructure::meetingSource($type->slug());
+
+        return $source === null ? $type->name() : __($source, 'foreningsplugin');
     }
 
     public static function status(MeetingStatus $status): string

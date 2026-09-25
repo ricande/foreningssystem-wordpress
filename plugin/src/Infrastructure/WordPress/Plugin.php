@@ -109,6 +109,12 @@ final class Plugin
         add_action('admin_post_assoc_save_minutes_lock', [MinutesLockPage::class, 'save']);
         add_action('admin_post_assoc_save_minutes_publish', [MinutesPublishPage::class, 'save']);
         add_action('admin_post_assoc_save_profile', [AssociationProfilePage::class, 'save']);
+        add_action('admin_post_assoc_add_board_role', [AssociationSettingsPage::class, 'addBoardRole']);
+        add_action('admin_post_assoc_update_board_role', [AssociationSettingsPage::class, 'updateBoardRole']);
+        add_action('admin_post_assoc_move_board_role', [AssociationSettingsPage::class, 'moveBoardRole']);
+        add_action('admin_post_assoc_add_meeting_type', [AssociationSettingsPage::class, 'addMeetingType']);
+        add_action('admin_post_assoc_rename_meeting_type', [AssociationSettingsPage::class, 'renameMeetingType']);
+        add_action('admin_post_assoc_move_meeting_type', [AssociationSettingsPage::class, 'moveMeetingType']);
 
         if (defined('WP_CLI') && WP_CLI) {
             Cli::register();
@@ -188,6 +194,15 @@ final class Plugin
             Capabilities::VIEW_INTERNAL_MEETINGS,
             'foreningsplugin-meetings',
             [MeetingsPage::class, 'render']
+        );
+
+        add_submenu_page(
+            'foreningsplugin',
+            __('Settings', 'foreningsplugin'),
+            __('Settings', 'foreningsplugin'),
+            Capabilities::MANAGE_ASSOCIATION,
+            'foreningsplugin-settings',
+            [AssociationSettingsPage::class, 'render']
         );
 
         add_submenu_page(

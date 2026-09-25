@@ -167,13 +167,39 @@ final class MemoryMeetingTypeRepository implements MeetingTypeRepository
 
     private int $nextId = 1;
 
+    public bool $failNextWrite = false;
+
     public function add(MeetingType $type): MeetingType
     {
+        $this->guardWrite();
         $saved = $type->withId($this->nextId);
         $this->types[$this->nextId] = $saved;
         $this->nextId++;
 
         return $saved;
+    }
+
+    public function save(MeetingType $type): void
+    {
+        $this->guardWrite();
+        $id = $type->id();
+
+        if ($id === null || ! isset($this->types[$id])) {
+            throw new \RuntimeException('The meeting type could not be saved.');
+        }
+
+        $this->types[$id] = $type;
+    }
+
+    private function guardWrite(): void
+    {
+        if (! $this->failNextWrite) {
+            return;
+        }
+
+        $this->failNextWrite = false;
+
+        throw new \RuntimeException('The meeting type could not be saved.');
     }
 
     public function find(int $id): ?MeetingType

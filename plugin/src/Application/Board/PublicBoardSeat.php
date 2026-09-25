@@ -8,10 +8,16 @@ final class PublicBoardSeat
 {
     public function __construct(
         private readonly string $personName,
+        private readonly string $roleSlug,
         private readonly string $roleName,
         private readonly string $publicContact,
         private readonly int $sortOrder,
     ) {
+    }
+
+    public function roleSlug(): string
+    {
+        return $this->roleSlug;
     }
 
     public function personName(): string
