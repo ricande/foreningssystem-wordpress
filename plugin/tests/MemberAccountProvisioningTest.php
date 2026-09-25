@@ -9,6 +9,7 @@ use Foreningssystem\Application\Account\MemberAccountProvisioning;
 use Foreningssystem\Application\Account\ProvisioningResult;
 use Foreningssystem\Application\Account\WordPressAccountGateway;
 use Foreningssystem\Application\Document\MemberDocumentAccess;
+use Foreningssystem\Application\Document\WordPressIdentity;
 use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\MemberExchange;
 use Foreningssystem\Domain\Membership\MembershipLedger;
@@ -318,7 +319,7 @@ final class MemberAccountProvisioningTest extends TestCase
         $person = $this->member($people, $memberships, 'Anna', 'Andersson', 'anna@example.test', '1990-05-01');
         $created = $service->provision((int) $person->id(), $this->on);
         $userId = (int) $created->wordpressUserId;
-        $access = new MemberDocumentAccess($people, $memberships);
+        $access = new MemberDocumentAccess($people, $memberships, new GatewayIdentity($accounts));
         $period = $memberships->periodsForMembership((int) $memberships->findMembershipByNumber('M-1')?->id())[0];
         $memberships->save(new MembershipPeriod(
             $period->id(),
@@ -517,7 +518,7 @@ CSV;
         [$service, $people, $memberships, $accounts] = $this->stack();
         $person = $people->add(new Person(null, 'Anna', 'Andersson', 'anna@example.test', PersonStatus::Known, 37, AssociationDate::fromIso('1990-05-01')));
         $memberships->grant((int) $person->id(), 'M-BROKEN', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null);
-        $access = new MemberDocumentAccess($people, $memberships);
+        $access = new MemberDocumentAccess($people, $memberships, new GatewayIdentity($accounts));
 
         $first = $service->reconcile($this->on);
         $second = $service->reconcile($this->on);
@@ -528,6 +529,7 @@ CSV;
         self::assertSame([], $accounts->created);
         self::assertSame([], $accounts->deleted);
         self::assertSame([], $accounts->notified);
+        self::assertFalse($access->allows(37, $this->on));
         self::assertFalse($access->allows(9, $this->on));
         self::assertFalse($access->allows(0, $this->on));
     }
@@ -678,6 +680,18 @@ CSV;
         }
 
         return null;
+    }
+}
+
+final class GatewayIdentity implements WordPressIdentity
+{
+    public function __construct(private readonly FakeWordPressAccounts $accounts)
+    {
+    }
+
+    public function exists(int $userId): bool
+    {
+        return $this->accounts->userExists($userId);
     }
 }
 

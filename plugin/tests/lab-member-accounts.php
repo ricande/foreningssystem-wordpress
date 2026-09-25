@@ -2,13 +2,17 @@
 
 require __DIR__ . '/lab-membership.php';
 
+use Foreningssystem\Application\Document\MemberDocumentAccess;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Document\DocumentVisibility;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Infrastructure\WordPress\MemberDocumentsBlock;
 use Foreningssystem\Infrastructure\WordPress\MembersScreen;
 use Foreningssystem\Infrastructure\WordPress\PrivateUploadDirectory;
+use Foreningssystem\Infrastructure\WordPress\WpdbMembershipRepository;
+use Foreningssystem\Infrastructure\WordPress\WpdbPersonRepository;
 use Foreningssystem\Infrastructure\WordPress\WordpressDocuments;
+use Foreningssystem\Infrastructure\WordPress\WpWordPressIdentity;
 use Foreningssystem\Infrastructure\WordPress\WordpressMemberAccounts;
 use Foreningssystem\Infrastructure\WordPress\WordpressPeople;
 
@@ -358,6 +362,11 @@ $annaUserRemains = get_userdata($annaUserId) instanceof WP_User;
 require_once ABSPATH . 'wp-admin/includes/user.php';
 wp_delete_user($annaUserId);
 $staleLink = (int) $wpdb->get_var($wpdb->prepare("SELECT wp_user_id FROM {$people} WHERE id = %d", $annaId));
+$staleMemberAccess = (new MemberDocumentAccess(
+    new WpdbPersonRepository(),
+    new WpdbMembershipRepository(),
+    new WpWordPressIdentity()
+))->allows($annaUserId, $today);
 $brokenPage = lab_account_page($annaId);
 $brokenMailBefore = count(lab_account_messages('anna@example.test'));
 $accounts->reconcile($today);
@@ -414,7 +423,7 @@ $checks = [
     'import rules' => $imported->errors() !== [] && $importAdult > 0 && $importMinor === null && $importAdultAgain === $importAdult && $importMessages === $importMessagesBefore + 1 && $importMessagesAgain === $importMessages,
     'johan historical' => $johan->errors() === [] && $johanLink === null,
     'same email without link' => $sameEmailDenied === true,
-    'broken link stays' => $staleLink === $annaUserId && $staleAfterReconcile === $annaUserId && $annaUsersWhileBroken === 0 && $brokenMailAfter === $brokenMailBefore && str_contains($brokenPage, 'Det kopplade WordPress-kontot finns inte längre.') && str_contains($brokenPage, 'assoc_clear_broken_member_account') && ! str_contains($brokenPage, 'assoc_create_member_account'),
+    'broken link stays' => $staleLink === $annaUserId && $staleMemberAccess === false && $staleAfterReconcile === $annaUserId && $annaUsersWhileBroken === 0 && $brokenMailAfter === $brokenMailBefore && str_contains($brokenPage, 'Det kopplade WordPress-kontot finns inte längre.') && str_contains($brokenPage, 'assoc_clear_broken_member_account') && ! str_contains($brokenPage, 'assoc_create_member_account'),
     'clear broken link' => $clearedBroken->outcome->value === 'broken_link_cleared' && $clearedLink === null,
     'replacement account' => $replaced->outcome->value === 'created' && $replacedUser instanceof WP_User && $replacedUserId !== $annaUserId && in_array('subscriber', $replacedUser->roles, true) && $replacedUserAgain === $replacedUserId && $replacedAgain->outcome->value === 'already_linked' && $replacedMail === $brokenMailAfter + 1 && $replacedMailAgain === $replacedMail && $replacementAuthenticated instanceof WP_User && $replacementRead === true,
     'registration unchanged' => get_option('users_can_register') === $registration,

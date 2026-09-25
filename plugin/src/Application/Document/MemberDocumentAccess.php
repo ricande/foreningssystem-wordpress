@@ -14,12 +14,13 @@ final class MemberDocumentAccess
     public function __construct(
         private readonly PersonRepository $people,
         private readonly MembershipRepository $memberships,
+        private readonly WordPressIdentity $identities,
     ) {
     }
 
     public function allows(int $wordpressUserId, AssociationDate $on): bool
     {
-        if ($wordpressUserId < 1) {
+        if ($wordpressUserId < 1 || ! $this->identities->exists($wordpressUserId)) {
             return false;
         }
 

@@ -48,7 +48,8 @@ final class WordpressDocuments
                 {
                     return (new MemberDocumentAccess(
                         new WpdbPersonRepository(),
-                        new WpdbMembershipRepository()
+                        new WpdbMembershipRepository(),
+                        new WpWordPressIdentity()
                     ))->allows(get_current_user_id(), AssociationDate::fromIso(wp_date('Y-m-d')));
                 }
             }
