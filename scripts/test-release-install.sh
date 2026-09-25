@@ -117,6 +117,21 @@ if [ "$schema" != "16" ]; then
 fi
 echo "assoc_schema_version after = 16"
 
+setup="$(compose run --rm -T wpcli option get assoc_setup_version | tr -d '[:space:]')"
+if [ "$setup" != "0" ]; then
+  echo "assoc_setup_version after = '${setup}', expected 0 for fresh install." >&2
+  exit 1
+fi
+echo "assoc_setup_version after = 0 (incomplete)"
+
+pending="$(compose run --rm -T wpcli option get assoc_setup_redirect_pending | tr -d '[:space:]')"
+if [ "$pending" != "1" ]; then
+  echo "assoc_setup_redirect_pending after = '${pending}', expected 1." >&2
+  exit 1
+fi
+echo "assoc_setup_redirect_pending after = 1"
+echo "WP-CLI activation did not consume the admin redirect marker"
+
 version="$(compose run --rm -T wpcli plugin get foreningsplugin --field=version | tr -d '[:space:]')"
 if [ "$version" != "0.1.0" ]; then
   echo "Installed plugin version is '${version}', expected 0.1.0." >&2

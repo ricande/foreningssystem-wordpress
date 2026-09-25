@@ -88,10 +88,15 @@ These must be answered deliberately. Do not silently turn assumptions into imple
 
 ## Setup, help, guides, and registered-install communications
 
-Product direction only. See `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`. Not implemented. Not LOCKED.
+See `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` and ADR-0023.
 
-38. What are the exact semantics of a versioned local setup marker such as `assoc_setup_version` (when it increments, how incomplete setups upgrade, relation to schema version)?
-39. Which capability may trigger a first-activation redirect into a setup wizard, and how is “first activation” detected without loops?
+### Resolved for Wizard v1 (2026-09-25)
+
+38. `assoc_setup_version` is a local integer independent of schema. `0`/absent = incomplete; `1` = Wizard v1 completed. Fresh installs (schema absent/`0` before activation migration) stay incomplete with optional first-run redirect. Existing pre-wizard installs (schema `> 0`, setup option never written) adopt `1` without forcing the wizard. Incomplete reactivation may recreate redirect pending; completed setup does not reopen. Progress uses `assoc_setup_step` for navigation only.
+39. First-activation redirect is gated on `manage_association`. Pending marker `assoc_setup_redirect_pending` is set on genuine fresh activation after successful migration. Unauthorized users do not consume it. No redirect for WP-CLI, AJAX, cron, REST, admin-post, network admin, or failed migration.
+
+### Still open (Help / bulletins)
+
 40. What is the Help & Guides information architecture (Swedish/English titles, WordPress screen help vs custom Association pages, handbook outline ownership)?
 41. Does a registered-install message center live under Help or as top-level Association navigation?
 42. Who owns and hosts any voluntary registration / bulletin pull service, and what is the offline default for open-source installs?

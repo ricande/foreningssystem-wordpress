@@ -75,6 +75,8 @@ Implemented areas:
 
 Some product decisions remain provisional, including the migration policy and personal-identity encryption. Schema 16 is the current schema, not a claim that every earlier design note is locked.
 
-## Planned product area (docs only) — setup, help, guides, bulletins
+## Planned product area — setup, help, guides, bulletins
 
-Owner product direction for first-run setup wizard, contextual help, handbook/guides, and optional registered-install communications is captured in `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`. That document is proposal status: not implemented and not LOCKED. Open questions are listed in `OPEN_QUESTIONS.md`. This is separate from the existing association Settings setup v1 (board roles / meeting types) already noted above.
+**First-run Setup Wizard v1 is implemented** (ADR-0023). Local options `assoc_setup_version`, `assoc_setup_step`, and `assoc_setup_redirect_pending` track completion and first-run redirect. Schema remains 16. Plugin version remains 0.1.0.
+
+Help & Guides, contextual help, and optional registered-install communications remain proposal-only in `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` and `OPEN_QUESTIONS.md` (Q40–Q45). They are not implemented and not LOCKED.

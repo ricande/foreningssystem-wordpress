@@ -26,7 +26,8 @@ Future:
 - Activities
 - Membership fees
 - Mail/recipient selection
-- Help & Guides / first-run setup wizard / optional message center — proposed only; see `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` (not implemented, not LOCKED)
+- Help & Guides / optional message center — proposed only; see `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` (not implemented, not LOCKED)
+- First-run Setup Wizard v1 — **implemented**; see ADR-0023 and Association → Get started / Settings → Run setup guide again
 
 ## Settings
 
@@ -34,11 +35,15 @@ Association → Settings is the entry point for association structure. It requir
 
 The Association menu itself uses `access_association`. That capability only shows the menu. Someone who manages association settings can open the menu and Settings without `view_members`. Members, meetings, documents, and the board stay behind their own capabilities.
 
-The screen links to the existing association profile, retention, minutes locking, and minutes publication pages. Those pages stay as they are.
+The screen links to the existing association profile, retention, minutes locking, and minutes publication pages. Those pages stay as they are. When setup is complete, Settings also links to **Run setup guide again**. Reopening the guide does not mark setup incomplete, hide menus, or reset domain data.
 
 Board roles and meeting types can be reordered. The seeded built-in slugs stay fixed, and their labels stay plugin translations. An association can add its own roles and meeting types. The internal slug is created once and is not edited. A custom role name and holder rule become fixed once any board assignment uses the role. A custom meeting-type name becomes fixed once any meeting or meeting template uses it. Order can still change. Nothing in this screen deletes a role or a meeting type. Schema 16 is unchanged.
 
 Decisions, activities, fees, and mailings are not part of this screen.
+
+## First-run setup wizard
+
+Fresh installs keep `assoc_setup_version` incomplete until Wizard v1 is finished. While incomplete, Association navigation shows **Get started** / **Kom igång** instead of the operational screens. Direct URLs keep their existing capability checks. The wizard is server-rendered WordPress admin HTML and reuses the same profile, structure, minutes-permission, and retention services as the ordinary Settings pages. Completing the wizard sets setup version `1`, restores the full Association menu, and shows next-step links for members, board, and the first meeting. Help & Guides is not part of this flow.
 
 ## Overview
 

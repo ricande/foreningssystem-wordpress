@@ -205,6 +205,7 @@ final class AssociationSettingsPage
         echo '<li><a href="' . esc_url(self::pageUrl('foreningsplugin-retention')) . '">' . esc_html__('Retention', 'foreningsplugin') . '</a></li>';
         echo '<li><a href="' . esc_url(self::pageUrl('foreningsplugin-minutes-lock')) . '">' . esc_html__('Minutes locking', 'foreningsplugin') . '</a></li>';
         echo '<li><a href="' . esc_url(self::pageUrl('foreningsplugin-minutes-publish')) . '">' . esc_html__('Minutes publication', 'foreningsplugin') . '</a></li>';
+        echo '<li><a href="' . esc_url(self::pageUrl(SetupPage::PAGE)) . '">' . esc_html__('Run setup guide again', 'foreningsplugin') . '</a></li>';
         echo '</ul>';
         echo '</div>';
     }

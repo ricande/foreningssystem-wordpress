@@ -24,6 +24,7 @@ use Foreningssystem\Infrastructure\WordPress\WordpressDocuments;
 use Foreningssystem\Infrastructure\WordPress\WordpressMeetings;
 use Foreningssystem\Infrastructure\WordPress\WordpressMemberAccounts;
 use Foreningssystem\Infrastructure\WordPress\WordpressPeople;
+use Foreningssystem\Infrastructure\WordPress\WordpressSetupState;
 use Foreningssystem\Domain\Membership\AssociationDate;
 
 /**
@@ -78,6 +79,47 @@ function release_schema(): void
     if (Plugin::VERSION !== '0.1.0' || ! defined('FORENINGSPLUGIN_VERSION') || FORENINGSPLUGIN_VERSION !== '0.1.0') {
         \WP_CLI::error('Packaged plugin version is not 0.1.0.');
     }
+}
+
+function release_fresh_setup(): void
+{
+    $state = WordpressSetupState::instance();
+
+    if ($state->isComplete() || $state->version() !== 0) {
+        \WP_CLI::error('Fresh ZIP install must leave assoc_setup_version incomplete (0).');
+    }
+
+    if (! $state->redirectPending()) {
+        \WP_CLI::error('Fresh ZIP install must leave assoc_setup_redirect_pending set.');
+    }
+
+    if (defined('WP_CLI') && WP_CLI && $state->redirectPending()) {
+        \WP_CLI::log('WP-CLI did not consume the first-run redirect pending marker.');
+    }
+}
+
+function release_complete_setup(): void
+{
+    release_admin();
+    $profile = new AssociationProfile(
+        'Scratch Test Association',
+        '',
+        '',
+        'admin@example.test',
+        '',
+        AssociationProfile::LANGUAGE_SWEDISH,
+        null,
+        1,
+        1
+    );
+    WordpressAssociationProfile::save($profile);
+    WordpressSetupState::instance()->complete();
+
+    if (! WordpressSetupState::instance()->isComplete()) {
+        \WP_CLI::error('Could not complete setup before scratch UI smoke.');
+    }
+
+    \WP_CLI::log('setup completed for scratch UI smoke');
 }
 
 function release_tables(): void
@@ -551,12 +593,22 @@ release_blocks();
 release_translations();
 
 if (getenv('RELEASE_PHASE') === 'reactivate') {
+    if (! WordpressSetupState::instance()->isComplete()) {
+        \WP_CLI::error('Reactivation reopened completed setup.');
+    }
+
+    if (WordpressSetupState::instance()->redirectPending()) {
+        \WP_CLI::error('Completed setup gained a first-run redirect on reactivation.');
+    }
+
     release_retained();
     \WP_CLI::success('Reactivation smoke passed.');
 
     return;
 }
 
+release_fresh_setup();
+release_complete_setup();
 release_empty_pages();
 release_flow();
 \WP_CLI::success('Scratch install smoke passed.');

@@ -25,6 +25,7 @@ final class Plugin
             if (defined('WP_CLI') && WP_CLI) {
                 WordpressMigrations::migrateIfNeeded();
                 WordpressAccess::sync();
+                WordpressSetupState::adoptPreWizardIfNeeded();
             }
         }, 0);
 
@@ -41,7 +42,18 @@ final class Plugin
         WordpressMemberAccounts::register();
         add_action('template_redirect', [DocumentDownload::class, 'maybeSend']);
         add_action('admin_init', [self::class, 'migrateInAdmin']);
+        add_action('admin_init', [self::class, 'maybeRedirectToSetup']);
         add_action('admin_menu', [self::class, 'registerAdminMenu']);
+        add_action('admin_notices', [self::class, 'setupSuccessNotice']);
+        add_action('admin_post_assoc_setup_start', [SetupPage::class, 'start']);
+        add_action('admin_post_assoc_setup_back', [SetupPage::class, 'back']);
+        add_action('admin_post_assoc_setup_skip', [SetupPage::class, 'skip']);
+        add_action('admin_post_assoc_setup_save_association', [SetupPage::class, 'saveAssociation']);
+        add_action('admin_post_assoc_setup_add_board_role', [SetupPage::class, 'addBoardRole']);
+        add_action('admin_post_assoc_setup_add_meeting_type', [SetupPage::class, 'addMeetingType']);
+        add_action('admin_post_assoc_setup_save_minutes', [SetupPage::class, 'saveMinutes']);
+        add_action('admin_post_assoc_setup_save_privacy', [SetupPage::class, 'savePrivacy']);
+        add_action('admin_post_assoc_setup_finish', [SetupPage::class, 'finish']);
         add_action('admin_post_assoc_register_person', [MembersPage::class, 'registerPerson']);
         add_action('admin_post_assoc_export_members', [MembersPage::class, 'exportMembers']);
         add_action('admin_post_assoc_import_members', [MembersPage::class, 'importMembers']);
@@ -125,8 +137,8 @@ final class Plugin
 
     public static function activate(): void
     {
-        WordpressMigrations::runner()->migrate();
-        WordpressAccess::sync();
+        $schemaBefore = (new WordpressSchemaVersionStore())->current();
+        WordpressSetupState::handleActivation($schemaBefore);
     }
 
     public static function migrateInAdmin(): void
@@ -138,6 +150,7 @@ final class Plugin
         try {
             WordpressMigrations::migrateIfNeeded();
             WordpressAccess::sync();
+            WordpressSetupState::adoptPreWizardIfNeeded();
         } catch (MigrationException $error) {
             add_action('admin_notices', static function () use ($error): void {
                 printf(
@@ -148,8 +161,66 @@ final class Plugin
         }
     }
 
+    public static function maybeRedirectToSetup(): void
+    {
+        if (! WordpressSetupState::instance()->redirectPending()) {
+            return;
+        }
+
+        if (! self::isSuitableSetupRedirectRequest()) {
+            return;
+        }
+
+        if (! current_user_can(Capabilities::MANAGE_ASSOCIATION)) {
+            return;
+        }
+
+        $page = isset($_GET['page']) ? sanitize_key((string) $_GET['page']) : '';
+
+        if ($page === SetupPage::PAGE) {
+            WordpressSetupState::instance()->clearRedirectPending();
+
+            return;
+        }
+
+        WordpressSetupState::instance()->clearRedirectPending();
+        wp_safe_redirect(admin_url('admin.php?page=' . SetupPage::PAGE));
+        exit;
+    }
+
+    public static function setupSuccessNotice(): void
+    {
+        if (! current_user_can(Capabilities::MANAGE_ASSOCIATION)) {
+            return;
+        }
+
+        $page = isset($_GET['page']) ? sanitize_key((string) $_GET['page']) : '';
+
+        if ($page !== 'foreningsplugin') {
+            return;
+        }
+
+        $fromQuery = isset($_GET['assoc_notice']) && sanitize_key((string) $_GET['assoc_notice']) === 'setup_complete';
+        $fromOption = WordpressSetupState::instance()->consumeSuccessNotice();
+
+        if (! $fromQuery && ! $fromOption) {
+            return;
+        }
+
+        echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__(
+            'Association setup is complete. Next steps: add members, set up the board, and plan the first meeting.',
+            'foreningsplugin'
+        ) . '</p><ul>';
+        echo '<li><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-members')) . '">' . esc_html__('Add members', 'foreningsplugin') . '</a></li>';
+        echo '<li><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-board')) . '">' . esc_html__('Set up the board', 'foreningsplugin') . '</a></li>';
+        echo '<li><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-meetings')) . '">' . esc_html__('Plan the first meeting', 'foreningsplugin') . '</a></li>';
+        echo '</ul></div>';
+    }
+
     public static function registerAdminMenu(): void
     {
+        $complete = WordpressSetupState::instance()->isComplete();
+
         // The parent item is only the menu shell. Each page keeps its own capability.
         add_menu_page(
             __('Association', 'foreningsplugin'),
@@ -160,6 +231,20 @@ final class Plugin
             'dashicons-groups',
             26
         );
+
+        if (! $complete) {
+            remove_submenu_page('foreningsplugin', 'foreningsplugin');
+            add_submenu_page(
+                'foreningsplugin',
+                __('Get started', 'foreningsplugin'),
+                __('Get started', 'foreningsplugin'),
+                Capabilities::MANAGE_ASSOCIATION,
+                SetupPage::PAGE,
+                [SetupPage::class, 'render']
+            );
+
+            return;
+        }
 
         add_submenu_page(
             'foreningsplugin',
@@ -259,10 +344,63 @@ final class Plugin
             'foreningsplugin-minutes-publish',
             [MinutesPublishPage::class, 'render']
         );
+
+        add_submenu_page(
+            null,
+            __('Association setup', 'foreningsplugin'),
+            __('Association setup', 'foreningsplugin'),
+            Capabilities::MANAGE_ASSOCIATION,
+            SetupPage::PAGE,
+            [SetupPage::class, 'render']
+        );
     }
 
     public static function renderAdminPage(): void
     {
+        if (! WordpressSetupState::instance()->isComplete()) {
+            if (current_user_can(Capabilities::MANAGE_ASSOCIATION)) {
+                SetupPage::render();
+
+                return;
+            }
+
+            echo '<div class="wrap"><h1>' . esc_html__('Association', 'foreningsplugin') . '</h1>';
+            echo '<p>' . esc_html__('Association setup is not finished yet. An administrator with association management permission can complete Get started.', 'foreningsplugin') . '</p></div>';
+
+            return;
+        }
+
         AssociationOverviewPage::render();
+    }
+
+    private static function isSuitableSetupRedirectRequest(): bool
+    {
+        if (! is_admin() || wp_doing_ajax() || wp_doing_cron()) {
+            return false;
+        }
+
+        if (defined('WP_CLI') && WP_CLI) {
+            return false;
+        }
+
+        if (defined('REST_REQUEST') && REST_REQUEST) {
+            return false;
+        }
+
+        if (is_network_admin()) {
+            return false;
+        }
+
+        global $pagenow;
+
+        if (is_string($pagenow) && $pagenow === 'admin-post.php') {
+            return false;
+        }
+
+        if (isset($_SERVER['REQUEST_URI']) && is_string($_SERVER['REQUEST_URI']) && str_contains($_SERVER['REQUEST_URI'], 'admin-post.php')) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -1,10 +1,10 @@
 # Setup, Help, Guides and Registered-install Communications
 
-**Status:** product direction / proposal — **not implemented**, not LOCKED  
-**Context:** owner product brief captured for foundation review (2026-09-25)  
-**Implementation:** requires ADRs (and owner decisions) for open points listed here and in `OPEN_QUESTIONS.md`. Do not start coding this area as if approved.
+**Status:** mixed — **First-run Setup Wizard v1 is implemented** (see ADR-0023). Help & Guides, contextual help, and registered-install bulletins remain **proposal only**, not LOCKED.  
+**Context:** owner product brief (2026-09-25); wizard implementation approved and shipped as Wizard v1.  
+**Implementation:** Wizard only. Do not treat Help/Guides/bulletins as approved for coding.
 
-This document is the canonical home for the proposed product communications and onboarding surface. It does not replace `docs/10_ADMIN_UX.md` (current admin navigation and implemented screens) and it is **not** the same thing as the existing **association setup v1** Settings screen (board roles / meeting types). That settings work remains as documented in `PROJECT_STATE.md` and `docs/10_ADMIN_UX.md`.
+This document is the canonical home for product communications and onboarding. It does not replace `docs/10_ADMIN_UX.md` (admin navigation and implemented screens). The existing **association Settings** screen (board roles / meeting types) remains the canonical structure editor; the wizard reuses those same services.
 
 ---
 
@@ -25,17 +25,35 @@ These are already LOCKED in `AGENTS.md` / `DECISIONS.md`. This brief must fit th
 
 ---
 
-## New proposals (need decisions before coding)
+## Implemented: First-run Setup Wizard v1
 
-Everything below is **PROPOSAL** unless an ADR later locks it.
+Approved and implemented. Details in ADR-0023 and `docs/10_ADMIN_UX.md`.
 
-1. Four product surfaces treated as features, not post-hoc docs: First-run Setup Wizard, contextual help, complete handbook/guides, message center for registered installations.
-2. Versioned local setup status (e.g. `assoc_setup_version`), not a mere boolean.
-3. Optional first-activation redirect into the wizard for capable admins only.
-4. Help menu IA under Association (Swedish/English titles TBD).
-5. Optional registered-install communications: pull/poll bulletins, voluntary registration, optional consented minimal install telemetry.
-6. Cryptographic signing of bulletins (security design TBD).
-7. Whether Messages lives under Help or as top-level Association nav.
+**Flow:** Install → activate → Welcome → setup wizard → association configured → Overview → next steps (add members, set up board, plan first meeting).
+
+**Hard constraints (shipped):**
+
+- Reuses Association Profile, Settings (board roles / meeting types), minutes lock/publish, retention, and private-storage warning status. No second settings system.
+- Local options only: `assoc_setup_version` (`0`/absent incomplete, `1` = Wizard v1 done), `assoc_setup_step`, `assoc_setup_redirect_pending`. Not tied to schema (still 16).
+- Fresh install (schema absent/`0` before activation migration): setup stays incomplete; first-run redirect pending for `manage_association`.
+- Existing pre-wizard (schema `> 0`, setup option never written): adopt setup `1`, do not force wizard.
+- While incomplete: Association → Get started / Förening → Kom igång. Direct URLs keep page caps. Application services are not blocked.
+- Reopen from Settings after complete does not mark incomplete or reset data.
+
+**Wizard steps:** Welcome → Association → Membership (educational) → Board → Meetings → Minutes and documents → Privacy → Complete.
+
+Help & Guides links are **not** included in the completion next steps.
+
+---
+
+## Still proposal only (not implemented)
+
+1. Contextual help per workspace.
+2. Complete handbook / Help & Guides under Association.
+3. Message center for registered installations.
+4. Optional voluntary registration, bulletin pull/poll, signing, and consented install telemetry.
+
+Do not start coding those areas as if approved.
 
 ---
 
@@ -47,207 +65,58 @@ Användaren ska inte behöva förstå pluginets interna informationsarkitektur f
 
 Produkten ska därför innehålla fyra sammanhängande delar:
 
-1. **First-run Setup Wizard**
-2. **Kontextuell hjälp**
-3. **Komplett handbok / guider**
-4. **Meddelandecenter för registrerade installationer**
-
-Dessa ska betraktas som **produktfunktioner**, inte som dokumentation som skrivs i efterhand.
+1. **First-run Setup Wizard** — **implemented (v1)**
+2. **Kontextuell hjälp** — proposal
+3. **Komplett handbok / guider** — proposal
+4. **Meddelandecenter för registrerade installationer** — proposal
 
 ---
 
-## 1. First-run Setup Wizard
+## 2. Setup-status — versioned (implemented for v1)
 
-After first install/activation, an admin should not only meet the full Association menu without context.
+Local marker `assoc_setup_version`:
 
-**Proposed flow:**
+- `0` / absent = incomplete
+- `1` = Wizard v1 completed
 
-Install → Welcome → Setup Wizard → Configured → Overview → next steps (members, board, first meeting, handbook)
-
-**Hard constraint for any future implementation:** the wizard must reuse the same application services and data as ordinary admin pages. No separate wizard database and no parallel settings model.
-
-### Proposed wizard steps
-
-| Step | Intent |
-|---|---|
-| Welcome | Orient; what the plugin is for |
-| Föreningen | Association profile basics |
-| Medlemskap | Membership types; Person vs Membership (and vs `wp_user` where relevant) |
-| Styrelsen | Roles; not required to fill the entire board in the wizard |
-| Möten | Meeting types / how meetings work in the product |
-| Protokoll och dokument | Minutes and documents at a product level |
-| Integritet | Privacy posture in the product — **not legal advice** |
-| Klart | Completion; point to Overview and handbook next steps |
-
-Exact step list, copy, and which fields are required remain OPEN pending ADR / UX design.
+Core does not depend on an external server for setup status. Future wizard revisions may increment the version; semantics for upgrades beyond v1 remain for a later ADR.
 
 ---
 
-## 2. Setup-status — versioned
+## 3. First activation (implemented)
 
-Proposed local marker, e.g. `assoc_setup_version = 1` (integer / versioned), **not** a mere boolean.
-
-- Allows future wizard revisions without treating every install as “done forever” incorrectly.
-- **Core must not depend on an external server** for setup status. Status is local to the WordPress installation.
-
-Semantics of the version number (what “1” means, when it increments, migration of incomplete setups) are OPEN — see `OPEN_QUESTIONS.md`.
-
----
-
-## 3. First activation
-
-Proposed behavior:
-
-- A capable admin **may** be redirected to the wizard after first activation.
-- No redirect loops.
-- No redirect for unauthorized users.
+- A user with `manage_association` may be redirected once after genuine fresh activation.
+- No redirect loops; unauthorized users do not consume the pending marker.
+- No redirect for WP-CLI, AJAX, cron, REST, admin-post, or network admin.
+- No redirect if migration failed.
 - Never force the wizard after setup is complete for the current setup version.
 
-Exact capability gate and “first activation” detection remain OPEN.
-
 ---
 
-## 4. Help system
+## 4–6. Help system, guide areas, integrations posture
 
-Proposed:
-
-- **Contextual help** per workspace (Members, Board, Meetings, …), discrete and non-intrusive.
-- **Complete handbook** under Association → Help & Guides (Swedish title TBD, e.g. Hjälp och guider).
-- No aggressive popups or nags.
-
-Relation to WordPress Screen Options / Help tabs vs custom Association UI is OPEN.
-
----
-
-## 5. Guide areas
-
-Proposed handbook areas (detailed outlines to be authored later; substance is product guidance, not API docs):
-
-| Area | Examples of coverage |
-|---|---|
-| Kom igång | Install, wizard, first Overview, first next steps |
-| Medlemmar | Person, membership kinds, periods, accounts linkage |
-| Styrelsen | Roles, assignments, history, replacement without destroying history |
-| Möten | Prepare → meet → record → decide → finalize |
-| Beslut / uppgifter | Cross-meeting follow-up vs meeting as source of truth |
-| Dokument | Private files, visibility, minutes PDF / signed copy |
-| Integritet | Export/erase posture, retention settings, what the product does *not* claim legally |
-| Integrationer | Adapters, ownership, what not to dual-write |
-
-Sub-page IA and authoring ownership are OPEN.
-
----
-
-## 6. Integrations architecture (guide + product posture)
-
-Proposed product posture for integrations (guides must teach this):
-
-- Prefer **adapters** over rebuilding unrelated systems.
-- Be explicit about **data ownership** and the master record.
-- Avoid two-way sync without a clear master.
-- Integration guides must answer ownership questions before suggesting a connector.
-
-This aligns with locked “prefer integration over rebuilding” and “one source of truth” without locking a specific adapter catalog.
+Unchanged proposals. See earlier sections in git history / product review notes. **Not implemented.**
 
 ---
 
 ## 7–22. Registered-install Communications
 
-Separate from WordPress plugin updates. This is a **message center** for product news, security notices, and similar communications to **voluntarily registered** installations.
-
-### 7. Purpose
-
-Product communications for registered installs — not a substitute for `update_plugins` / wordpress.org update checks.
-
-### 8. Transport model
-
-- **Pull / poll**, not inbound push into the site.
-- Infrequent check (proposed order of magnitude: every 12 hours or daily).
-- Prefer WP-Cron for scheduling.
-- Cache results locally.
-- **Fail-open for core:** if the bulletin service is unreachable, misconfigured, or refused, association administration continues normally.
-
-### 9. Payload
-
-- Declarative **JSON bulletins only**.
-- **Never** executable code in bulletins.
-- Strict validation before accept.
-- Escaped render in admin UI (treat bulletin content as untrusted until validated/signed per future security design).
-
-### 10. Targeting and identity
-
-- Local targeting rules (e.g. by plugin version / locale) evaluated on the install.
-- **Voluntary registration** only.
-- Random `installation_id` (opaque install identifier).
-- **No member / person data** in registration or poll requests.
-- Minimal install telemetry **only with consent** — and only if a future decision allows a narrow, documented payload that still satisfies locked “no secret telemetry”.
-
-### 11. Message types and UI
-
-- Typed messages (product news, security, deprecation, etc. — exact enum OPEN).
-- Admin notice reserved for **critical** items; ordinary messages stay in the message center.
-- Outdated-version detection is **separate** from bulletin content (local version comparison vs known current — exact mechanism OPEN).
-
-### 12. Trust and signing
-
-- Cryptographic signing of bulletins is **TBD** as a separate security design / ADR.
-- If signing is adopted: **fail-closed** for invalid or unsigned bulletins (do not display them as trusted).
-- Unsigned/optional mode vs mandatory signed mode is OPEN.
-
-### 13. Privacy and unregister
-
-- Clear privacy explanation for what registration sends (and what it never sends).
-- Clear path to unregister / stop polling.
-- Registration must never be required for core features, guides, or wizard completion.
-
-### 14. Guides linkage
-
-Bulletins may link to **version-matched** handbook pages where practical, so advice matches the installed plugin version.
-
-### 15. Product principle lifecycle
-
-This area must preserve the lifecycle of locked principles: useful offline base product, optional central communications, **no mandatory central SaaS**.
-
-### Explicit non-goals for this proposal
-
-- Mandatory registration
-- Push servers that require inbound connectivity to the association site
-- Executable remote code or remote configuration that changes domain data
-- Sending member, person, or membership payloads
-- Framing optional poll as required “telemetry product analytics”
+Unchanged proposals. Pull/poll bulletins, voluntary registration, signing, and telemetry remain **proposal only**. Explicit non-goals (mandatory registration, push servers, executable remote code, member payloads, secret telemetry) still apply.
 
 ---
 
 ## Relation to current implementation
 
-| Existing | This proposal |
+| Existing | This document |
 |---|---|
-| Association Settings (roles / meeting types) — setup v1 | Different: structural settings, not first-run wizard |
-| Overview empty-state setup links | May complement wizard; not a substitute for the proposed wizard |
+| Association Settings (roles / meeting types) | Canonical structure editor; wizard reuses it |
+| First-run Setup Wizard v1 | **Implemented** (ADR-0023) |
+| Overview empty-state setup links | Complement wizard after completion |
 | WordPress plugin update checks | Separate from registered-install bulletins |
-| Handbook / Help & Guides / Message center | **Not implemented** |
+| Handbook / Help & Guides / Message center | **Not implemented** (still proposal) |
 
 ---
 
-## Open questions before coding
+## Open questions (Help / bulletins only)
 
-Durable items are also listed in `OPEN_QUESTIONS.md`. Do not invent answers here.
-
-1. Bulletin signing model (keys, rotation, fail-closed rules).
-2. Telemetry consent UX (what is asked, defaults, how consent is stored and revoked).
-3. Registration service ownership and hosting (who runs it; how open-source installs point at it; offline default).
-4. `assoc_setup_version` semantics (increments, incomplete setups, upgrades).
-5. Help menu information architecture (Swedish/English labels; Screen Help vs custom pages).
-6. Whether Messages sits under Help or as top-level Association navigation.
-7. Capability gates for wizard redirect, handbook, and message center.
-8. Exact bulletin JSON schema and allowed HTML/Markdown subset for rendering.
-9. Poll interval, backoff, and interaction with disabled WP-Cron.
-10. How outdated-version detection relates to wordpress.org / manual updates without duplicating or fighting core update UI.
-
----
-
-## Decision and ADR expectation
-
-- Do **not** mark this document LOCKED.
-- Before implementation: record ADRs for transport/trust (bulletins), registration/privacy, and setup-version semantics at minimum.
-- Until then: treat this file as owner direction for product design review.
+Q38–Q39 are resolved by ADR-0023. Remaining open items for Help/Guides/bulletins are Q40–Q45 in `OPEN_QUESTIONS.md`.

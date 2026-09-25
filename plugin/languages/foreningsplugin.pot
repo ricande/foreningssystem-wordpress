@@ -1693,3 +1693,132 @@ msgstr ""
 #: src/Infrastructure/WordPress/WordpressPrivacy.php:312
 msgid "Known"
 msgstr ""
+
+msgid "Get started"
+msgstr ""
+
+msgid "Welcome"
+msgstr ""
+
+msgid "Association setup"
+msgstr ""
+
+msgid "Start setup"
+msgstr ""
+
+msgid "Save and continue"
+msgstr ""
+
+msgid "Continue"
+msgstr ""
+
+msgid "Skip"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Finish setup"
+msgstr ""
+
+msgid "Complete"
+msgstr ""
+
+msgid "Step %1$d of %2$d"
+msgstr ""
+
+msgid "Run setup guide again"
+msgstr ""
+
+msgid "Minutes and documents"
+msgstr ""
+
+msgid "Privacy"
+msgstr ""
+
+msgid "Association setup is complete. Next steps: add members, set up the board, and plan the first meeting."
+msgstr ""
+
+msgid "Add members"
+msgstr ""
+
+msgid "Set up the board"
+msgstr ""
+
+msgid "Plan the first meeting"
+msgstr ""
+
+msgid "Association setup is not finished yet. An administrator with association management permission can complete Get started."
+msgstr ""
+
+msgid "This guide helps you configure the association structure: profile, membership kinds, board roles, meeting types, minutes permissions, and retention. It does not add members, board assignments, meetings, documents, decisions, or tasks."
+msgstr ""
+
+msgid "You can leave and return later from Association → Get started."
+msgstr ""
+
+msgid "The association's name, contact details, and when the membership year starts. The name is required to continue."
+msgstr ""
+
+msgid "The product supports ordinary, youth, family, and company memberships. A Person is not the same as a Membership, and neither is the same as a WordPress account."
+msgstr ""
+
+msgid "Ordinary — an individual adult membership."
+msgstr ""
+
+msgid "Youth — an individual membership for a younger person."
+msgstr ""
+
+msgid "Family — several people on one membership."
+msgstr ""
+
+msgid "Company — an organization membership, not a person."
+msgstr ""
+
+msgid "This step does not create members and does not turn kinds on or off."
+msgstr ""
+
+msgid "Board roles describe the structure. You do not assign people here. Built-in roles keep their meaning. You may add a custom role."
+msgstr ""
+
+msgid "Meeting types describe how the association meets. You do not create meetings here. Built-in types keep their meaning. You may add a custom type."
+msgstr ""
+
+msgid "Choose which association roles may finalize minutes and which may publish them. Document files stay private; downloads check authorization."
+msgstr ""
+
+msgid "Finalize minutes"
+msgstr ""
+
+msgid "Contact details are anonymized this many years after the membership has ended. Audit events are removed after the same time. Locked minutes and signed scans are kept. This is not legal advice. Personal identity numbers are never public output."
+msgstr ""
+
+msgid "Saving here only stores the retention setting. It does not apply erasure now."
+msgstr ""
+
+msgid "Review the association setup, then finish. Finishing requires a non-empty association name."
+msgstr ""
+
+msgid "(missing)"
+msgstr ""
+
+msgid "years"
+msgstr ""
+
+msgid "Enter the association name on the Association step before finishing."
+msgstr ""
+
+msgid "You do not have permission to run association setup."
+msgstr ""
+
+msgid "The association profile could not be saved. Check the fields and enter a name."
+msgstr ""
+
+msgid "The minutes permissions could not be saved."
+msgstr ""
+
+msgid "Retention must be between 1 and 100 years."
+msgstr ""
+
+msgid "Enter the association name before finishing setup."
+msgstr ""

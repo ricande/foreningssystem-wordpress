@@ -6,8 +6,50 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "Page %1$d / %2$d"
-msgstr "Sida %1$d / %2$d"
+msgid "%1$s assignment now ends %2$s."
+msgstr "Uppdraget som %1$s slutar nu %2$s."
+
+msgid "%1$s changes to %2$s on %3$s."
+msgstr "%1$s byts till %2$s den %3$s."
+
+msgid "%1$s's assignment will end %2$s. %3$s's assignment will begin %4$s. The previous assignment remains in history."
+msgstr "Uppdraget för %1$s slutar %2$s. Uppdraget för %3$s börjar %4$s. Det tidigare uppdraget finns kvar i historiken."
+
+msgid "%s assignment remains active because the person has continuous membership coverage."
+msgstr "Uppdraget som %s är fortsatt aktivt eftersom personen har sammanhängande medlemstäckning."
+
+msgid "%s is the current holder. If the new start date falls inside this assignment, it ends the day before. A later start leaves the current end date unchanged. The earlier assignment remains in history."
+msgstr "%s är nuvarande innehavare. Om det nya startdatumet ligger inom det här uppdraget slutar det dagen innan. Ett senare startdatum lämnar det nuvarande slutdatumet oförändrat. Det tidigare uppdraget finns kvar i historiken."
+
+msgid "%s is the current holder. The new assignment starts on the date you choose, and this assignment ends the day before. The previous assignment remains in history."
+msgstr "%s är nuvarande innehavare. Det nya uppdraget börjar det datum du väljer, och det här uppdraget slutar dagen innan. Det tidigare uppdraget finns kvar i historiken."
+
+msgid "%s – present"
+msgstr "%s – pågår"
+
+msgid "(missing)"
+msgstr "(saknas)"
+
+msgid "A board assignment now ends %s."
+msgstr "Ett styrelseuppdrag slutar nu %s."
+
+msgid "A board role with that name already exists."
+msgstr "En styrelseroll med det namnet finns redan."
+
+msgid "A built-in board role keeps its name and holder rule."
+msgstr "En inbyggd styrelseroll behåller sitt namn och sin innehavarregel."
+
+msgid "A built-in meeting type keeps its name."
+msgstr "En inbyggd mötestyp behåller sitt namn."
+
+msgid "A company contact is not an individual member."
+msgstr "En företagskontakt är inte en enskild medlem."
+
+msgid "A company contact is not an individual member. You can add contacts after the membership is saved."
+msgstr "En företagskontakt är inte en enskild medlem. Du kan lägga till kontakter efter att medlemskapet har sparats."
+
+msgid "A deceased person cannot be added to a meeting."
+msgstr "En avliden person kan inte läggas till på ett möte."
 
 msgid "A deceased person cannot have an open assignment."
 msgstr "En avliden person kan inte ha ett öppet uppdrag."
@@ -15,41 +57,161 @@ msgstr "En avliden person kan inte ha ett öppet uppdrag."
 msgid "A deceased person cannot receive a new membership period."
 msgstr "En avliden person kan inte få en ny medlemsperiod."
 
+msgid "A family membership is one membership shared by the people who take part. Add the primary contact here, then add the other participants."
+msgstr "Ett familjemedlemskap är ett medlemskap som delas av personerna som ingår. Lägg till den primära kontakten här och lägg sedan till de andra deltagarna."
+
+msgid "A family participant is a member."
+msgstr "En familjedeltagare är en medlem."
+
+msgid "A future %s is already scheduled:"
+msgstr "En framtida %s är redan planerad:"
+
+msgid "A held meeting is not finalized minutes. The draft is a copy of the meeting, attendance, agenda, notes marked for inclusion, decisions, and tasks."
+msgstr "Ett hållet möte är inte ett justerat protokoll. Utkastet är en kopia av mötet, närvaron, dagordningen, anteckningar som ska tas med, beslut och uppgifter."
+
 msgid "A held meeting is not minutes. Notes are working material until minutes are created."
 msgstr "Ett hållet möte är inte ett protokoll. Anteckningar är arbetsmaterial tills ett protokoll skapas."
+
+msgid "A meeting type with that name already exists."
+msgstr "En mötestyp med det namnet finns redan."
+
+msgid "A member account can be created for this person."
+msgstr "Ett medlemskonto kan skapas för den här personen."
 
 msgid "A new membership period is saved. The earlier period remains."
 msgstr "En ny medlemsperiod är sparad. Den tidigare perioden finns kvar."
 
+msgid "A personal identity number is not required. Guardian approval is not required just because a person is under 18. The association can record a guardian and an approval where it needs that record."
+msgstr "Ett personnummer krävs inte. Vårdnadshavargodkännande krävs inte bara för att en person är under 18. Föreningen kan registrera en vårdnadshavare och ett godkännande när den behöver den posten."
+
 msgid "A signed copy can be attached only to a locked revision."
 msgstr "En signerad kopia kan bara knytas till en låst revision."
+
+msgid "A signed copy is stored."
+msgstr "En signerad kopia finns lagrad."
 
 msgid "A task is something to be done, not a decision. Marking it done does not change the text."
 msgstr "En uppgift är något som ska göras, inte ett beslut. Att markera den som klar ändrar inte texten."
 
+msgid "A task is something to be done. It is not the same as a decision."
+msgstr "En uppgift är något som ska göras. Den är inte samma sak som ett beslut."
+
 msgid "A template is a list of headings. It is copied in when the meeting is created. A later change to the template does not change the meeting, and the template does not contain a ready-made annual-meeting agenda."
 msgstr "En mall är en lista med rubriker. Den kopieras in när mötet skapas. En senare ändring av mallen ändrar inte mötet, och mallen innehåller ingen färdig årsmötesdagordning."
+
+msgid "A WordPress account already uses this email."
+msgstr "Ett WordPress-konto använder redan den här e-postadressen."
+
+msgid "A working note stays with the meeting. Only a note marked for inclusion is copied into the minutes draft."
+msgstr "En arbetsanteckning stannar vid mötet. Bara en anteckning som ska tas med kopieras in i protokollsutkastet."
+
+msgid "A youth membership needs a birth date on the person. Add that date on the person first. A personal identity number is not used to fill it in."
+msgstr "Ett ungdomsmedlemskap behöver ett födelsedatum på personen. Lägg till datumet på personen först. Ett personnummer används inte för att fylla i det."
 
 msgid "Absent"
 msgstr "Frånvarande"
 
+msgid "Account email"
+msgstr "Kontots e-post"
+
 msgid "Action"
 msgstr "Åtgärd"
+
+msgid "Actions"
+msgstr "Åtgärder"
 
 msgid "Active"
 msgstr "Aktiv"
 
+msgid "Active individual members: %d"
+msgstr "Aktiva enskilda medlemmar: %d"
+
+msgid "active member"
+msgstr "aktiv medlem"
+
 msgid "Active members: %d"
 msgstr "Aktiva medlemmar: %d"
+
+msgid "Active memberships: %d"
+msgstr "Aktiva medlemskap: %d"
+
+msgid "Add a birth date before starting a youth membership."
+msgstr "Lägg till ett födelsedatum innan du startar ett ungdomsmedlemskap."
+
+msgid "Add assignment"
+msgstr "Lägg till uppdrag"
+
+msgid "Add board role"
+msgstr "Lägg till styrelseroll"
+
+msgid "Add company contact"
+msgstr "Lägg till företagskontakt"
+
+msgid "Add company membership"
+msgstr "Lägg till företagsmedlemskap"
+
+msgid "Add decision"
+msgstr "Lägg till beslut"
+
+msgid "Add family membership"
+msgstr "Lägg till familjemedlemskap"
+
+msgid "Add family participant"
+msgstr "Lägg till familjedeltagare"
+
+msgid "Add guardian"
+msgstr "Lägg till vårdnadshavare"
 
 msgid "Add heading"
 msgstr "Lägg till rubrik"
 
+msgid "Add holder"
+msgstr "Lägg till innehavare"
+
+msgid "Add holder: %s"
+msgstr "Lägg till innehavare: %s"
+
+msgid "Add important documents"
+msgstr "Lägg till viktiga dokument"
+
 msgid "Add item"
 msgstr "Lägg till punkt"
 
+msgid "Add meeting type"
+msgstr "Lägg till mötestyp"
+
+msgid "Add member"
+msgstr "Lägg till medlem"
+
+msgid "Add members"
+msgstr "Lägg till medlemmar"
+
+msgid "Add membership for this person"
+msgstr "Lägg till medlemskap för den här personen"
+
+msgid "Add note"
+msgstr "Lägg till anteckning"
+
+msgid "Add ordinary member"
+msgstr "Lägg till ordinarie medlem"
+
 msgid "Add participant"
 msgstr "Lägg till deltagare"
+
+msgid "Add role"
+msgstr "Lägg till roll"
+
+msgid "Add task"
+msgstr "Lägg till uppgift"
+
+msgid "Add the association name and details."
+msgstr "Lägg till föreningens namn och uppgifter."
+
+msgid "Add the first board assignment."
+msgstr "Lägg till det första styrelseuppdraget."
+
+msgid "Add youth member"
+msgstr "Lägg till ungdomsmedlem"
 
 msgid "Address"
 msgstr "Adress"
@@ -66,8 +228,23 @@ msgstr "Administratör"
 msgid "Agenda"
 msgstr "Dagordning"
 
+msgid "Agenda item unavailable"
+msgstr "Dagordningspunkten är inte tillgänglig"
+
+msgid "All"
+msgstr "Alla"
+
 msgid "All meetings"
 msgstr "Alla möten"
+
+msgid "All states"
+msgstr "Alla statusar"
+
+msgid "All types"
+msgstr "Alla typer"
+
+msgid "Allow several people to hold this role at the same time"
+msgstr "Tillåt att flera personer har rollen samtidigt"
 
 msgid "Alternate"
 msgstr "Suppleant"
@@ -75,11 +252,17 @@ msgstr "Suppleant"
 msgid "An adjunct person does not have to be a member. The list shows names, not private email."
 msgstr "En adjungerad person behöver inte vara medlem. Listan visar namn, inte privat e-post."
 
+msgid "An approval record says what the association recorded. It does not prove that the approval was legally valid."
+msgstr "En godkännandepost beskriver vad föreningen har registrerat. Den bevisar inte att godkännandet var juridiskt giltigt."
+
 msgid "An assignment requires a membership that covers the whole period. The auditor and the election committee follow the same rule. A closed row is not deleted."
 msgstr "Ett uppdrag kräver ett medlemskap som täcker hela perioden. Revisor och valberedning följer samma regel. En avslutad rad tas inte bort."
 
 msgid "An open board assignment does not fit the date, so nothing changed."
 msgstr "Ett öppet styrelseuppdrag passar inte datumet, så inget ändrades."
+
+msgid "An ordinary or youth membership has one member."
+msgstr "Ett ordinarie medlemskap eller ungdomsmedlemskap har en medlem."
 
 msgid "Annual meeting"
 msgstr "Årsmöte"
@@ -87,8 +270,17 @@ msgstr "Årsmöte"
 msgid "Apply now"
 msgstr "Tillämpa nu"
 
+msgid "Approval date"
+msgstr "Godkännandedatum"
+
 msgid "April"
 msgstr "april"
+
+msgid "Assignee"
+msgstr "Ansvarig för uppgiften"
+
+msgid "Assignee: %s"
+msgstr "Ansvarig: %s"
 
 msgid "Assignment"
 msgstr "Uppdrag"
@@ -102,6 +294,24 @@ msgstr "Förening"
 msgid "Association plugin"
 msgstr "Föreningsplugin"
 
+msgid "Association profile"
+msgstr "Föreningsprofil"
+
+msgid "Association settings"
+msgstr "Föreningsinställningar"
+
+msgid "Association setup"
+msgstr "Föreningsguiden"
+
+msgid "Association setup is complete. Next steps: add members, set up the board, and plan the first meeting."
+msgstr "Föreningsguiden är klar. Nästa steg: lägg till medlemmar, sätt upp styrelsen och planera första mötet."
+
+msgid "Association setup is not finished yet. An administrator with association management permission can complete Get started."
+msgstr "Föreningsguiden är inte klar ännu. En administratör med behörighet att hantera föreningen kan slutföra Kom igång."
+
+msgid "At a glance"
+msgstr "I korthet"
+
 msgid "Attendance"
 msgstr "Närvaro"
 
@@ -111,11 +321,32 @@ msgstr "Revisor"
 msgid "August"
 msgstr "augusti"
 
+msgid "Back"
+msgstr "Tillbaka"
+
+msgid "Back to members"
+msgstr "Tillbaka till medlemmar"
+
+msgid "Basis note"
+msgstr "Grund"
+
+msgid "Birth date"
+msgstr "Födelsedatum"
+
+msgid "Birth date: Not recorded"
+msgstr "Födelsedatum: inte registrerat"
+
+msgid "Birth date: Recorded"
+msgstr "Födelsedatum: registrerat"
+
 msgid "Board"
 msgstr "Styrelse"
 
 msgid "Board assignment"
 msgstr "Styrelseuppdrag"
+
+msgid "Board assignment remains active because the person has continuous membership coverage."
+msgstr "Styrelseuppdraget är fortsatt aktivt eftersom personen har sammanhängande medlemstäckning."
 
 msgid "Board assignments today: %d"
 msgstr "Styrelseuppdrag idag: %d"
@@ -126,14 +357,47 @@ msgstr "Styrelsemöte"
 msgid "Board member"
 msgstr "Styrelseledamot"
 
+msgid "Board roles"
+msgstr "Styrelseroller"
+
+msgid "Board roles and meeting types describe how this association organizes its work. Built-in entries keep their system meaning. Add a custom entry when the association needs another one."
+msgstr "Styrelseroller och mötestyper beskriver hur föreningen organiserar sitt arbete. Inbyggda poster behåller sin systembetydelse. Lägg till en egen post när föreningen behöver en annan."
+
+msgid "Board roles describe the structure. You do not assign people here. Built-in roles keep their meaning. You may add a custom role."
+msgstr "Styrelseroller beskriver strukturen. Du tilldelar inte personer här. Inbyggda roller behåller sin betydelse. Du kan lägga till en egen roll."
+
+msgid "Cancel %1$s's scheduled %2$s assignment starting %3$s? This assignment has not started and will not be kept as board history."
+msgstr "Avbryt det planerade uppdraget som %2$s för %1$s med start %3$s? Uppdraget har inte börjat och sparas inte som styrelsehistorik."
+
+msgid "Cancel scheduled assignment"
+msgstr "Avbryt planerat uppdrag"
+
+msgid "Cancel this scheduled assignment"
+msgstr "Avbryt det här planerade uppdraget"
+
 msgid "Chair"
 msgstr "Ordförande"
+
+msgid "Change board"
+msgstr "Ändra styrelsen"
 
 msgid "Check the details and try again."
 msgstr "Kontrollera uppgifterna och försök igen."
 
 msgid "Check the title, the visibility, and that the file is a PDF, JPEG, or PNG."
 msgstr "Kontrollera titel, synlighet och att filen är en PDF, JPEG eller PNG."
+
+msgid "Checked for format and checksum only, including coordination numbers. Not checked against an external register."
+msgstr "Kontrolleras bara till form och kontrollsiffra, inklusive samordningsnummer. Slås inte upp i ett externt register."
+
+msgid "Checked for format and checksum only, including coordination numbers. Not checked against an external register. Not stored encrypted."
+msgstr "Kontrolleras bara för format och kontrollsiffra, även samordningsnummer. Kontrolleras inte mot ett externt register. Lagras inte krypterat."
+
+msgid "Choose an existing person, or leave that choice empty and enter a new person. The plugin does not merge people automatically."
+msgstr "Välj en befintlig person, eller lämna valet tomt och ange en ny person. Pluginet slår inte ihop personer automatiskt."
+
+msgid "Choose an existing person."
+msgstr "Välj en befintlig person."
 
 msgid "Choose image"
 msgstr "Välj bild"
@@ -147,17 +411,116 @@ msgstr "Välj roll"
 msgid "Choose type"
 msgstr "Välj typ"
 
+msgid "Choose which association roles may finalize minutes and which may publish them. Document files stay private; downloads check authorization."
+msgstr "Välj vilka föreningsroller som får justera protokoll och vilka som får publicera dem. Dokumentfiler förblir privata; nedladdningar kontrollerar behörighet."
+
+msgid "Choosing a person here is explicit. People are not merged because they share an email address."
+msgstr "Att välja en person här är ett aktivt val. Personer slås inte ihop för att de har samma e-postadress."
+
+msgid "Clear broken account link"
+msgstr "Rensa trasig kontokoppling"
+
+msgid "Clear filters"
+msgstr "Rensa filter"
+
+msgid "Clear the broken WordPress account link? This only removes the missing account reference from the member record. It does not create a new account."
+msgstr "Rensa den trasiga WordPress-kontokopplingen? Det tar bara bort den saknade kontoreferensen från medlemsregistret. Det skapar inget nytt konto."
+
+msgid "Collected"
+msgstr "Inhämtat"
+
+msgid "Company"
+msgstr "Företag"
+
+msgid "Company contact"
+msgstr "Företagskontakt"
+
+msgid "Company contacts are not individual members."
+msgstr "Företagskontakter är inte enskilda medlemmar."
+
+msgid "Company contacts can only be added to company memberships."
+msgstr "Företagskontakter kan bara läggas till på företagsmedlemskap."
+
+msgid "Company membership"
+msgstr "Företagsmedlemskap"
+
+msgid "Company — an organization membership, not a person."
+msgstr "Företag — ett organisationsmedlemskap, inte en person."
+
+msgid "Complete"
+msgstr "Klart"
+
+msgid "Confirm before cancelling the scheduled assignment."
+msgstr "Bekräfta innan det planerade uppdraget avbryts."
+
+msgid "Confirm before finalizing the revision."
+msgstr "Bekräfta innan revisionen låses."
+
+msgid "Confirm before marking the meeting as held. Notes, decisions and tasks remain available for minutes preparation."
+msgstr "Bekräfta innan mötet markeras som hållet. Anteckningar, beslut och uppgifter finns kvar för protokollsarbetet."
+
+msgid "Confirm before removing that record."
+msgstr "Bekräfta innan posten tas bort."
+
+msgid "Confirm the action before it is saved."
+msgstr "Bekräfta åtgärden innan den sparas."
+
+msgid "Confirm the end date before ending the assignment."
+msgstr "Bekräfta slutdatumet innan uppdraget avslutas."
+
+msgid "Confirm the WordPress account before linking it."
+msgstr "Bekräfta WordPress-kontot innan det kopplas."
+
 msgid "Confirm whether the edited text should be replaced."
 msgstr "Bekräfta om den ändrade texten ska ersättas."
+
+msgid "Contact details"
+msgstr "Kontaktuppgifter"
 
 msgid "Contact details are anonymized this many years after the membership has ended. Audit events are removed after the same time. Locked minutes and signed scans are kept."
 msgstr "Kontaktuppgifter avidentifieras det här antalet år efter att medlemskapet har avslutats. Granskningshändelser tas bort efter samma tid. Låsta protokoll och signerade skanningar behålls."
 
+msgid "Contact details are anonymized this many years after the membership has ended. Audit events are removed after the same time. Locked minutes and signed scans are kept. This is not legal advice. Personal identity numbers are never public output."
+msgstr "Kontaktuppgifter anonymiseras så här många år efter att medlemskapet avslutats. Händelseloggar tas bort efter samma tid. Låsta protokoll och signerade skanningar sparas. Detta är inte juridisk rådgivning. Personnummer visas aldrig publikt."
+
+msgid "Contact email"
+msgstr "Kontakt-e-post"
+
+msgid "Contact the association if your information needs to be corrected."
+msgstr "Kontakta föreningen om uppgifterna behöver rättas."
+
+msgid "Contacts"
+msgstr "Kontakter"
+
+msgid "Context"
+msgstr "Sammanhang"
+
+msgid "Continue"
+msgstr "Fortsätt"
+
+msgid "Continue meeting"
+msgstr "Fortsätt mötet"
+
+msgid "Correction of revision %d"
+msgstr "Rättelse av revision %d"
+
 msgid "Create correction"
 msgstr "Skapa rättelse"
 
+msgid "Create correction revision"
+msgstr "Skapa rättelserevision"
+
+msgid "Create member account now"
+msgstr "Skapa medlemskonto nu"
+
 msgid "Create minutes draft"
 msgstr "Skapa protokollutkast"
+
+msgid "Create the association's first meeting."
+msgstr "Skapa föreningens första möte."
+
+msgid "Create the minutes draft after the meeting is marked as held."
+msgstr "Skapa protokollsutkastet när mötet har markerats som hållet."
 
 msgid "Current board"
 msgstr "Aktuell styrelse"
@@ -165,20 +528,44 @@ msgstr "Aktuell styrelse"
 msgid "Current membership year: %1$s–%2$s"
 msgstr "Pågående verksamhetsår: %1$s–%2$s"
 
+msgid "Currently an individual member."
+msgstr "Är enskild medlem just nu."
+
 msgid "Date"
+msgstr "Datum"
+
+msgid "Dates"
 msgstr "Datum"
 
 msgid "Day"
 msgstr "Dag"
 
+msgid "Deadline"
+msgstr "Deadline"
+
 msgid "Deceased"
 msgstr "Avliden"
+
+msgid "deceased"
+msgstr "avliden"
 
 msgid "December"
 msgstr "december"
 
 msgid "Decision"
 msgstr "Beslut"
+
+msgid "Decisions"
+msgstr "Beslut"
+
+msgid "Decisions and tasks"
+msgstr "Beslut och uppgifter"
+
+msgid "Decisions are added from a meeting workspace."
+msgstr "Beslut läggs till från ett mötes arbetsyta."
+
+msgid "Decisions are recorded in meetings. Follow-up status can change without changing finalized minutes."
+msgstr "Beslut antecknas i möten. Uppföljningsstatus kan ändras utan att ett justerat protokoll ändras."
 
 msgid "Document archive"
 msgstr "Dokumentarkiv"
@@ -188,6 +575,9 @@ msgstr "Dokument"
 
 msgid "Done"
 msgstr "Klar"
+
+msgid "Done: %d"
+msgstr "Klara: %d"
 
 msgid "Dormant"
 msgstr "Vilande"
@@ -207,8 +597,20 @@ msgstr "Hämta signerad kopia"
 msgid "Draft"
 msgstr "Utkast"
 
+msgid "Due date"
+msgstr "Förfallodag"
+
+msgid "Due date: %s"
+msgstr "Senast: %s"
+
 msgid "Duty"
 msgstr "Funktion"
+
+msgid "Edit %s"
+msgstr "Redigera %s"
+
+msgid "Edit meeting details"
+msgstr "Redigera mötesuppgifter"
 
 msgid "Election committee"
 msgstr "Valberedning"
@@ -219,14 +621,38 @@ msgstr "E-post"
 msgid "End"
 msgstr "Slut"
 
+msgid "End %1$s's %2$s assignment on %3$s? The historical assignment will remain."
+msgstr "Avsluta uppdraget som %2$s för %1$s den %3$s? Det historiska uppdraget finns kvar."
+
+msgid "End %1$s's %2$s assignment on the date below? The historical assignment will remain."
+msgstr "Avsluta uppdraget som %2$s för %1$s på datumet nedan? Det historiska uppdraget finns kvar."
+
 msgid "End assignment"
 msgstr "Avsluta uppdrag"
 
 msgid "End date"
 msgstr "Slutdatum"
 
+msgid "End guardian relationship"
+msgstr "Avsluta vårdnadshavarrelation"
+
 msgid "End membership"
 msgstr "Avsluta medlemskap"
+
+msgid "End membership on this date? Membership history is retained. Current board assignments may be shortened if no other membership coverage remains."
+msgstr "Avsluta medlemskapet det här datumet? Medlemshistoriken behålls. Pågående styrelseuppdrag kan kortas om inget annat medlemskap täcker dem."
+
+msgid "End participation"
+msgstr "Avsluta deltagande"
+
+msgid "End this assignment"
+msgstr "Avsluta det här uppdraget"
+
+msgid "End this guardian relationship? The earlier record remains."
+msgstr "Avsluta den här vårdnadshavarrelationen? Den tidigare posten finns kvar."
+
+msgid "End this participation? Earlier participation history is retained. A board assignment may be shortened if no other membership coverage remains."
+msgstr "Avsluta det här deltagandet? Tidigare deltagarhistorik behålls. Ett styrelseuppdrag kan kortas om inget annat medlemskap täcker personen."
 
 msgid "Ended"
 msgstr "Avslutad"
@@ -234,8 +660,32 @@ msgstr "Avslutad"
 msgid "English"
 msgstr "Engelska"
 
+msgid "Enter a board role name."
+msgstr "Ange ett namn på styrelserollen."
+
+msgid "Enter a meeting type name."
+msgstr "Ange ett namn på mötestypen."
+
 msgid "Enter a number of years between 1 and 100."
 msgstr "Ange ett antal år mellan 1 och 100."
+
+msgid "Enter the association name before finishing setup."
+msgstr "Ange föreningens namn innan du avslutar guiden."
+
+msgid "Enter the association name on the Association step before finishing."
+msgstr "Ange föreningens namn i steget Föreningen innan du avslutar."
+
+msgid "Existing account"
+msgstr "Befintligt konto"
+
+msgid "Existing guardian"
+msgstr "Befintlig vårdnadshavare"
+
+msgid "Existing holders of this role stay in place."
+msgstr "Befintliga innehavare av den här rollen är kvar."
+
+msgid "Existing person"
+msgstr "Befintlig person"
 
 msgid "Export"
 msgstr "Exportera"
@@ -243,20 +693,113 @@ msgstr "Exportera"
 msgid "Export members"
 msgstr "Exportera medlemmar"
 
+msgid "Export membership structure"
+msgstr "Exportera medlemskapsstruktur"
+
 msgid "Extraordinary annual meeting"
 msgstr "Extra årsmöte"
+
+msgid "Family"
+msgstr "Familj"
+
+msgid "Family participant"
+msgstr "Familjedeltagare"
+
+msgid "Family — several people on one membership."
+msgstr "Familj — flera personer på ett medlemskap."
 
 msgid "February"
 msgstr "februari"
 
+msgid "Filter"
+msgstr "Filtrera"
+
+msgid "Finalize"
+msgstr "Lås"
+
+msgid "Finalize minutes"
+msgstr "Justera protokoll"
+
+msgid "Finalize minutes revision %d? The finalized revision is preserved as a historical record. Further corrections use a new correction revision rather than silently replacing it."
+msgstr "Lås protokollsrevision %d? Den låsta revisionen bevaras som historik. Ytterligare rättelser görs i en ny rättelserevision i stället för att tyst ersätta den."
+
+msgid "Finalize this revision"
+msgstr "Lås den här revisionen"
+
+msgid "Finalized"
+msgstr "Låst"
+
+msgid "Find account"
+msgstr "Hitta konto"
+
+msgid "Finish setup"
+msgstr "Avsluta guiden"
+
 msgid "First name"
 msgstr "Förnamn"
+
+msgid "Follow-up"
+msgstr "Uppföljning"
+
+msgid "Follow-up was marked done."
+msgstr "Uppföljningen markerades som klar."
+
+msgid "Follow-up was reopened."
+msgstr "Uppföljningen öppnades igen."
+
+msgid "Follow-up: Done"
+msgstr "Uppföljning: Klar"
+
+msgid "Follow-up: Open"
+msgstr "Uppföljning: Öppen"
+
+msgid "For a role with one holder, cancel a scheduled successor before adding another assignment."
+msgstr "För en roll med en innehavare behöver ett planerat uppdrag avbrytas innan ett nytt läggs till."
+
+msgid "From"
+msgstr "Från"
+
+msgid "Future"
+msgstr "Kommande"
+
+msgid "Get started"
+msgstr "Kom igång"
+
+msgid "Guardian"
+msgstr "Vårdnadshavare"
+
+msgid "Guardian approvals"
+msgstr "Vårdnadshavargodkännanden"
+
+msgid "Guardian first name"
+msgstr "Vårdnadshavares förnamn"
+
+msgid "Guardian last name"
+msgstr "Vårdnadshavares efternamn"
+
+msgid "Guardian relationships are recorded only when someone adds them. The plugin does not infer a guardian from a shared name, family membership or address."
+msgstr "Vårdnadshavarrelationer registreras bara när någon lägger till dem. Pluginet härleder inte en vårdnadshavare från ett gemensamt namn, familjemedlemskap eller adress."
+
+msgid "Guardians"
+msgstr "Vårdnadshavare"
 
 msgid "Heading"
 msgstr "Rubrik"
 
 msgid "Held"
 msgstr "Hållet"
+
+msgid "Held %s"
+msgstr "Hållet %s"
+
+msgid "Hello %s"
+msgstr "Hej %s"
+
+msgid "History"
+msgstr "Historik"
+
+msgid "Holders"
+msgstr "Innehavare"
 
 msgid "If the role can have only one holder, the open assignment ends the day before the new start date."
 msgstr "Om rollen bara kan ha en innehavare avslutas det öppna uppdraget dagen före det nya startdatumet."
@@ -269,6 +812,12 @@ msgstr "Importera medlemmar"
 
 msgid "In progress"
 msgstr "Pågår"
+
+msgid "Inactive"
+msgstr "Inaktiv"
+
+msgid "Include in minutes"
+msgstr "Ta med i protokollet"
 
 msgid "Include in the minutes"
 msgstr "Ta med i protokollet"
@@ -306,11 +855,29 @@ msgstr "Senaste styrelsemötet"
 msgid "Latest documents"
 msgstr "Senaste dokument"
 
+msgid "Latest finalized minutes"
+msgstr "Senast låsta protokollet"
+
 msgid "Latest held meeting"
 msgstr "Senaste hållet möte"
 
 msgid "Latest minutes"
 msgstr "Senaste protokollet"
+
+msgid "Leave empty to use the position number."
+msgstr "Lämna tomt för att använda löpnumret."
+
+msgid "Leave the end date empty if the assignment continues until it is changed."
+msgstr "Lämna slutdatum tomt om uppdraget fortsätter tills det ändras."
+
+msgid "Link this account"
+msgstr "Länka det här kontot"
+
+msgid "Link this WordPress account to the member."
+msgstr "Koppla det här WordPress-kontot till medlemmen."
+
+msgid "Linked"
+msgstr "Kopplat"
 
 msgid "Lock minutes"
 msgstr "Låsa protokoll"
@@ -321,11 +888,26 @@ msgstr "Lås revisionen"
 msgid "Locked"
 msgstr "Låst"
 
+msgid "Log in"
+msgstr "Logga in"
+
+msgid "Log in to view your membership."
+msgstr "Logga in för att se ditt medlemskap."
+
 msgid "Log in with an active membership to see member documents."
 msgstr "Logga in med ett aktivt medlemskap för att se medlemsdokument."
 
+msgid "Log out"
+msgstr "Logga ut"
+
+msgid "Logged in as"
+msgstr "Inloggad som"
+
 msgid "Logo"
 msgstr "Logotyp"
+
+msgid "Manual edits in this draft will be lost."
+msgstr "Manuella ändringar i det här utkastet försvinner."
 
 msgid "March"
 msgstr "mars"
@@ -339,11 +921,62 @@ msgstr "Markera som klar"
 msgid "Mark as held"
 msgstr "Markera som hållet"
 
+msgid "Mark follow-up done"
+msgstr "Markera uppföljningen som klar"
+
+msgid "Mark meeting as held"
+msgstr "Markera mötet som hållet"
+
+msgid "Mark person deceased"
+msgstr "Markera personen som avliden"
+
+msgid "Mark task done"
+msgstr "Markera uppgiften som klar"
+
+msgid "Mark this guardian approval as withdrawn? The record remains."
+msgstr "Markera det här vårdnadshavargodkännandet som återkallat? Posten finns kvar."
+
+msgid "Mark this meeting as held"
+msgstr "Markera det här mötet som hållet"
+
+msgid "Mark this meeting as held? Notes, decisions and tasks remain available for minutes preparation."
+msgstr "Markera mötet som hållet? Anteckningar, beslut och uppgifter finns kvar för protokollsarbetet."
+
+msgid "Mark this person as deceased? Open memberships end on that date and the history is retained."
+msgstr "Markera personen som avliden? Öppna medlemskap avslutas det datumet och historiken behålls."
+
 msgid "May"
 msgstr "maj"
 
 msgid "Meeting"
 msgstr "Möte"
+
+msgid "Meeting in progress"
+msgstr "Möte pågår"
+
+msgid "Meeting notes"
+msgstr "Anteckningar om mötet"
+
+msgid "Meeting templates"
+msgstr "Mötesmallar"
+
+msgid "Meeting type"
+msgstr "Mötestyp"
+
+msgid "Meeting types"
+msgstr "Mötestyper"
+
+msgid "Meeting types describe how the association meets. You do not create meetings here. Built-in types keep their meaning. You may add a custom type."
+msgstr "Mötestyper beskriver hur föreningen möts. Du skapar inga möten här. Inbyggda typer behåller sin betydelse. Du kan lägga till en egen typ."
+
+msgid "Meeting unavailable"
+msgstr "Mötet är inte tillgängligt"
+
+msgid "Meeting-level decision"
+msgstr "Beslut på mötesnivå"
+
+msgid "Meeting-level task"
+msgstr "Uppgift på mötesnivå"
 
 msgid "Meetings"
 msgstr "Möten"
@@ -351,14 +984,26 @@ msgstr "Möten"
 msgid "Member"
 msgstr "Medlem"
 
+msgid "Member account"
+msgstr "Medlemskonto"
+
+msgid "Member area"
+msgstr "Mina sidor"
+
 msgid "Member count"
 msgstr "Medlemsantal"
 
 msgid "Member documents"
 msgstr "Medlemsdokument"
 
+msgid "Member email"
+msgstr "Medlemmens e-post"
+
 msgid "Member meeting"
 msgstr "Medlemsmöte"
+
+msgid "Member-only documents are available while your individual membership is active."
+msgstr "Medlemsdokument visas när ditt enskilda medlemskap är aktivt."
 
 msgid "Members"
 msgstr "Medlemmar"
@@ -366,26 +1011,107 @@ msgstr "Medlemmar"
 msgid "Membership"
 msgstr "Medlemskap"
 
+msgid "membership ends %s"
+msgstr "medlemskapet slutar %s"
+
+msgid "Membership history"
+msgstr "Medlemskapshistorik"
+
+msgid "Membership id"
+msgstr "Medlemskaps-id"
+
+msgid "Membership kind"
+msgstr "Medlemskapstyp"
+
 msgid "Membership number"
 msgstr "Medlemsnummer"
+
+msgid "membership starts %s"
+msgstr "medlemskapet börjar %s"
+
+msgid "Membership status: Active"
+msgstr "Medlemsstatus: Aktivt"
+
+msgid "Membership status: Not currently active"
+msgstr "Medlemsstatus: Inte aktivt"
 
 msgid "Membership type"
 msgstr "Medlemstyp"
 
+msgid "Method"
+msgstr "Metod"
+
 msgid "Minutes"
 msgstr "Protokoll"
+
+msgid "Minutes and documents"
+msgstr "Protokoll och dokument"
+
+msgid "Minutes draft"
+msgstr "Protokollutkast"
+
+msgid "Minutes draft — revision %d"
+msgstr "Protokollsutkast — revision %d"
+
+msgid "Minutes finalized"
+msgstr "Protokollet är låst"
+
+msgid "Minutes locking"
+msgstr "Protokollåsning"
 
 msgid "Minutes may contain your name and are kept. The minutes text is not included in the export."
 msgstr "Protokoll kan innehålla ditt namn och behålls. Protokolltexten ingår inte i exporten."
 
+msgid "Minutes publication"
+msgstr "Publicering av protokoll"
+
+msgid "Minutes text"
+msgstr "Protokollstext"
+
 msgid "Minutes, revision %d"
 msgstr "Protokoll, revision %d"
+
+msgid "Minutes: awaiting draft"
+msgstr "Protokoll: utkast saknas"
 
 msgid "Month"
 msgstr "Månad"
 
+msgid "Move %s down"
+msgstr "Flytta %s nedåt"
+
+msgid "Move %s up"
+msgstr "Flytta %s uppåt"
+
+msgid "Move down"
+msgstr "Flytta ned"
+
+msgid "Move up"
+msgstr "Flytta upp"
+
+msgid "Multiple holders"
+msgstr "Flera innehavare"
+
+msgid "My account"
+msgstr "Mitt konto"
+
+msgid "My details"
+msgstr "Mina uppgifter"
+
+msgid "My documents"
+msgstr "Mina dokument"
+
+msgid "My membership"
+msgstr "Mitt medlemskap"
+
+msgid "My privacy"
+msgstr "Min integritet"
+
 msgid "Name"
 msgstr "Namn"
+
+msgid "Needs attention"
+msgstr "Behöver uppmärksamhet"
 
 msgid "New assignment"
 msgstr "Nytt uppdrag"
@@ -405,11 +1131,17 @@ msgstr "Ny period"
 msgid "New person"
 msgstr "Ny person"
 
+msgid "Next"
+msgstr "Nästa"
+
 msgid "Next meeting"
 msgstr "Nästa möte"
 
 msgid "No"
 msgstr "Nej"
+
+msgid "No account is created automatically for members under 18."
+msgstr "Inget konto skapas automatiskt för medlemmar under 18 år."
 
 msgid "No agenda yet."
 msgstr "Ingen dagordning ännu."
@@ -417,8 +1149,23 @@ msgstr "Ingen dagordning ännu."
 msgid "No assignments yet."
 msgstr "Inga uppdrag ännu."
 
+msgid "No current board assignments."
+msgstr "Inga aktuella styrelseuppdrag."
+
 msgid "No current board."
 msgstr "Ingen aktuell styrelse."
+
+msgid "No current membership"
+msgstr "Inget pågående medlemskap"
+
+msgid "No deadline"
+msgstr "Inget slutdatum"
+
+msgid "No decisions have been recorded yet."
+msgstr "Inga beslut har antecknats ännu."
+
+msgid "No decisions match these filters."
+msgstr "Inga beslut matchar de här filtren."
 
 msgid "No documents to show."
 msgstr "Inga dokument att visa."
@@ -426,8 +1173,29 @@ msgstr "Inga dokument att visa."
 msgid "No draft yet."
 msgstr "Inget utkast ännu."
 
+msgid "No due date"
+msgstr "Inget förfallodatum"
+
+msgid "No earlier board assignments."
+msgstr "Inga tidigare styrelseuppdrag."
+
+msgid "No email address"
+msgstr "Ingen e-postadress"
+
+msgid "No finalized minutes."
+msgstr "Inget låst protokoll."
+
+msgid "No guardian approvals recorded."
+msgstr "Inga vårdnadshavargodkännanden är registrerade."
+
+msgid "No guardian relationships recorded."
+msgstr "Inga vårdnadshavarrelationer är registrerade."
+
 msgid "No held meeting."
 msgstr "Inget hållet möte."
+
+msgid "No meeting is in progress."
+msgstr "Inget möte pågår."
 
 msgid "No meetings yet."
 msgstr "Inga möten ännu."
@@ -435,17 +1203,35 @@ msgstr "Inga möten ännu."
 msgid "No member documents."
 msgstr "Inga medlemsdokument."
 
+msgid "No members match this search."
+msgstr "Inga medlemmar matchar den här sökningen."
+
+msgid "No members yet. Add the association's first member."
+msgstr "Inga medlemmar ännu. Lägg till föreningens första medlem."
+
 msgid "No membership"
 msgstr "Utan medlemskap"
 
+msgid "No membership is recorded for this person."
+msgstr "Inget medlemskap är registrerat för den här personen."
+
 msgid "No overdue tasks."
 msgstr "Inga försenade uppgifter."
+
+msgid "No participants are recorded."
+msgstr "Inga deltagare är registrerade."
 
 msgid "No participants yet."
 msgstr "Inga deltagare ännu."
 
 msgid "No people yet."
 msgstr "Inga personer ännu."
+
+msgid "No personal identity number is recorded. A membership does not require one."
+msgstr "Inget personnummer är registrerat. Ett medlemskap kräver inte ett."
+
+msgid "No previous membership periods."
+msgstr "Inga tidigare medlemsperioder."
 
 msgid "No public documents."
 msgstr "Inga offentliga dokument."
@@ -459,17 +1245,44 @@ msgstr "Inget publicerat protokoll."
 msgid "No signed copy yet."
 msgstr "Ingen signerad kopia ännu."
 
+msgid "No tasks have been recorded yet."
+msgstr "Inga uppgifter har antecknats ännu."
+
+msgid "No tasks match these filters."
+msgstr "Inga uppgifter matchar de här filtren."
+
 msgid "No template"
 msgstr "Ingen mall"
 
 msgid "No upcoming meeting."
 msgstr "Inget kommande möte."
 
+msgid "No WordPress account is linked."
+msgstr "Inget WordPress-konto är kopplat."
+
+msgid "No WordPress account matches that username or email."
+msgstr "Inget WordPress-konto matchar det användarnamnet eller den e-postadressen."
+
+msgid "No WordPress account was created."
+msgstr "Inget WordPress-konto skapades."
+
 msgid "No."
 msgstr "Nr"
 
 msgid "None"
 msgstr "Ingen"
+
+msgid "not a current member"
+msgstr "inte medlem nu"
+
+msgid "Not automatically created"
+msgstr "Inte skapat automatiskt"
+
+msgid "Not created"
+msgstr "Inte skapat"
+
+msgid "Not currently an individual member."
+msgstr "Är inte enskild medlem just nu."
 
 msgid "Note"
 msgstr "Anteckning"
@@ -480,6 +1293,12 @@ msgstr "Anteckningar om mötet"
 msgid "Notes are working material, not the minutes. Mark what should be included later."
 msgstr "Anteckningar är arbetsmaterial, inte protokollet. Markera det som ska tas med senare."
 
+msgid "Nothing needs attention right now."
+msgstr "Inget behöver uppmärksamhet just nu."
+
+msgid "Notice version"
+msgstr "Versionsnummer för informationen"
+
 msgid "November"
 msgstr "november"
 
@@ -489,26 +1308,86 @@ msgstr "Nummer"
 msgid "October"
 msgstr "oktober"
 
+msgid "One holder"
+msgstr "En innehavare"
+
+msgid "Ongoing"
+msgstr "Pågår"
+
 msgid "Only a planned meeting can be started."
 msgstr "Bara ett planerat möte kan startas."
+
+msgid "Only a scheduled assignment that has not started can be cancelled."
+msgstr "Bara ett planerat uppdrag som inte har börjat kan avbrytas."
 
 msgid "Open"
 msgstr "Öppen"
 
+msgid "Open association profile"
+msgstr "Öppna föreningsprofil"
+
 msgid "Open decisions: %d"
 msgstr "Öppna beslut: %d"
+
+msgid "Open meeting"
+msgstr "Öppna mötet"
+
+msgid "Open meetings"
+msgstr "Öppna möten"
+
+msgid "Open minutes"
+msgstr "Öppna protokollet"
+
+msgid "Open profile"
+msgstr "Öppna profilen"
+
+msgid "Open Settings"
+msgstr "Öppna inställningar"
+
+msgid "Open tasks: %d"
+msgstr "Öppna uppgifter: %d"
+
+msgid "Open: %d"
+msgstr "Öppna: %d"
+
+msgid "Order"
+msgstr "Ordning"
+
+msgid "Ordinary"
+msgstr "Ordinarie"
+
+msgid "Ordinary — an individual adult membership."
+msgstr "Ordinarie — ett enskilt medlemskap för vuxen."
+
+msgid "Organization name"
+msgstr "Organisationsnamn"
 
 msgid "Organization number"
 msgstr "Organisationsnummer"
 
+msgid "Other settings"
+msgstr "Övriga inställningar"
+
+msgid "Overdue"
+msgstr "Försenad"
+
 msgid "Overdue tasks"
 msgstr "Försenade uppgifter"
 
-msgid "PDF, JPEG, or PNG"
-msgstr "PDF, JPEG eller PNG"
+msgid "Overdue: %d"
+msgstr "Försenade: %d"
+
+msgid "Page %1$d / %2$d"
+msgstr "Sida %1$d / %2$d"
+
+msgid "Page %1$d of %2$d"
+msgstr "Sida %1$d av %2$d"
 
 msgid "Participants"
 msgstr "Deltagare"
+
+msgid "PDF, JPEG, or PNG"
+msgstr "PDF, JPEG eller PNG"
 
 msgid "Pending"
 msgstr "Väntande"
@@ -516,11 +1395,32 @@ msgstr "Väntande"
 msgid "People"
 msgstr "Personer"
 
+msgid "Person"
+msgstr "Person"
+
+msgid "Person unavailable"
+msgstr "Personen är inte tillgänglig"
+
+msgid "Personal identity number"
+msgstr "Personnummer"
+
+msgid "Personal identity number: Not recorded"
+msgstr "Personnummer: inte registrerat"
+
+msgid "Personal identity number: Recorded"
+msgstr "Personnummer: Registrerat"
+
 msgid "Phone"
 msgstr "Telefon"
 
 msgid "Place"
 msgstr "Plats"
+
+msgid "Plan a meeting"
+msgstr "Planera ett möte"
+
+msgid "Plan the first meeting"
+msgstr "Planera första mötet"
 
 msgid "Planned"
 msgstr "Planerat"
@@ -531,11 +1431,29 @@ msgstr "Planerade och hållna möten"
 msgid "Planned meetings: %d"
 msgstr "Planerade möten: %d"
 
+msgid "Postal address"
+msgstr "Postadress"
+
 msgid "Present"
 msgstr "Närvarande"
 
+msgid "present"
+msgstr "pågår"
+
+msgid "Previous"
+msgstr "Föregående"
+
+msgid "Previous membership"
+msgstr "Tidigare medlemskap"
+
+msgid "Primary contact"
+msgstr "Primär kontakt"
+
 msgid "Print view"
 msgstr "Utskriftsvy"
+
+msgid "Privacy"
+msgstr "Integritet"
 
 msgid "Profile"
 msgstr "Profil"
@@ -551,6 +1469,9 @@ msgstr "Skyddade föreningsfiler ligger under webbroten."
 
 msgid "Protected association files are placed or confirmed."
 msgstr "Skyddade föreningsfiler är placerade eller bekräftade."
+
+msgid "Protected identity data"
+msgstr "Skyddade identitetsuppgifter"
 
 msgid "Public"
 msgstr "Offentlig"
@@ -570,8 +1491,38 @@ msgstr "Publicera"
 msgid "Publish minutes"
 msgstr "Publicera protokoll"
 
+msgid "Publish publicly"
+msgstr "Publicera öppet"
+
+msgid "Published. The text is unchanged, and the signed copy stays private."
+msgstr "Publicerat. Texten är oförändrad, och den signerade kopian förblir privat."
+
+msgid "Purpose"
+msgstr "Ändamål"
+
+msgid "Record afterwards"
+msgstr "Anteckna i efterhand"
+
+msgid "Record guardian approval"
+msgstr "Registrera vårdnadshavargodkännande"
+
+msgid "Record the board"
+msgstr "Registrera styrelsen"
+
 msgid "Recreate from the meeting details"
 msgstr "Skapa om från mötesuppgifterna"
+
+msgid "Regenerate from meeting data"
+msgstr "Återskapa från mötesuppgifterna"
+
+msgid "Regenerating replaces the current draft text with a new version generated from the meeting data."
+msgstr "Att återskapa ersätter den nuvarande utkasttexten med en ny version som skapas från mötesuppgifterna."
+
+msgid "Relationship"
+msgstr "Relation"
+
+msgid "Remove agenda item"
+msgstr "Ta bort punkt"
 
 msgid "Remove decision"
 msgstr "Ta bort beslut"
@@ -588,14 +1539,50 @@ msgstr "Ta bort anteckning"
 msgid "Remove participant"
 msgstr "Ta bort deltagare"
 
+msgid "Remove personal identity number"
+msgstr "Ta bort personnummer"
+
 msgid "Remove task"
 msgstr "Ta bort uppgift"
 
 msgid "Remove template"
 msgstr "Ta bort mall"
 
+msgid "Remove the notes, decisions, and tasks on this item before removing it."
+msgstr "Ta bort anteckningar, beslut och uppgifter på punkten innan den tas bort."
+
+msgid "Remove the personal identity number? Membership history is retained."
+msgstr "Ta bort personnumret? Medlemshistoriken behålls."
+
+msgid "Remove this agenda item"
+msgstr "Ta bort den här punkten"
+
+msgid "Remove this decision"
+msgstr "Ta bort det här beslutet"
+
+msgid "Remove this note"
+msgstr "Ta bort den här anteckningen"
+
+msgid "Remove this participant from the meeting"
+msgstr "Ta bort den här deltagaren från mötet"
+
+msgid "Remove this task"
+msgstr "Ta bort den här uppgiften"
+
 msgid "Reopen"
 msgstr "Återöppna"
+
+msgid "Reopen follow-up"
+msgstr "Öppna uppföljningen igen"
+
+msgid "Reopen task"
+msgstr "Öppna uppgiften igen"
+
+msgid "Replace %s"
+msgstr "Ersätt %s"
+
+msgid "Replace the edited draft"
+msgstr "Ersätt det ändrade utkastet"
 
 msgid "Replace the edited text"
 msgstr "Ersätt den ändrade texten"
@@ -603,17 +1590,50 @@ msgstr "Ersätt den ändrade texten"
 msgid "Responsible"
 msgstr "Ansvarig"
 
+msgid "Responsible: %s"
+msgstr "Ansvarig: %s"
+
 msgid "Retained records"
 msgstr "Behållna handlingar"
 
 msgid "Retention"
 msgstr "Kvarhållning"
 
+msgid "Retention must be between 1 and 100 years."
+msgstr "Gallring måste vara mellan 1 och 100 år."
+
+msgid "Retry account creation"
+msgstr "Försök skapa kontot igen"
+
+msgid "Return for changes"
+msgstr "Skicka tillbaka för ändring"
+
+msgid "Review minutes"
+msgstr "Granska protokollet"
+
+msgid "Review the association setup, then finish. Finishing requires a non-empty association name."
+msgstr "Granska föreningsguiden och avsluta sedan. Avslut kräver att föreningen har ett namn."
+
+msgid "Revision %d"
+msgstr "Revision %d"
+
+msgid "Revision %d finalized"
+msgstr "Revision %d är låst"
+
 msgid "Role"
 msgstr "Roll"
 
+msgid "Run setup guide again"
+msgstr "Kör installationsguiden igen"
+
+msgid "Save and continue"
+msgstr "Spara och fortsätt"
+
 msgid "Save assignment"
 msgstr "Spara uppdrag"
+
+msgid "Save company membership"
+msgstr "Spara företagsmedlemskap"
 
 msgid "Save decision"
 msgstr "Spara beslut"
@@ -621,8 +1641,20 @@ msgstr "Spara beslut"
 msgid "Save document"
 msgstr "Spara dokument"
 
+msgid "Save draft"
+msgstr "Spara utkast"
+
+msgid "Save identity record"
+msgstr "Spara identitetsuppgift"
+
 msgid "Save meeting"
 msgstr "Spara möte"
+
+msgid "Save meeting details"
+msgstr "Spara mötesuppgifter"
+
+msgid "Save meeting type"
+msgstr "Spara mötestyp"
 
 msgid "Save note"
 msgstr "Spara anteckning"
@@ -639,6 +1671,9 @@ msgstr "Spara profil"
 msgid "Save retention"
 msgstr "Spara kvarhållning"
 
+msgid "Save role"
+msgstr "Spara roll"
+
 msgid "Save task"
 msgstr "Spara uppgift"
 
@@ -654,6 +1689,15 @@ msgstr "Spara synlighet"
 msgid "Saved documents"
 msgstr "Sparade dokument"
 
+msgid "Saving here only stores the retention setting. It does not apply erasure now."
+msgstr "Här sparas bara gallringsinställningen. Den kör ingen radering nu."
+
+msgid "Scheduled: %1$s %2$s"
+msgstr "Planerat: %1$s %2$s"
+
+msgid "Search"
+msgstr "Sök"
+
 msgid "Secretary"
 msgstr "Sekreterare"
 
@@ -663,8 +1707,20 @@ msgstr "Säkerhet"
 msgid "Send back"
 msgstr "Skicka tillbaka"
 
+msgid "Send for review / adjustment"
+msgstr "Skicka för granskning / justering"
+
 msgid "September"
 msgstr "september"
+
+msgid "Set up the board"
+msgstr "Sätt upp styrelsen"
+
+msgid "Set up your association"
+msgstr "Kom igång med föreningen"
+
+msgid "Settings"
+msgstr "Inställningar"
 
 msgid "Shows documents for a logged-in person with an active membership. The download goes through a check."
 msgstr "Visar dokument för en inloggad person med aktivt medlemskap. Hämtningen går via en kontroll."
@@ -672,11 +1728,17 @@ msgstr "Visar dokument för en inloggad person med aktivt medlemskap. Hämtninge
 msgid "Shows how many active members the association has, without names."
 msgstr "Visar hur många aktiva medlemmar föreningen har, utan namn."
 
+msgid "Shows how many people are members of a membership that is active today. Company memberships and contact-only people are not included."
+msgstr "Visar hur många personer som är medlemmar i ett medlemskap som är aktivt idag. Företagsmedlemskap och rena kontaktpersoner räknas inte."
+
 msgid "Shows public documents. The download goes through a check."
 msgstr "Visar offentliga dokument. Hämtningen går via en kontroll."
 
 msgid "Shows the latest published locked revision."
 msgstr "Visar den senast publicerade låsta revisionen."
+
+msgid "Shows the logged-in person's own membership information."
+msgstr "Visar den inloggade personens egna medlemsuppgifter."
 
 msgid "Shows the name, role, and public contact for the current board."
 msgstr "Visar namn, uppdrag och offentlig kontakt för den aktuella styrelsen."
@@ -684,20 +1746,59 @@ msgstr "Visar namn, uppdrag och offentlig kontakt för den aktuella styrelsen."
 msgid "Shows the title, date, and place of the latest board meeting with published minutes."
 msgstr "Visar rubrik, datum och plats för det senaste styrelsemötet med ett publicerat protokoll."
 
+msgid "Signed copies are stored privately and are not published automatically."
+msgstr "Signerade kopior lagras privat och publiceras inte automatiskt."
+
+msgid "Signed copy"
+msgstr "Signerad kopia"
+
 msgid "Signed scan"
 msgstr "Signerad skanning"
+
+msgid "Since %s"
+msgstr "Sedan %s"
+
+msgid "Skip"
+msgstr "Hoppa över"
+
+msgid "Source"
+msgstr "Källa"
 
 msgid "Start date"
 msgstr "Startdatum"
 
+msgid "Start meeting"
+msgstr "Starta mötet"
+
+msgid "Start new membership period"
+msgstr "Starta ny medlemsperiod"
+
+msgid "Start setup"
+msgstr "Starta guiden"
+
 msgid "Start the meeting"
 msgstr "Starta mötet"
+
+msgid "Starts %s"
+msgstr "Börjar %s"
 
 msgid "State"
 msgstr "Läge"
 
+msgid "Status"
+msgstr "Status"
+
+msgid "Status: %s"
+msgstr "Status: %s"
+
+msgid "Step %1$d of %2$d"
+msgstr "Steg %1$d av %2$d"
+
 msgid "Submit for adjustment"
 msgstr "Skicka till justering"
+
+msgid "Superseded by revision %d"
+msgstr "Ersatt av revision %d"
 
 msgid "Swedish"
 msgstr "Svenska"
@@ -708,8 +1809,26 @@ msgstr "Uppgift"
 msgid "Task at the meeting"
 msgstr "Uppgift på mötet"
 
+msgid "Task was marked done."
+msgstr "Uppgiften markerades som klar."
+
+msgid "Task was reopened."
+msgstr "Uppgiften öppnades igen."
+
+msgid "Tasks"
+msgstr "Uppgifter"
+
+msgid "Tasks are added from a meeting workspace."
+msgstr "Uppgifter läggs till från ett mötes arbetsyta."
+
+msgid "Tasks are recorded from meetings."
+msgstr "Uppgifter antecknas i möten."
+
 msgid "Template"
 msgstr "Mall"
+
+msgid "Template headings are copied into this meeting. Changing the template later does not rewrite the meeting. A template is not a complete legal annual-meeting agenda."
+msgstr "Mallens rubriker kopieras in i det här mötet. En senare ändring av mallen skriver inte om mötet. En mall är inte en juridiskt fullständig årsmötesdagordning."
 
 msgid "Templates"
 msgstr "Mallar"
@@ -717,8 +1836,32 @@ msgstr "Mallar"
 msgid "Term"
 msgstr "Mandatperiod"
 
-msgid "The PDF is downloaded after a permission check and is not shown as a public link."
-msgstr "PDF-filen hämtas efter behörighetskontroll och visas inte som en offentlig länk."
+msgid "That assignment could not be found."
+msgstr "Det uppdraget kunde inte hittas."
+
+msgid "That membership number is already in use."
+msgstr "Det medlemsnumret används redan."
+
+msgid "That organization number is already in use."
+msgstr "Det organisationsnumret används redan."
+
+msgid "That person could not be found."
+msgstr "Den personen kunde inte hittas."
+
+msgid "That person or membership could not be found."
+msgstr "Den personen eller det medlemskapet kunde inte hittas."
+
+msgid "That record belongs to another meeting."
+msgstr "Den posten hör till ett annat möte."
+
+msgid "That role could not be found."
+msgstr "Den rollen kunde inte hittas."
+
+msgid "That WordPress account is already linked to another person."
+msgstr "Det WordPress-kontot är redan kopplat till en annan person."
+
+msgid "The account could not be created."
+msgstr "Kontot kunde inte skapas."
 
 msgid "The agenda is reordered."
 msgstr "Dagordningen är omordnad."
@@ -738,11 +1881,41 @@ msgstr "Uppdraget är sparat."
 msgid "The assignment is saved. The previous holder ended the day before, and that row remains."
 msgstr "Uppdraget är sparat. Den tidigare innehavaren avslutades dagen före, och den raden finns kvar."
 
+msgid "The association currently has these basic categories linked to your member record:"
+msgstr "Föreningen har just nu de här grunduppgifterna kopplade till din medlemspost:"
+
+msgid "The association has no records yet."
+msgstr "Föreningen har inga poster ännu."
+
+msgid "The association profile could not be saved. Check the fields and enter a name."
+msgstr "Föreningsprofilen kunde inte sparas. Kontrollera fälten och ange ett namn."
+
 msgid "The association profile is saved."
 msgstr "Föreningsprofilen är sparad."
 
 msgid "The association's name, contact details, and when the membership year starts. The logo is an image in the media library. A membership year can start on a day other than 1 January. The setting does not change membership periods that already exist."
 msgstr "Föreningens namn, kontaktuppgifter och när verksamhetsåret börjar. Logotypen är en bild i mediabiblioteket. Ett verksamhetsår kan börja en annan dag än den 1 januari. Inställningen ändrar inte medlemsperioder som redan finns."
+
+msgid "The association's name, contact details, and when the membership year starts. The name is required to continue."
+msgstr "Föreningens namn, kontaktuppgifter och när verksamhetsåret börjar. Namnet krävs för att fortsätta."
+
+msgid "The birth date does not match the recorded personal identity number."
+msgstr "Födelsedatumet stämmer inte med det registrerade personnumret."
+
+msgid "The board role could not be saved."
+msgstr "Styrelserollen kunde inte sparas."
+
+msgid "The board role order was saved."
+msgstr "Ordningen för styrelseroller sparades."
+
+msgid "The board role was added."
+msgstr "Styrelserollen lades till."
+
+msgid "The board role was saved."
+msgstr "Styrelserollen sparades."
+
+msgid "The broken WordPress account link is cleared. No new account was created."
+msgstr "Den trasiga WordPress-kontokopplingen är rensad. Inget nytt konto skapades."
 
 msgid "The chair may lock minutes from the start. The association can give the same permission to another role. The person who records minutes can still write drafts. The site administrator keeps the permission and can change it back."
 msgstr "Ordföranden får låsa protokoll från början. Föreningen kan ge samma behörighet till en annan roll. Den som för protokoll kan fortfarande skriva utkast. Webbplatsens administratör behåller behörigheten och kan ändra tillbaka."
@@ -750,11 +1923,26 @@ msgstr "Ordföranden får låsa protokoll från början. Föreningen kan ge samm
 msgid "The chair may publish locked minutes from the start. The association can give the same permission to another role. Publishing shows the text on the site and leaves the minutes unchanged. The site administrator keeps the permission and can change it back."
 msgstr "Ordföranden får publicera ett låst protokoll från början. Föreningen kan ge samma behörighet till en annan roll. Publicering visar texten på webbplatsen och lämnar protokollet oförändrat. Webbplatsens administratör behåller behörigheten och kan ändra tillbaka."
 
+msgid "The company contact is saved. This does not make the person an individual member."
+msgstr "Företagskontakten är sparad. Det gör inte personen till enskild medlem."
+
+msgid "The company membership is saved. A company contact is not an individual member."
+msgstr "Företagsmedlemskapet är sparat. En företagskontakt är inte en enskild medlem."
+
 msgid "The contact details are anonymized and the account link is removed."
 msgstr "Kontaktuppgifterna är avidentifierade och kontolänken är borttagen."
 
 msgid "The correction is a new draft with the locked text."
 msgstr "Rättelsen är ett nytt utkast med den låsta texten."
+
+msgid "The current assignment still ends %1$s. %2$s's assignment will begin %3$s. The earlier assignment remains in history."
+msgstr "Det nuvarande uppdraget slutar fortfarande %1$s. Uppdraget för %2$s börjar %3$s. Det tidigare uppdraget finns kvar i historiken."
+
+msgid "The date does not cover a board assignment, so nothing changed."
+msgstr "Datumet täcker inte ett styrelseuppdrag, så inget ändrades."
+
+msgid "The decision could not be updated."
+msgstr "Beslutet kunde inte uppdateras."
 
 msgid "The decision is removed."
 msgstr "Beslutet är borttaget."
@@ -774,6 +1962,9 @@ msgstr "Utkastet är skickat till justering."
 msgid "The draft is a copy of the meeting, attendance, agenda, marked notes, decisions, and tasks. Later changes to those rows do not rewrite the copy."
 msgstr "Utkastet är en kopia av mötet, närvaron, dagordningen, markerade anteckningar, beslut och uppgifter. Senare ändringar i de raderna skriver inte om kopian."
 
+msgid "The draft is composed from the meeting, attendance, agenda, notes marked for inclusion, decisions, and tasks."
+msgstr "Utkastet sätts ihop av mötet, närvaron, dagordningen, anteckningar som ska tas med, beslut och uppgifter."
+
 msgid "The draft is created when the meeting is held, and only once."
 msgstr "Utkastet skapas när mötet är hållet, och bara en gång."
 
@@ -786,11 +1977,14 @@ msgstr "Utkastet är skapat om från mötesuppgifterna."
 msgid "The draft text is saved. The source details are unchanged."
 msgstr "Utkastets text är sparad. Källuppgifterna är oförändrade."
 
-msgid "The file is UTF-8 and semicolon-separated, with one row per membership period. A membership number that already exists is left unchanged. The import does not link a WordPress account and does not rename a person who already exists."
-msgstr "Filen är UTF-8 och semikolonseparerad, med en rad per medlemsperiod. Ett medlemsnummer som redan finns lämnas orört. Importen kopplar inget WordPress-konto och byter inte namn på en person som redan finns."
+msgid "The end date cannot be before the start date."
+msgstr "Slutdatumet kan inte ligga före startdatumet."
 
 msgid "The file is larger than 2 MB."
 msgstr "Filen är större än 2 MB."
+
+msgid "The file is UTF-8 and semicolon-separated, with one row per membership period. A membership number that already exists is left unchanged. The import does not link a WordPress account and does not rename a person who already exists."
+msgstr "Filen är UTF-8 och semikolonseparerad, med en rad per medlemsperiod. Ett medlemsnummer som redan finns lämnas orört. Importen kopplar inget WordPress-konto och byter inte namn på en person som redan finns."
 
 msgid "The file must be UTF-8 with the expected columns, separated by semicolons."
 msgstr "Filen måste vara UTF-8 med de förväntade kolumnerna, separerade med semikolon."
@@ -803,6 +1997,24 @@ msgstr "Filerna ligger utanför WordPress webbrot. Hämtning går fortfarande vi
 
 msgid "The follow-up is changed. The wording of the decision is the same."
 msgstr "Uppföljningen är ändrad. Beslutets lydelse är densamma."
+
+msgid "The guardian approval is marked as withdrawn. The record remains."
+msgstr "Vårdnadshavargodkännandet är markerat som återkallat. Posten finns kvar."
+
+msgid "The guardian approval is saved. It records what the association says occurred."
+msgstr "Vårdnadshavarens godkännande är sparat. Det återger vad föreningen uppger har skett."
+
+msgid "The guardian approval is saved. It records what the association says occurred. It does not prove legal validity."
+msgstr "Vårdnadshavargodkännandet är sparat. Det registrerar vad föreningen uppger har skett. Det bevisar inte juridisk giltighet."
+
+msgid "The guardian relationship is ended. The earlier record remains."
+msgstr "Vårdnadshavarrelationen är avslutad. Den tidigare posten finns kvar."
+
+msgid "The guardian relationship is saved."
+msgstr "Vårdnadshavarrelationen är sparad."
+
+msgid "The guardian relationship is saved. It is not inferred from name, family or address."
+msgstr "Vårdnadshavarrelationen är sparad. Den härleds inte från namn, familj eller adress."
 
 msgid "The import created %1$d membership periods and left %2$d unchanged."
 msgstr "Importen skapade %1$d medlemsperioder och lämnade %2$d orörda."
@@ -819,8 +2031,17 @@ msgstr "Punkten är tillagd."
 msgid "The item is removed and the numbers are recalculated."
 msgstr "Punkten är borttagen och numren är räknade om."
 
+msgid "The linked WordPress account no longer exists."
+msgstr "Det kopplade WordPress-kontot finns inte längre."
+
+msgid "The meeting details are saved."
+msgstr "Mötesuppgifterna är sparade."
+
 msgid "The meeting details changed after the draft. Recreate the draft if the new text should be included."
 msgstr "Mötesuppgifterna har ändrats efter utkastet. Skapa om utkastet om den nya texten ska med."
+
+msgid "The meeting details changed after the draft. Regenerating replaces the draft text with a new version from the meeting data."
+msgstr "Mötesuppgifterna har ändrats efter utkastet. Att återskapa ersätter utkasttexten med en ny version från mötesuppgifterna."
 
 msgid "The meeting does not exist."
 msgstr "Mötet finns inte."
@@ -837,14 +2058,32 @@ msgstr "Mötet är markerat som hållet."
 msgid "The meeting is saved as planned."
 msgstr "Mötet är sparat som planerat."
 
-msgid "The selected person's membership does not cover the full assignment period."
-msgstr "Den valda personens medlemskap täcker inte hela uppdragsperioden."
+msgid "The meeting type could not be saved."
+msgstr "Mötestypen kunde inte sparas."
+
+msgid "The meeting type order was saved."
+msgstr "Ordningen för mötestyper sparades."
+
+msgid "The meeting type was added."
+msgstr "Mötestypen lades till."
+
+msgid "The meeting type was saved."
+msgstr "Mötestypen sparades."
+
+msgid "The member email and the WordPress account email are different. WordPress keeps its own account email."
+msgstr "Medlemmens e-post och WordPress-kontots e-post skiljer sig. WordPress behåller kontots egen e-post."
 
 msgid "The membership is already ended."
 msgstr "Medlemskapet är redan avslutat."
 
+msgid "The membership is ended. Membership history is retained."
+msgstr "Medlemskapet är avslutat. Medlemshistoriken behålls."
+
 msgid "The membership is ended. The person remains."
 msgstr "Medlemskapet är avslutat. Personen finns kvar."
+
+msgid "The membership is saved."
+msgstr "Medlemskapet är sparat."
 
 msgid "The membership number is already used."
 msgstr "Medlemsnumret används redan."
@@ -864,6 +2103,9 @@ msgstr "Protokollet kunde inte hämtas."
 msgid "The minutes draft is created from the meeting details."
 msgstr "Protokollutkastet är skapat från mötesuppgifterna."
 
+msgid "The minutes permissions could not be saved."
+msgstr "Protokollbehörigheterna kunde inte sparas."
+
 msgid "The name in locked minutes is kept."
 msgstr "Namnet i ett låst protokoll behålls."
 
@@ -873,11 +2115,26 @@ msgstr "Anteckningen är borttagen."
 msgid "The note is saved."
 msgstr "Anteckningen är sparad."
 
+msgid "The organization number is checked for format and checksum only. It is not checked against a company register."
+msgstr "Organisationsnumret kontrolleras bara till form och kontrollsiffra. Det slås inte upp i ett företagsregister."
+
 msgid "The participant is added."
 msgstr "Deltagaren är tillagd."
 
 msgid "The participant is removed from the meeting."
 msgstr "Deltagaren är borttagen från mötet."
+
+msgid "The participant is saved on the existing membership."
+msgstr "Deltagaren är sparad på det befintliga medlemskapet."
+
+msgid "The participant is saved. The earlier participation history remains."
+msgstr "Deltagaren är sparad. Den tidigare deltagarhistoriken finns kvar."
+
+msgid "The participation is ended. The earlier participation history remains."
+msgstr "Deltagandet är avslutat. Den tidigare deltagarhistoriken finns kvar."
+
+msgid "The PDF is downloaded after a permission check and is not shown as a public link."
+msgstr "PDF-filen hämtas efter behörighetskontroll och visas inte som en offentlig länk."
 
 msgid "The permission to lock minutes is saved."
 msgstr "Behörigheten att låsa protokoll är sparad."
@@ -891,11 +2148,23 @@ msgstr "Personen finns redan på mötet."
 msgid "The person is marked as deceased and open memberships are ended."
 msgstr "Personen är markerad som avliden och öppna medlemskap är avslutade."
 
+msgid "The person is marked as deceased and open memberships are ended. The history remains."
+msgstr "Personen är markerad som avliden och öppna medlemskap är avslutade. Historiken finns kvar."
+
 msgid "The person is saved."
 msgstr "Personen är sparad."
 
+msgid "The personal identity record is removed. Membership history remains."
+msgstr "Identitetsuppgiften är borttagen. Medlemskapshistoriken finns kvar."
+
+msgid "The personal identity record is saved."
+msgstr "Identitetsuppgiften är sparad."
+
 msgid "The plugin is active."
 msgstr "Pluginet är aktivt."
+
+msgid "The product supports ordinary, youth, family, and company memberships. A Person is not the same as a Membership, and neither is the same as a WordPress account."
+msgstr "Produkten stöder ordinarie, ungdoms-, familje- och företagsmedlemskap. En person är inte samma sak som ett medlemskap, och ingen av dem är samma sak som ett WordPress-konto."
 
 msgid "The profile could not be saved. Check the email, phone, language, logo, and start day."
 msgstr "Profilen kunde inte sparas. Kontrollera e-post, telefon, språk, logotyp och startdag."
@@ -936,6 +2205,18 @@ msgstr "Rollen har redan en innehavare under de datumen."
 msgid "The role could not be saved."
 msgstr "Rollen kunde inte sparas."
 
+msgid "The scheduled assignment could not be cancelled."
+msgstr "Det planerade uppdraget kunde inte avbrytas."
+
+msgid "The scheduled assignment was cancelled."
+msgstr "Det planerade uppdraget avbröts."
+
+msgid "The scheduled assignment was cancelled. The current %1$s still ends on %2$s. Review the current assignment if that end date should change."
+msgstr "Det planerade uppdraget avbröts. Nuvarande %1$s slutar fortfarande %2$s. Granska det nuvarande uppdraget om slutdatumet ska ändras."
+
+msgid "The selected person's membership does not cover the full assignment period."
+msgstr "Den valda personens medlemskap täcker inte hela uppdragsperioden."
+
 msgid "The signed copy could not be downloaded."
 msgstr "Den signerade kopian kunde inte hämtas."
 
@@ -951,8 +2232,17 @@ msgstr "Den signerade kopian ska vara en PDF, JPEG eller PNG."
 msgid "The signed scan is kept."
 msgstr "Den signerade skanningen behålls."
 
+msgid "The signed scan is the archival original when it differs from the finalized text. The minutes text does not change when the scan is uploaded."
+msgstr "Den signerade skanningen är originalet i arkivet när den skiljer sig från den låsta texten. Protokollstexten ändras inte när skanningen laddas upp."
+
 msgid "The signed scan is the original. The minutes text does not change when the scan is uploaded."
 msgstr "Den signerade skanningen är originalet. Protokolltexten ändras inte när skanningen laddas upp."
+
+msgid "The structured file can describe memberships, periods, participants and organizations. It does not contain personal identity numbers."
+msgstr "Den strukturerade filen kan beskriva medlemskap, perioder, deltagare och organisationer. Den innehåller inte personnummer."
+
+msgid "The task could not be updated."
+msgstr "Uppgiften kunde inte uppdateras."
 
 msgid "The task is removed."
 msgstr "Uppgiften är borttagen."
@@ -978,17 +2268,89 @@ msgstr "Synligheten är ändrad. Filen är densamma."
 msgid "The web server blocks the directory"
 msgstr "Webbservern blockerar katalogen"
 
+msgid "The WordPress account could not be created."
+msgstr "WordPress-kontot kunde inte skapas."
+
+msgid "The WordPress account exists, so the link was not cleared."
+msgstr "WordPress-kontot finns, så kopplingen rensades inte."
+
+msgid "The WordPress account is created. WordPress sends the password setup message."
+msgstr "WordPress-kontot är skapat. WordPress skickar meddelandet för att välja lösenord."
+
+msgid "The WordPress account is linked to this member."
+msgstr "WordPress-kontot är kopplat till den här medlemmen."
+
+msgid "The WordPress account is unlinked. The WordPress user was not deleted."
+msgstr "WordPress-kontot är frånkopplat. Själva WordPress-användaren är inte borttagen."
+
+msgid "There is no open participation to end."
+msgstr "Det finns inget pågående deltagande att avsluta."
+
+msgid "This action is only available for family memberships."
+msgstr "Den här åtgärden finns bara för familjemedlemskap."
+
 msgid "This change does not fit the revision's state."
 msgstr "Den här ändringen passar inte revisionens läge."
 
+msgid "This draft has been edited by hand."
+msgstr "Det här utkastet har ändrats för hand."
+
+msgid "This email address is used by more than one person. Resolve the member email addresses before automatic account creation."
+msgstr "Den här e-postadressen används av mer än en person. Ordna medlemmarnas e-postadresser innan ett konto skapas automatiskt."
+
+msgid "This guardian relationship already covers that time."
+msgstr "Den här vårdnadshavarrelationen täcker redan den tiden."
+
+msgid "This guide helps you configure the association structure: profile, membership kinds, board roles, meeting types, minutes permissions, and retention. It does not add members, board assignments, meetings, documents, decisions, or tasks."
+msgstr "Den här guiden hjälper dig att konfigurera föreningens struktur: profil, medlemskapstyper, styrelseroller, mötestyper, protokollbehörigheter och gallring. Den lägger inte till medlemmar, styrelseuppdrag, möten, dokument, beslut eller uppgifter."
+
 msgid "This is a correction of a locked revision."
 msgstr "Det här är en rättelse av en låst revision."
+
+msgid "This is a summary from Mina sidor. You can contact the association if information is incorrect or if you want to exercise privacy rights."
+msgstr "Det här är en sammanfattning från Mina sidor. Kontakta föreningen om något är fel eller om du vill utöva dina integritetsrättigheter."
+
+msgid "This may be shown on the public website for this board role."
+msgstr "Detta kan visas på den offentliga webbplatsen för det här styrelseuppdraget."
+
+msgid "This meeting type has been used by a meeting or template. Its name is now preserved for history. You can still change its display order."
+msgstr "Den här mötestypen har använts av ett möte eller en mall. Namnet bevaras för historiken. Du kan fortfarande ändra visningsordningen."
+
+msgid "This person already has overlapping active membership coverage."
+msgstr "Personen har redan överlappande aktivt medlemskap."
+
+msgid "This person is deceased."
+msgstr "Personen är avliden."
+
+msgid "This person is not an active individual member."
+msgstr "Personen är inte en aktiv enskild medlem."
+
+msgid "This revision is not the current minutes."
+msgstr "Den här revisionen är inte det aktuella protokollet."
+
+msgid "This revision is preserved. Further corrections use a new revision."
+msgstr "Den här revisionen bevaras. Ytterligare rättelser görs i en ny revision."
+
+msgid "This role already has a scheduled assignment. Cancel that assignment before adding another."
+msgstr "Den här rollen har redan ett planerat uppdrag. Avbryt det innan ett nytt läggs till."
+
+msgid "This role has been used by a board assignment. Its name and holder rule are now preserved for history. You can still change its display order."
+msgstr "Den här rollen har använts i ett styrelseuppdrag. Namn och innehavarregel bevaras för historiken. Du kan fortfarande ändra visningsordningen."
+
+msgid "This step does not create members and does not turn kinds on or off."
+msgstr "Det här steget skapar inga medlemmar och slår inte på eller av medlemskapstyper."
+
+msgid "This WordPress account is not linked to a member record. Contact the association if you think this is incorrect."
+msgstr "Det här WordPress-kontot är inte kopplat till en medlem. Kontakta föreningen om det verkar fel."
 
 msgid "Time"
 msgstr "Tid"
 
 msgid "Title"
 msgstr "Titel"
+
+msgid "To"
+msgstr "Till"
 
 msgid "Today"
 msgstr "Idag"
@@ -999,8 +2361,20 @@ msgstr "Kassör"
 msgid "Type"
 msgstr "Typ"
 
+msgid "Unassigned"
+msgstr "Ingen ansvarig"
+
 msgid "Under adjustment"
 msgstr "Under justering"
+
+msgid "Unlink account"
+msgstr "Koppla loss konto"
+
+msgid "Unlink the current WordPress account before linking a different one."
+msgstr "Koppla loss det nuvarande WordPress-kontot innan ett annat kopplas."
+
+msgid "Unlink this WordPress account from the member? The WordPress user itself will not be deleted."
+msgstr "Koppla loss det här WordPress-kontot från medlemmen? Själva WordPress-användaren tas inte bort."
 
 msgid "Unpublish"
 msgstr "Avpublicera"
@@ -1008,11 +2382,68 @@ msgstr "Avpublicera"
 msgid "Up"
 msgstr "Upp"
 
+msgid "Upcoming"
+msgstr "Kommande"
+
+msgid "Upcoming board changes"
+msgstr "Kommande styrelseändringar"
+
+msgid "Upcoming changes"
+msgstr "Kommande förändringar"
+
 msgid "Upload signed copy"
 msgstr "Ladda upp signerad kopia"
 
+msgid "Urgency"
+msgstr "Brådska"
+
+msgid "View board"
+msgstr "Visa styrelsen"
+
+msgid "View decisions"
+msgstr "Visa beslut"
+
+msgid "View documents"
+msgstr "Visa dokument"
+
+msgid "View meeting work"
+msgstr "Visa mötesarbetet"
+
+msgid "View tasks"
+msgstr "Visa uppgifter"
+
 msgid "Visibility"
 msgstr "Synlighet"
+
+msgid "Visibility: Board. Publishing shows the finalized text and does not publish the signed copy."
+msgstr "Synlighet: Styrelsen. Publicering visar den låsta texten och publicerar inte den signerade kopian."
+
+msgid "Welcome"
+msgstr "Välkommen"
+
+msgid "Withdraw guardian approval"
+msgstr "Återkalla vårdnadshavargodkännande"
+
+msgid "Withdrawal date"
+msgstr "Datum för återkallelse"
+
+msgid "Withdrawn"
+msgstr "Återkallat"
+
+msgid "WordPress account email"
+msgstr "WordPress-kontots e-post"
+
+msgid "WordPress account link"
+msgstr "Koppling till WordPress-konto"
+
+msgid "WordPress account to link"
+msgstr "WordPress-konto att koppla"
+
+msgid "WordPress user"
+msgstr "WordPress-användare"
+
+msgid "WordPress username or email"
+msgstr "WordPress-användarnamn eller e-post"
 
 msgid "Working meeting"
 msgstr "Arbetsmöte"
@@ -1023,11 +2454,17 @@ msgstr "Arbetsanteckning"
 msgid "Years"
 msgstr "År"
 
+msgid "years"
+msgstr "år"
+
 msgid "Yes"
 msgstr "Ja"
 
 msgid "You are not allowed to change this setting."
 msgstr "Du har inte behörighet att ändra den här inställningen."
+
+msgid "You can leave and return later from Association → Get started."
+msgstr "Du kan lämna och återvända senare via Förening → Kom igång."
 
 msgid "You do not have permission to add documents."
 msgstr "Du har inte behörighet att lägga till dokument."
@@ -1038,8 +2475,14 @@ msgstr "Du har inte behörighet att avidentifiera personen."
 msgid "You do not have permission to apply the retention."
 msgstr "Du har inte behörighet att tillämpa kvarhållningen."
 
+msgid "You do not have permission to change association settings."
+msgstr "Du har inte behörighet att ändra föreningsinställningar."
+
 msgid "You do not have permission to change members."
 msgstr "Du har inte behörighet att ändra medlemmar."
+
+msgid "You do not have permission to change personal identity numbers."
+msgstr "Du har inte behörighet att ändra personnummer."
 
 msgid "You do not have permission to change the association profile."
 msgstr "Du har inte behörighet att ändra föreningsprofilen."
@@ -1098,6 +2541,9 @@ msgstr "Du har inte behörighet att föra anteckningar, beslut eller uppgifter."
 msgid "You do not have permission to record the meeting."
 msgstr "Du har inte behörighet att föra mötet."
 
+msgid "You do not have permission to run association setup."
+msgstr "Du har inte behörighet att köra föreningsguiden."
+
 msgid "You do not have permission to see who may lock minutes."
 msgstr "Du har inte behörighet att se vem som får låsa protokoll."
 
@@ -1107,14 +2553,23 @@ msgstr "Du har inte behörighet att se vem som får publicera protokoll."
 msgid "You do not have permission to upload the signed copy."
 msgstr "Du har inte behörighet att ladda upp den signerade kopian."
 
+msgid "You do not have permission to view decisions."
+msgstr "Du har inte behörighet att se beslut."
+
 msgid "You do not have permission to view meetings."
 msgstr "Du har inte behörighet att se möten."
 
 msgid "You do not have permission to view members."
 msgstr "Du har inte behörighet att se medlemmar."
 
+msgid "You do not have permission to view tasks."
+msgstr "Du har inte behörighet att se uppgifter."
+
 msgid "You do not have permission to view the association profile."
 msgstr "Du har inte behörighet att se föreningsprofilen."
+
+msgid "You do not have permission to view the association."
+msgstr "Du har inte behörighet att se föreningen."
 
 msgid "You do not have permission to view the board."
 msgstr "Du har inte behörighet att se styrelsen."
@@ -1125,1379 +2580,18 @@ msgstr "Du har inte behörighet att se dokumenten."
 msgid "You do not have permission to view the retention."
 msgstr "Du har inte behörighet att se kvarhållningen."
 
-msgid "deceased"
-msgstr "avliden"
-
-msgid "Membership kind"
-msgstr "Medlemskapstyp"
-
-msgid "Ordinary"
-msgstr "Ordinarie"
-
-msgid "Youth"
-msgstr "Ungdom"
-
-msgid "Family"
-msgstr "Familj"
-
-msgid "Birth date"
-msgstr "Födelsedatum"
-
-msgid "Active individual members: %d"
-msgstr "Aktiva enskilda medlemmar: %d"
-
-msgid "Active memberships: %d"
-msgstr "Aktiva medlemskap: %d"
-
-msgid "Company membership"
-msgstr "Företagsmedlemskap"
-
-msgid "Organization name"
-msgstr "Organisationsnamn"
-
-msgid "Organization number"
-msgstr "Organisationsnummer"
-
-msgid "Postal address"
-msgstr "Postadress"
-
-msgid "Save company membership"
-msgstr "Spara företagsmedlemskap"
-
-msgid "Family participant"
-msgstr "Familjedeltagare"
-
-msgid "Membership id"
-msgstr "Medlemskaps-id"
-
-msgid "Add participant"
-msgstr "Lägg till deltagare"
-
-msgid "Export membership structure"
-msgstr "Exportera medlemskapsstruktur"
-
-msgid "The structured file can describe memberships, periods, participants and organizations. It does not contain personal identity numbers."
-msgstr "Den strukturerade filen kan beskriva medlemskap, perioder, deltagare och organisationer. Den innehåller inte personnummer."
-
-msgid "Personal identity number"
-msgstr "Personnummer"
-
-msgid "Purpose"
-msgstr "Ändamål"
-
-msgid "Basis note"
-msgstr "Grund"
-
-msgid "Save identity record"
-msgstr "Spara identitetsuppgift"
-
-msgid "Guardian first name"
-msgstr "Vårdnadshavares förnamn"
-
-msgid "Guardian last name"
-msgstr "Vårdnadshavares efternamn"
-
-msgid "Relationship"
-msgstr "Relation"
-
-msgid "Add guardian"
-msgstr "Lägg till vårdnadshavare"
-
-msgid "Guardian"
-msgstr "Vårdnadshavare"
-
-msgid "The personal identity record is saved."
-msgstr "Identitetsuppgiften är sparad."
-
-msgid "The personal identity record is removed. Membership history remains."
-msgstr "Identitetsuppgiften är borttagen. Medlemskapshistoriken finns kvar."
-
-msgid "The guardian relationship is saved."
-msgstr "Vårdnadshavarrelationen är sparad."
-
-msgid "The guardian approval is saved. It records what the association says occurred."
-msgstr "Vårdnadshavarens godkännande är sparat. Det återger vad föreningen uppger har skett."
-
-msgid "The participant is saved on the existing membership."
-msgstr "Deltagaren är sparad på det befintliga medlemskapet."
-
-msgid "You do not have permission to change personal identity numbers."
-msgstr "Du har inte behörighet att ändra personnummer."
-
-msgid "Shows how many people are members of a membership that is active today. Company memberships and contact-only people are not included."
-msgstr "Visar hur många personer som är medlemmar i ett medlemskap som är aktivt idag. Företagsmedlemskap och rena kontaktpersoner räknas inte."
-
-msgid "The organization number is checked for format and checksum only. It is not checked against a company register."
-msgstr "Organisationsnumret kontrolleras bara till form och kontrollsiffra. Det slås inte upp i ett företagsregister."
-
-msgid "Choose an existing person, or leave that choice empty and enter a new person. The plugin does not merge people automatically."
-msgstr "Välj en befintlig person, eller lämna valet tomt och ange en ny person. Pluginet slår inte ihop personer automatiskt."
-
-msgid "Existing person"
-msgstr "Befintlig person"
-
-msgid "Checked for format and checksum only, including coordination numbers. Not checked against an external register."
-msgstr "Kontrolleras bara till form och kontrollsiffra, inklusive samordningsnummer. Slås inte upp i ett externt register."
-
-
-msgid "That person or membership could not be found."
-msgstr "Den personen eller det medlemskapet kunde inte hittas."
-
-msgid "Add ordinary member"
-msgstr "Lägg till ordinarie medlem"
-
-msgid "Add youth member"
-msgstr "Lägg till ungdomsmedlem"
-
-msgid "Add family membership"
-msgstr "Lägg till familjemedlemskap"
-
-msgid "Add company membership"
-msgstr "Lägg till företagsmedlemskap"
-
-msgid "Search"
-msgstr "Sök"
-
-msgid "All types"
-msgstr "Alla typer"
-
-msgid "All states"
-msgstr "Alla statusar"
-
-msgid "Inactive"
-msgstr "Inaktiv"
-
-msgid "History"
-msgstr "Historik"
-
-msgid "Filter"
-msgstr "Filtrera"
-
-msgid "Dates"
-msgstr "Datum"
-
-msgid "Context"
-msgstr "Sammanhang"
-
-msgid "No members yet. Add the association's first member."
-msgstr "Inga medlemmar ännu. Lägg till föreningens första medlem."
-
-msgid "No members match this search."
-msgstr "Inga medlemmar matchar den här sökningen."
-
-msgid "Back to members"
-msgstr "Tillbaka till medlemmar"
-
-msgid "Person"
-msgstr "Person"
-
-msgid "Currently an individual member."
-msgstr "Är enskild medlem just nu."
-
-msgid "Not currently an individual member."
-msgstr "Är inte enskild medlem just nu."
-
-msgid "No membership is recorded for this person."
-msgstr "Inget medlemskap är registrerat för den här personen."
-
-msgid "Actions"
-msgstr "Åtgärder"
-
-msgid "Mark this person as deceased? Open memberships end on that date and the history is retained."
-msgstr "Markera personen som avliden? Öppna medlemskap avslutas det datumet och historiken behålls."
-
-msgid "Mark person deceased"
-msgstr "Markera personen som avliden"
-
-msgid "Company contacts are not individual members."
-msgstr "Företagskontakter är inte enskilda medlemmar."
-
-msgid "No previous membership periods."
-msgstr "Inga tidigare medlemsperioder."
-
-msgid "Contacts"
-msgstr "Kontakter"
-
-msgid "No participants are recorded."
-msgstr "Inga deltagare är registrerade."
-
-msgid "Primary contact"
-msgstr "Primär kontakt"
-
-msgid "End membership on this date? Membership history is retained. Current board assignments may be shortened if no other membership coverage remains."
-msgstr "Avsluta medlemskapet det här datumet? Medlemshistoriken behålls. Pågående styrelseuppdrag kan kortas om inget annat medlemskap täcker dem."
-
-msgid "Start new membership period"
-msgstr "Starta ny medlemsperiod"
-
-msgid "Add family participant"
-msgstr "Lägg till familjedeltagare"
-
-msgid "Add company contact"
-msgstr "Lägg till företagskontakt"
-
-msgid "A company contact is not an individual member."
-msgstr "En företagskontakt är inte en enskild medlem."
-
-msgid "End this participation? Earlier participation history is retained. A board assignment may be shortened if no other membership coverage remains."
-msgstr "Avsluta det här deltagandet? Tidigare deltagarhistorik behålls. Ett styrelseuppdrag kan kortas om inget annat medlemskap täcker personen."
-
-msgid "End participation"
-msgstr "Avsluta deltagande"
-
-msgid "Guardians"
-msgstr "Vårdnadshavare"
-
-msgid "Guardian relationships are recorded only when someone adds them. The plugin does not infer a guardian from a shared name, family membership or address."
-msgstr "Vårdnadshavarrelationer registreras bara när någon lägger till dem. Pluginet härleder inte en vårdnadshavare från ett gemensamt namn, familjemedlemskap eller adress."
-
-msgid "No guardian relationships recorded."
-msgstr "Inga vårdnadshavarrelationer är registrerade."
-
-msgid "End this guardian relationship? The earlier record remains."
-msgstr "Avsluta den här vårdnadshavarrelationen? Den tidigare posten finns kvar."
-
-msgid "End guardian relationship"
-msgstr "Avsluta vårdnadshavarrelation"
-
-msgid "Guardian approvals"
-msgstr "Vårdnadshavargodkännanden"
-
-msgid "An approval record says what the association recorded. It does not prove that the approval was legally valid."
-msgstr "En godkännandepost beskriver vad föreningen har registrerat. Den bevisar inte att godkännandet var juridiskt giltigt."
-
-msgid "No guardian approvals recorded."
-msgstr "Inga vårdnadshavargodkännanden är registrerade."
-
-msgid "Withdrawn"
-msgstr "Återkallat"
-
-msgid "Withdrawal date"
-msgstr "Datum för återkallelse"
-
-msgid "Mark this guardian approval as withdrawn? The record remains."
-msgstr "Markera det här vårdnadshavargodkännandet som återkallat? Posten finns kvar."
-
-msgid "Withdraw guardian approval"
-msgstr "Återkalla vårdnadshavargodkännande"
-
-msgid "Existing guardian"
-msgstr "Befintlig vårdnadshavare"
-
-msgid "Approval date"
-msgstr "Godkännandedatum"
-
-msgid "Method"
-msgstr "Metod"
-
-msgid "Notice version"
-msgstr "Versionsnummer för informationen"
-
-msgid "Record guardian approval"
-msgstr "Registrera vårdnadshavargodkännande"
-
-msgid "Protected identity data"
-msgstr "Skyddade identitetsuppgifter"
-
-msgid "No personal identity number is recorded. A membership does not require one."
-msgstr "Inget personnummer är registrerat. Ett medlemskap kräver inte ett."
-
-msgid "Personal identity number: Recorded"
-msgstr "Personnummer: Registrerat"
-
-msgid "Collected"
-msgstr "Inhämtat"
-
-msgid "Checked for format and checksum only, including coordination numbers. Not checked against an external register. Not stored encrypted."
-msgstr "Kontrolleras bara för format och kontrollsiffra, även samordningsnummer. Kontrolleras inte mot ett externt register. Lagras inte krypterat."
-
-msgid "Remove the personal identity number? Membership history is retained."
-msgstr "Ta bort personnumret? Medlemshistoriken behålls."
-
-msgid "Remove personal identity number"
-msgstr "Ta bort personnummer"
-
-msgid "A company contact is not an individual member. You can add contacts after the membership is saved."
-msgstr "En företagskontakt är inte en enskild medlem. Du kan lägga till kontakter efter att medlemskapet har sparats."
-
-msgid "A personal identity number is not required. Guardian approval is not required just because a person is under 18. The association can record a guardian and an approval where it needs that record."
-msgstr "Ett personnummer krävs inte. Vårdnadshavargodkännande krävs inte bara för att en person är under 18. Föreningen kan registrera en vårdnadshavare och ett godkännande när den behöver den posten."
-
-msgid "A family membership is one membership shared by the people who take part. Add the primary contact here, then add the other participants."
-msgstr "Ett familjemedlemskap är ett medlemskap som delas av personerna som ingår. Lägg till den primära kontakten här och lägg sedan till de andra deltagarna."
-
-msgid "Add member"
-msgstr "Lägg till medlem"
-
-msgid "Choosing a person here is explicit. People are not merged because they share an email address."
-msgstr "Att välja en person här är ett aktivt val. Personer slås inte ihop för att de har samma e-postadress."
-
-msgid "Add membership for this person"
-msgstr "Lägg till medlemskap för den här personen"
-
-msgid "Company"
-msgstr "Företag"
-
-msgid "Previous membership"
-msgstr "Tidigare medlemskap"
-
-msgid "Company contact"
-msgstr "Företagskontakt"
-
-msgid "No current membership"
-msgstr "Inget pågående medlemskap"
-
-msgid "present"
-msgstr "pågår"
-
-msgid "Board assignment remains active because the person has continuous membership coverage."
-msgstr "Styrelseuppdraget är fortsatt aktivt eftersom personen har sammanhängande medlemstäckning."
-
-msgid "%s assignment remains active because the person has continuous membership coverage."
-msgstr "Uppdraget som %s är fortsatt aktivt eftersom personen har sammanhängande medlemstäckning."
-
-msgid "A board assignment now ends %s."
-msgstr "Ett styrelseuppdrag slutar nu %s."
-
-msgid "%1$s assignment now ends %2$s."
-msgstr "Uppdraget som %1$s slutar nu %2$s."
-
-msgid "The membership is saved."
-msgstr "Medlemskapet är sparat."
-
-msgid "The company membership is saved. A company contact is not an individual member."
-msgstr "Företagsmedlemskapet är sparat. En företagskontakt är inte en enskild medlem."
-
-msgid "The guardian relationship is saved. It is not inferred from name, family or address."
-msgstr "Vårdnadshavarrelationen är sparad. Den härleds inte från namn, familj eller adress."
-
-msgid "The guardian relationship is ended. The earlier record remains."
-msgstr "Vårdnadshavarrelationen är avslutad. Den tidigare posten finns kvar."
-
-msgid "The guardian approval is saved. It records what the association says occurred. It does not prove legal validity."
-msgstr "Vårdnadshavargodkännandet är sparat. Det registrerar vad föreningen uppger har skett. Det bevisar inte juridisk giltighet."
-
-msgid "The guardian approval is marked as withdrawn. The record remains."
-msgstr "Vårdnadshavargodkännandet är markerat som återkallat. Posten finns kvar."
-
-msgid "The participant is saved. The earlier participation history remains."
-msgstr "Deltagaren är sparad. Den tidigare deltagarhistoriken finns kvar."
-
-msgid "The company contact is saved. This does not make the person an individual member."
-msgstr "Företagskontakten är sparad. Det gör inte personen till enskild medlem."
-
-msgid "The membership is ended. Membership history is retained."
-msgstr "Medlemskapet är avslutat. Medlemshistoriken behålls."
-
-msgid "The participation is ended. The earlier participation history remains."
-msgstr "Deltagandet är avslutat. Den tidigare deltagarhistoriken finns kvar."
-
-msgid "The person is marked as deceased and open memberships are ended. The history remains."
-msgstr "Personen är markerad som avliden och öppna medlemskap är avslutade. Historiken finns kvar."
-
-msgid "That membership number is already in use."
-msgstr "Det medlemsnumret används redan."
-
-msgid "That organization number is already in use."
-msgstr "Det organisationsnumret används redan."
-
-msgid "This person already has overlapping active membership coverage."
-msgstr "Personen har redan överlappande aktivt medlemskap."
-
-msgid "The date does not cover a board assignment, so nothing changed."
-msgstr "Datumet täcker inte ett styrelseuppdrag, så inget ändrades."
-
-msgid "The end date cannot be before the start date."
-msgstr "Slutdatumet kan inte ligga före startdatumet."
-
-msgid "The birth date does not match the recorded personal identity number."
-msgstr "Födelsedatumet stämmer inte med det registrerade personnumret."
-
-msgid "There is no open participation to end."
-msgstr "Det finns inget pågående deltagande att avsluta."
-
-msgid "Choose an existing person."
-msgstr "Välj en befintlig person."
-
-msgid "A family participant is a member."
-msgstr "En familjedeltagare är en medlem."
-
-msgid "This guardian relationship already covers that time."
-msgstr "Den här vårdnadshavarrelationen täcker redan den tiden."
-
-msgid "Confirm the action before it is saved."
-msgstr "Bekräfta åtgärden innan den sparas."
-
-msgid "This action is only available for family memberships."
-msgstr "Den här åtgärden finns bara för familjemedlemskap."
-
-msgid "Company contacts can only be added to company memberships."
-msgstr "Företagskontakter kan bara läggas till på företagsmedlemskap."
-
-msgid "An ordinary or youth membership has one member."
-msgstr "Ett ordinarie medlemskap eller ungdomsmedlemskap har en medlem."
-
-msgid "Add a birth date before starting a youth membership."
-msgstr "Lägg till ett födelsedatum innan du startar ett ungdomsmedlemskap."
-
-msgid "A youth membership needs a birth date on the person. Add that date on the person first. A personal identity number is not used to fill it in."
-msgstr "Ett ungdomsmedlemskap behöver ett födelsedatum på personen. Lägg till datumet på personen först. Ett personnummer används inte för att fylla i det."
-
-msgid "No current board assignments."
-msgstr "Inga aktuella styrelseuppdrag."
-
-msgid "Add the first board assignment."
-msgstr "Lägg till det första styrelseuppdraget."
-
-msgid "Upcoming changes"
-msgstr "Kommande förändringar"
-
-msgid "No earlier board assignments."
-msgstr "Inga tidigare styrelseuppdrag."
-
-msgid "Change board"
-msgstr "Ändra styrelsen"
-
-msgid "Add holder: %s"
-msgstr "Lägg till innehavare: %s"
-
-msgid "Existing holders of this role stay in place."
-msgstr "Befintliga innehavare av den här rollen är kvar."
-
-msgid "Replace %s"
-msgstr "Ersätt %s"
-
-msgid "%s is the current holder. The new assignment starts on the date you choose, and this assignment ends the day before. The previous assignment remains in history."
-msgstr "%s är nuvarande innehavare. Det nya uppdraget börjar det datum du väljer, och det här uppdraget slutar dagen innan. Det tidigare uppdraget finns kvar i historiken."
-
-msgid "Since %s"
-msgstr "Sedan %s"
-
-msgid "%s – present"
-msgstr "%s – pågår"
-
-msgid "Leave the end date empty if the assignment continues until it is changed."
-msgstr "Lämna slutdatum tomt om uppdraget fortsätter tills det ändras."
-
-msgid "This may be shown on the public website for this board role."
-msgstr "Detta kan visas på den offentliga webbplatsen för det här styrelseuppdraget."
-
-msgid "Add holder"
-msgstr "Lägg till innehavare"
-
-msgid "Add assignment"
-msgstr "Lägg till uppdrag"
-
-msgid "active member"
-msgstr "aktiv medlem"
-
-msgid "membership ends %s"
-msgstr "medlemskapet slutar %s"
-
-msgid "membership starts %s"
-msgstr "medlemskapet börjar %s"
-
-msgid "not a current member"
-msgstr "inte medlem nu"
-
-msgid "End %1$s's %2$s assignment on the date below? The historical assignment will remain."
-msgstr "Avsluta uppdraget som %2$s för %1$s på datumet nedan? Det historiska uppdraget finns kvar."
-
-msgid "End this assignment"
-msgstr "Avsluta det här uppdraget"
-
-msgid "%1$s's assignment will end %2$s. %3$s's assignment will begin %4$s. The previous assignment remains in history."
-msgstr "Uppdraget för %1$s slutar %2$s. Uppdraget för %3$s börjar %4$s. Det tidigare uppdraget finns kvar i historiken."
-
-msgid "End %1$s's %2$s assignment on %3$s? The historical assignment will remain."
-msgstr "Avsluta uppdraget som %2$s för %1$s den %3$s? Det historiska uppdraget finns kvar."
-
-msgid "That person could not be found."
-msgstr "Den personen kunde inte hittas."
-
-msgid "That role could not be found."
-msgstr "Den rollen kunde inte hittas."
-
-msgid "That assignment could not be found."
-msgstr "Det uppdraget kunde inte hittas."
-
-msgid "Confirm the end date before ending the assignment."
-msgstr "Bekräfta slutdatumet innan uppdraget avslutas."
-
-msgid "Starts %s"
-msgstr "Börjar %s"
-
-msgid "A future %s is already scheduled:"
-msgstr "En framtida %s är redan planerad:"
-
-msgid "%s is the current holder. If the new start date falls inside this assignment, it ends the day before. A later start leaves the current end date unchanged. The earlier assignment remains in history."
-msgstr "%s är nuvarande innehavare. Om det nya startdatumet ligger inom det här uppdraget slutar det dagen innan. Ett senare startdatum lämnar det nuvarande slutdatumet oförändrat. Det tidigare uppdraget finns kvar i historiken."
-
-msgid "For a role with one holder, cancel a scheduled successor before adding another assignment."
-msgstr "För en roll med en innehavare behöver ett planerat uppdrag avbrytas innan ett nytt läggs till."
-
-msgid "Cancel %1$s's scheduled %2$s assignment starting %3$s? This assignment has not started and will not be kept as board history."
-msgstr "Avbryt det planerade uppdraget som %2$s för %1$s med start %3$s? Uppdraget har inte börjat och sparas inte som styrelsehistorik."
-
-msgid "Cancel this scheduled assignment"
-msgstr "Avbryt det här planerade uppdraget"
-
-msgid "Cancel scheduled assignment"
-msgstr "Avbryt planerat uppdrag"
-
-msgid "The current assignment still ends %1$s. %2$s's assignment will begin %3$s. The earlier assignment remains in history."
-msgstr "Det nuvarande uppdraget slutar fortfarande %1$s. Uppdraget för %2$s börjar %3$s. Det tidigare uppdraget finns kvar i historiken."
-
-msgid "The scheduled assignment was cancelled."
-msgstr "Det planerade uppdraget avbröts."
-
-msgid "The scheduled assignment was cancelled. The current %1$s still ends on %2$s. Review the current assignment if that end date should change."
-msgstr "Det planerade uppdraget avbröts. Nuvarande %1$s slutar fortfarande %2$s. Granska det nuvarande uppdraget om slutdatumet ska ändras."
-
-msgid "This role already has a scheduled assignment. Cancel that assignment before adding another."
-msgstr "Den här rollen har redan ett planerat uppdrag. Avbryt det innan ett nytt läggs till."
-
-msgid "Only a scheduled assignment that has not started can be cancelled."
-msgstr "Bara ett planerat uppdrag som inte har börjat kan avbrytas."
-
-msgid "The scheduled assignment could not be cancelled."
-msgstr "Det planerade uppdraget kunde inte avbrytas."
-
-msgid "Confirm before cancelling the scheduled assignment."
-msgstr "Bekräfta innan det planerade uppdraget avbryts."
-
-msgid "Edit meeting details"
-msgstr "Redigera mötesuppgifter"
-
-msgid "Save meeting details"
-msgstr "Spara mötesuppgifter"
-
-msgid "Start meeting"
-msgstr "Starta mötet"
-
-msgid "Record afterwards"
-msgstr "Anteckna i efterhand"
-
-msgid "Mark this meeting as held? Notes, decisions and tasks remain available for minutes preparation."
-msgstr "Markera mötet som hållet? Anteckningar, beslut och uppgifter finns kvar för protokollsarbetet."
-
-msgid "Mark meeting as held"
-msgstr "Markera mötet som hållet"
-
-msgid "Mark this meeting as held"
-msgstr "Markera det här mötet som hållet"
-
-msgid "The draft is composed from the meeting, attendance, agenda, notes marked for inclusion, decisions, and tasks."
-msgstr "Utkastet sätts ihop av mötet, närvaron, dagordningen, anteckningar som ska tas med, beslut och uppgifter."
-
-msgid "Review minutes"
-msgstr "Granska protokollet"
-
-msgid "Remove this participant from the meeting"
-msgstr "Ta bort den här deltagaren från mötet"
-
-msgid "Leave empty to use the position number."
-msgstr "Lämna tomt för att använda löpnumret."
-
-msgid "Meeting notes"
-msgstr "Anteckningar om mötet"
-
-msgid "Move up"
-msgstr "Flytta upp"
-
-msgid "Move down"
-msgstr "Flytta ned"
-
-msgid "Remove agenda item"
-msgstr "Ta bort punkt"
-
-msgid "Remove this agenda item"
-msgstr "Ta bort den här punkten"
-
-msgid "Include in minutes"
-msgstr "Ta med i protokollet"
-
-msgid "Remove this note"
-msgstr "Ta bort den här anteckningen"
-
-msgid "Mark follow-up done"
-msgstr "Markera uppföljningen som klar"
-
-msgid "Reopen follow-up"
-msgstr "Öppna uppföljningen igen"
-
-msgid "Remove this decision"
-msgstr "Ta bort det här beslutet"
-
-msgid "Mark task done"
-msgstr "Markera uppgiften som klar"
-
-msgid "Reopen task"
-msgstr "Öppna uppgiften igen"
-
-msgid "Remove this task"
-msgstr "Ta bort den här uppgiften"
-
-msgid "Add note"
-msgstr "Lägg till anteckning"
-
-msgid "A working note stays with the meeting. Only a note marked for inclusion is copied into the minutes draft."
-msgstr "En arbetsanteckning stannar vid mötet. Bara en anteckning som ska tas med kopieras in i protokollsutkastet."
-
-msgid "Add decision"
-msgstr "Lägg till beslut"
-
-msgid "Deadline"
-msgstr "Deadline"
-
-msgid "Add task"
-msgstr "Lägg till uppgift"
-
-msgid "Assignee"
-msgstr "Ansvarig för uppgiften"
-
-msgid "Due date"
-msgstr "Förfallodag"
-
-msgid "A task is something to be done. It is not the same as a decision."
-msgstr "En uppgift är något som ska göras. Den är inte samma sak som ett beslut."
-
-msgid "A held meeting is not finalized minutes. The draft is a copy of the meeting, attendance, agenda, notes marked for inclusion, decisions, and tasks."
-msgstr "Ett hållet möte är inte ett justerat protokoll. Utkastet är en kopia av mötet, närvaron, dagordningen, anteckningar som ska tas med, beslut och uppgifter."
-
-msgid "Create the minutes draft after the meeting is marked as held."
-msgstr "Skapa protokollsutkastet när mötet har markerats som hållet."
-
-msgid "Revision %d"
-msgstr "Revision %d"
-
-msgid "Minutes draft — revision %d"
-msgstr "Protokollsutkast — revision %d"
-
-msgid "Correction of revision %d"
-msgstr "Rättelse av revision %d"
-
-msgid "This revision is preserved. Further corrections use a new revision."
-msgstr "Den här revisionen bevaras. Ytterligare rättelser görs i en ny revision."
-
-msgid "The meeting details changed after the draft. Regenerating replaces the draft text with a new version from the meeting data."
-msgstr "Mötesuppgifterna har ändrats efter utkastet. Att återskapa ersätter utkasttexten med en ny version från mötesuppgifterna."
-
-msgid "This draft has been edited by hand."
-msgstr "Det här utkastet har ändrats för hand."
-
-msgid "Minutes text"
-msgstr "Protokollstext"
-
-msgid "Save draft"
-msgstr "Spara utkast"
-
-msgid "Regenerating replaces the current draft text with a new version generated from the meeting data."
-msgstr "Att återskapa ersätter den nuvarande utkasttexten med en ny version som skapas från mötesuppgifterna."
-
-msgid "Manual edits in this draft will be lost."
-msgstr "Manuella ändringar i det här utkastet försvinner."
-
-msgid "Replace the edited draft"
-msgstr "Ersätt det ändrade utkastet"
-
-msgid "Regenerate from meeting data"
-msgstr "Återskapa från mötesuppgifterna"
-
-msgid "Send for review / adjustment"
-msgstr "Skicka för granskning / justering"
-
-msgid "Return for changes"
-msgstr "Skicka tillbaka för ändring"
-
-msgid "Finalize minutes revision %d? The finalized revision is preserved as a historical record. Further corrections use a new correction revision rather than silently replacing it."
-msgstr "Lås protokollsrevision %d? Den låsta revisionen bevaras som historik. Ytterligare rättelser görs i en ny rättelserevision i stället för att tyst ersätta den."
-
-msgid "Finalize this revision"
-msgstr "Lås den här revisionen"
-
-msgid "Finalize"
-msgstr "Lås"
-
-msgid "Create correction revision"
-msgstr "Skapa rättelserevision"
-
-msgid "Superseded by revision %d"
-msgstr "Ersatt av revision %d"
-
-msgid "This revision is not the current minutes."
-msgstr "Den här revisionen är inte det aktuella protokollet."
-
-msgid "Published. The text is unchanged, and the signed copy stays private."
-msgstr "Publicerat. Texten är oförändrad, och den signerade kopian förblir privat."
-
-msgid "Visibility: Board. Publishing shows the finalized text and does not publish the signed copy."
-msgstr "Synlighet: Styrelsen. Publicering visar den låsta texten och publicerar inte den signerade kopian."
-
-msgid "Publish publicly"
-msgstr "Publicera öppet"
-
-msgid "Signed copy"
-msgstr "Signerad kopia"
-
-msgid "Signed copies are stored privately and are not published automatically."
-msgstr "Signerade kopior lagras privat och publiceras inte automatiskt."
-
-msgid "The signed scan is the archival original when it differs from the finalized text. The minutes text does not change when the scan is uploaded."
-msgstr "Den signerade skanningen är originalet i arkivet när den skiljer sig från den låsta texten. Protokollstexten ändras inte när skanningen laddas upp."
-
-msgid "A signed copy is stored."
-msgstr "En signerad kopia finns lagrad."
-
-msgid "Template headings are copied into this meeting. Changing the template later does not rewrite the meeting. A template is not a complete legal annual-meeting agenda."
-msgstr "Mallens rubriker kopieras in i det här mötet. En senare ändring av mallen skriver inte om mötet. En mall är inte en juridiskt fullständig årsmötesdagordning."
-
-msgid "Meeting templates"
-msgstr "Mötesmallar"
-
-msgid "Create the association's first meeting."
-msgstr "Skapa föreningens första möte."
-
-msgid "Upcoming"
-msgstr "Kommande"
-
-msgid "Open meeting"
-msgstr "Öppna mötet"
-
-msgid "Continue meeting"
-msgstr "Fortsätt mötet"
-
-msgid "Confirm before marking the meeting as held. Notes, decisions and tasks remain available for minutes preparation."
-msgstr "Bekräfta innan mötet markeras som hållet. Anteckningar, beslut och uppgifter finns kvar för protokollsarbetet."
-
-msgid "The meeting details are saved."
-msgstr "Mötesuppgifterna är sparade."
-
-msgid "A deceased person cannot be added to a meeting."
-msgstr "En avliden person kan inte läggas till på ett möte."
-
-msgid "That record belongs to another meeting."
-msgstr "Den posten hör till ett annat möte."
-
-msgid "Remove the notes, decisions, and tasks on this item before removing it."
-msgstr "Ta bort anteckningar, beslut och uppgifter på punkten innan den tas bort."
-
-msgid "Confirm before removing that record."
-msgstr "Bekräfta innan posten tas bort."
-
-msgid "Confirm before finalizing the revision."
-msgstr "Bekräfta innan revisionen låses."
-
-msgid "Finalized"
-msgstr "Låst"
-
-msgid "Add the association name and details."
-msgstr "Lägg till föreningens namn och uppgifter."
-
-msgid "Open profile"
-msgstr "Öppna profilen"
-
-msgid "Set up your association"
-msgstr "Kom igång med föreningen"
-
-msgid "Add members"
-msgstr "Lägg till medlemmar"
-
-msgid "Record the board"
-msgstr "Registrera styrelsen"
-
-msgid "Plan the first meeting"
-msgstr "Planera det första mötet"
-
-msgid "Add important documents"
-msgstr "Lägg till viktiga dokument"
-
-msgid "The association has no records yet."
-msgstr "Föreningen har inga poster ännu."
-
-msgid "Needs attention"
-msgstr "Behöver uppmärksamhet"
-
-msgid "Nothing needs attention right now."
-msgstr "Inget behöver uppmärksamhet just nu."
-
-msgid "Meeting in progress"
-msgstr "Möte pågår"
-
-msgid "%d overdue task"
-msgid_plural "%d overdue tasks"
-msgstr[0] "%d försenad uppgift"
-msgstr[1] "%d försenade uppgifter"
-
-msgid "View meeting work"
-msgstr "Visa mötesarbetet"
-
-msgid "Review minutes"
-msgstr "Granska protokollet"
-
-msgid "Continue"
-msgstr "Fortsätt"
-
-msgid "%1$s changes to %2$s on %3$s."
-msgstr "%1$s byts till %2$s den %3$s."
-
-msgid "View board"
-msgstr "Visa styrelsen"
-
-msgid "At a glance"
-msgstr "I korthet"
-
-msgid "Open tasks: %d"
-msgstr "Öppna uppgifter: %d"
-
-msgid "Scheduled: %1$s %2$s"
-msgstr "Planerat: %1$s %2$s"
-
-msgid "No meeting is in progress."
-msgstr "Inget möte pågår."
-
-msgid "Plan a meeting"
-msgstr "Planera ett möte"
-
-msgid "Held %s"
-msgstr "Hållet %s"
-
-msgid "Latest finalized minutes"
-msgstr "Senast låsta protokollet"
-
-msgid "Revision %d finalized"
-msgstr "Revision %d är låst"
-
-msgid "Open minutes"
-msgstr "Öppna protokollet"
-
-msgid "No finalized minutes."
-msgstr "Inget låst protokoll."
-
-msgid "No current board assignments."
-msgstr "Inga aktuella styrelseuppdrag."
-
-msgid "Upcoming board changes"
-msgstr "Kommande styrelseändringar"
-
-msgid "Decisions and tasks"
-msgstr "Beslut och uppgifter"
-
-msgid "Unassigned"
-msgstr "Ingen ansvarig"
-
-msgid "View documents"
-msgstr "Visa dokument"
-
-msgid "Minutes draft"
-msgstr "Protokollutkast"
-
-msgid "Minutes finalized"
-msgstr "Protokollet är låst"
-
-msgid "Minutes: awaiting draft"
-msgstr "Protokoll: utkast saknas"
-
-msgid "A WordPress account already uses this email."
-msgstr "Ett WordPress-konto använder redan den här e-postadressen."
-
-msgid "A member account can be created for this person."
-msgstr "Ett medlemskonto kan skapas för den här personen."
-
-msgid "Account email"
-msgstr "Kontots e-post"
-
-msgid "Confirm the WordPress account before linking it."
-msgstr "Bekräfta WordPress-kontot innan det kopplas."
-
-msgid "Create member account now"
-msgstr "Skapa medlemskonto nu"
-
-msgid "Existing account"
-msgstr "Befintligt konto"
-
-msgid "Find account"
-msgstr "Hitta konto"
-
-msgid "Link this WordPress account to the member."
-msgstr "Koppla det här WordPress-kontot till medlemmen."
-
-msgid "Link this account"
-msgstr "Länka det här kontot"
-
-msgid "Linked"
-msgstr "Kopplat"
-
-msgid "Member account"
-msgstr "Medlemskonto"
-
-msgid "Member email"
-msgstr "Medlemmens e-post"
-
-msgid "Needs attention"
-msgstr "Behöver åtgärd"
-
-msgid "No WordPress account is linked."
-msgstr "Inget WordPress-konto är kopplat."
-
-msgid "No WordPress account matches that username or email."
-msgstr "Inget WordPress-konto matchar det användarnamnet eller den e-postadressen."
-
-msgid "No WordPress account was created."
-msgstr "Inget WordPress-konto skapades."
-
-msgid "No account is created automatically for members under 18."
-msgstr "Inget konto skapas automatiskt för medlemmar under 18 år."
-
-msgid "No email address"
-msgstr "Ingen e-postadress"
-
-msgid "Not automatically created"
-msgstr "Inte skapat automatiskt"
-
-msgid "Not created"
-msgstr "Inte skapat"
-
-msgid "Retry account creation"
-msgstr "Försök skapa kontot igen"
-
-msgid "Status"
-msgstr "Status"
-
-msgid "That WordPress account is already linked to another person."
-msgstr "Det WordPress-kontot är redan kopplat till en annan person."
-
-msgid "The WordPress account is created. WordPress sends the password setup message."
-msgstr "WordPress-kontot är skapat. WordPress skickar meddelandet för att välja lösenord."
-
-msgid "The WordPress account is linked to this member."
-msgstr "WordPress-kontot är kopplat till den här medlemmen."
-
-msgid "The WordPress account is unlinked. The WordPress user was not deleted."
-msgstr "WordPress-kontot är frånkopplat. Själva WordPress-användaren är inte borttagen."
-
-msgid "The account could not be created."
-msgstr "Kontot kunde inte skapas."
-
-msgid "The member email and the WordPress account email are different. WordPress keeps its own account email."
-msgstr "Medlemmens e-post och WordPress-kontots e-post skiljer sig. WordPress behåller kontots egen e-post."
-
-msgid "The WordPress account could not be created."
-msgstr "WordPress-kontot kunde inte skapas."
-
-msgid "This email address is used by more than one person. Resolve the member email addresses before automatic account creation."
-msgstr "Den här e-postadressen används av mer än en person. Ordna medlemmarnas e-postadresser innan ett konto skapas automatiskt."
-
-msgid "This person is deceased."
-msgstr "Personen är avliden."
-
-msgid "This person is not an active individual member."
-msgstr "Personen är inte en aktiv enskild medlem."
-
-msgid "Unlink account"
-msgstr "Koppla loss konto"
-
-msgid "Unlink the current WordPress account before linking a different one."
-msgstr "Koppla loss det nuvarande WordPress-kontot innan ett annat kopplas."
-
-msgid "Unlink this WordPress account from the member? The WordPress user itself will not be deleted."
-msgstr "Koppla loss det här WordPress-kontot från medlemmen? Själva WordPress-användaren tas inte bort."
-
-msgid "WordPress account email"
-msgstr "WordPress-kontots e-post"
-
-msgid "WordPress account to link"
-msgstr "WordPress-konto att koppla"
-
-msgid "WordPress user"
-msgstr "WordPress-användare"
-
-msgid "WordPress username or email"
-msgstr "WordPress-användarnamn eller e-post"
-
-msgid "Clear broken account link"
-msgstr "Rensa trasig kontokoppling"
-
-msgid "Clear the broken WordPress account link? This only removes the missing account reference from the member record. It does not create a new account."
-msgstr "Rensa den trasiga WordPress-kontokopplingen? Det tar bara bort den saknade kontoreferensen från medlemsregistret. Det skapar inget nytt konto."
-
-msgid "The broken WordPress account link is cleared. No new account was created."
-msgstr "Den trasiga WordPress-kontokopplingen är rensad. Inget nytt konto skapades."
-
-msgid "The linked WordPress account no longer exists."
-msgstr "Det kopplade WordPress-kontot finns inte längre."
-
-msgid "The WordPress account exists, so the link was not cleared."
-msgstr "WordPress-kontot finns, så kopplingen rensades inte."
-
-msgid "Member area"
-msgstr "Mina sidor"
-
-msgid "Shows the logged-in person's own membership information."
-msgstr "Visar den inloggade personens egna medlemsuppgifter."
-
-msgid "Log in to view your membership."
-msgstr "Logga in för att se ditt medlemskap."
-
-msgid "Log in"
-msgstr "Logga in"
-
-msgid "Log out"
-msgstr "Logga ut"
-
-msgid "This WordPress account is not linked to a member record. Contact the association if you think this is incorrect."
-msgstr "Det här WordPress-kontot är inte kopplat till en medlem. Kontakta föreningen om det verkar fel."
-
-msgid "Your member information is not available."
-msgstr "Dina medlemsuppgifter är inte tillgängliga."
-
-msgid "Hello %s"
-msgstr "Hej %s"
-
-msgid "My details"
-msgstr "Mina uppgifter"
-
-msgid "My membership"
-msgstr "Mitt medlemskap"
-
-msgid "My documents"
-msgstr "Mina dokument"
-
-msgid "My privacy"
-msgstr "Min integritet"
-
-msgid "My account"
-msgstr "Mitt konto"
-
-msgid "Contact email"
-msgstr "Kontakt-e-post"
-
-msgid "Membership status: Active"
-msgstr "Medlemsstatus: Aktivt"
-
-msgid "Membership status: Not currently active"
-msgstr "Medlemsstatus: Inte aktivt"
-
-msgid "Membership number"
-msgstr "Medlemsnummer"
-
-msgid "Membership type"
-msgstr "Medlemskapstyp"
-
-msgid "From"
-msgstr "Från"
-
-msgid "To"
-msgstr "Till"
-
-msgid "Ongoing"
-msgstr "Pågår"
-
-msgid "Future"
-msgstr "Kommande"
-
-msgid "Member-only documents are available while your individual membership is active."
-msgstr "Medlemsdokument visas när ditt enskilda medlemskap är aktivt."
-
-msgid "Contact details"
-msgstr "Kontaktuppgifter"
-
-msgid "Birth date: Recorded"
-msgstr "Födelsedatum: registrerat"
-
-msgid "Birth date: Not recorded"
-msgstr "Födelsedatum: inte registrerat"
-
-msgid "Personal identity number: Not recorded"
-msgstr "Personnummer: inte registrerat"
-
-msgid "Membership history"
-msgstr "Medlemskapshistorik"
-
-msgid "WordPress account link"
-msgstr "Koppling till WordPress-konto"
-
-msgid "The association currently has these basic categories linked to your member record:"
-msgstr "Föreningen har just nu de här grunduppgifterna kopplade till din medlemspost:"
-
-msgid "This is a summary from Mina sidor. You can contact the association if information is incorrect or if you want to exercise privacy rights."
-msgstr "Det här är en sammanfattning från Mina sidor. Kontakta föreningen om något är fel eller om du vill utöva dina integritetsrättigheter."
-
-msgid "Contact the association if your information needs to be corrected."
-msgstr "Kontakta föreningen om uppgifterna behöver rättas."
+msgid "You have access to association settings."
+msgstr "Du har tillgång till föreningsinställningar."
 
 msgid "Your association contact email and your WordPress account email are different."
 msgstr "Föreningens kontakt-e-post och e-postadressen för WordPress-kontot är olika."
 
-msgid "Logged in as"
-msgstr "Inloggad som"
+msgid "Your member information is not available."
+msgstr "Dina medlemsuppgifter är inte tillgängliga."
 
-msgid "Settings"
-msgstr "Inställningar"
+msgid "Youth"
+msgstr "Ungdom"
 
-msgid "Association settings"
-msgstr "Föreningsinställningar"
+msgid "Youth — an individual membership for a younger person."
+msgstr "Ungdom — ett enskilt medlemskap för en yngre person."
 
-msgid "Board roles and meeting types describe how this association organizes its work. Built-in entries keep their system meaning. Add a custom entry when the association needs another one."
-msgstr "Styrelseroller och mötestyper beskriver hur föreningen organiserar sitt arbete. Inbyggda poster behåller sin systembetydelse. Lägg till en egen post när föreningen behöver en annan."
-
-msgid "Open association profile"
-msgstr "Öppna föreningsprofil"
-
-msgid "Board roles"
-msgstr "Styrelseroller"
-
-msgid "Holders"
-msgstr "Innehavare"
-
-msgid "Order"
-msgstr "Ordning"
-
-msgid "One holder"
-msgstr "En innehavare"
-
-msgid "Multiple holders"
-msgstr "Flera innehavare"
-
-msgid "This role has been used by a board assignment. Its name and holder rule are now preserved for history. You can still change its display order."
-msgstr "Den här rollen har använts i ett styrelseuppdrag. Namn och innehavarregel bevaras för historiken. Du kan fortfarande ändra visningsordningen."
-
-msgid "Edit %s"
-msgstr "Redigera %s"
-
-msgid "Meeting types"
-msgstr "Mötestyper"
-
-msgid "Meeting type"
-msgstr "Mötestyp"
-
-msgid "This meeting type has been used by a meeting or template. Its name is now preserved for history. You can still change its display order."
-msgstr "Den här mötestypen har använts av ett möte eller en mall. Namnet bevaras för historiken. Du kan fortfarande ändra visningsordningen."
-
-msgid "Move %s up"
-msgstr "Flytta %s uppåt"
-
-msgid "Move %s down"
-msgstr "Flytta %s nedåt"
-
-msgid "Allow several people to hold this role at the same time"
-msgstr "Tillåt att flera personer har rollen samtidigt"
-
-msgid "Add board role"
-msgstr "Lägg till styrelseroll"
-
-msgid "Add role"
-msgstr "Lägg till roll"
-
-msgid "Add meeting type"
-msgstr "Lägg till mötestyp"
-
-msgid "Save role"
-msgstr "Spara roll"
-
-msgid "Save meeting type"
-msgstr "Spara mötestyp"
-
-msgid "Other settings"
-msgstr "Övriga inställningar"
-
-msgid "Association profile"
-msgstr "Föreningsprofil"
-
-msgid "Minutes locking"
-msgstr "Protokollåsning"
-
-msgid "Minutes publication"
-msgstr "Publicering av protokoll"
-
-msgid "You do not have permission to change association settings."
-msgstr "Du har inte behörighet att ändra föreningsinställningar."
-
-msgid "The board role was added."
-msgstr "Styrelserollen lades till."
-
-msgid "The board role was saved."
-msgstr "Styrelserollen sparades."
-
-msgid "The board role order was saved."
-msgstr "Ordningen för styrelseroller sparades."
-
-msgid "A board role with that name already exists."
-msgstr "En styrelseroll med det namnet finns redan."
-
-msgid "A built-in board role keeps its name and holder rule."
-msgstr "En inbyggd styrelseroll behåller sitt namn och sin innehavarregel."
-
-msgid "Enter a board role name."
-msgstr "Ange ett namn på styrelserollen."
-
-msgid "The board role could not be saved."
-msgstr "Styrelserollen kunde inte sparas."
-
-msgid "The meeting type was added."
-msgstr "Mötestypen lades till."
-
-msgid "The meeting type was saved."
-msgstr "Mötestypen sparades."
-
-msgid "The meeting type order was saved."
-msgstr "Ordningen för mötestyper sparades."
-
-msgid "A meeting type with that name already exists."
-msgstr "En mötestyp med det namnet finns redan."
-
-msgid "A built-in meeting type keeps its name."
-msgstr "En inbyggd mötestyp behåller sitt namn."
-
-msgid "Enter a meeting type name."
-msgstr "Ange ett namn på mötestypen."
-
-msgid "The meeting type could not be saved."
-msgstr "Mötestypen kunde inte sparas."
-
-msgid "You do not have permission to view the association."
-msgstr "Du har inte behörighet att se föreningen."
-
-msgid "You have access to association settings."
-msgstr "Du har tillgång till föreningsinställningar."
-
-msgid "Open Settings"
-msgstr "Öppna inställningar"
-
-msgid "Decisions"
-msgstr "Beslut"
-
-msgid "Decisions are recorded in meetings. Follow-up status can change without changing finalized minutes."
-msgstr "Beslut antecknas i möten. Uppföljningsstatus kan ändras utan att ett justerat protokoll ändras."
-
-msgid "Open: %d"
-msgstr "Öppna: %d"
-
-msgid "Overdue: %d"
-msgstr "Försenade: %d"
-
-msgid "Done: %d"
-msgstr "Klara: %d"
-
-msgid "Follow-up"
-msgstr "Uppföljning"
-
-msgid "All"
-msgstr "Alla"
-
-msgid "Urgency"
-msgstr "Brådska"
-
-msgid "Overdue"
-msgstr "Försenad"
-
-msgid "Follow-up: Open"
-msgstr "Uppföljning: Öppen"
-
-msgid "Follow-up: Done"
-msgstr "Uppföljning: Klar"
-
-msgid "Responsible: %s"
-msgstr "Ansvarig: %s"
-
-msgid "Due date: %s"
-msgstr "Senast: %s"
-
-msgid "No deadline"
-msgstr "Inget slutdatum"
-
-msgid "Source"
-msgstr "Källa"
-
-msgid "Meeting unavailable"
-msgstr "Mötet är inte tillgängligt"
-
-msgid "Agenda item unavailable"
-msgstr "Dagordningspunkten är inte tillgänglig"
-
-msgid "Meeting-level decision"
-msgstr "Beslut på mötesnivå"
-
-msgid "View decisions"
-msgstr "Visa beslut"
-
-msgid "No decisions have been recorded yet."
-msgstr "Inga beslut har antecknats ännu."
-
-msgid "Decisions are added from a meeting workspace."
-msgstr "Beslut läggs till från ett mötes arbetsyta."
-
-msgid "Open meetings"
-msgstr "Öppna möten"
-
-msgid "No decisions match these filters."
-msgstr "Inga beslut matchar de här filtren."
-
-msgid "Clear filters"
-msgstr "Rensa filter"
-
-msgid "Follow-up was marked done."
-msgstr "Uppföljningen markerades som klar."
-
-msgid "Follow-up was reopened."
-msgstr "Uppföljningen öppnades igen."
-
-msgid "The decision could not be updated."
-msgstr "Beslutet kunde inte uppdateras."
-
-msgid "You do not have permission to view decisions."
-msgstr "Du har inte behörighet att se beslut."
-
-msgid "Person unavailable"
-msgstr "Personen är inte tillgänglig"
-
-msgid "Page %1$d of %2$d"
-msgstr "Sida %1$d av %2$d"
-
-msgid "Previous"
-msgstr "Föregående"
-
-msgid "Next"
-msgstr "Nästa"
-
-msgid "Tasks"
-msgstr "Uppgifter"
-
-msgid "Tasks are recorded from meetings."
-msgstr "Uppgifter antecknas i möten."
-
-msgid "No tasks have been recorded yet."
-msgstr "Inga uppgifter har antecknats ännu."
-
-msgid "Tasks are added from a meeting workspace."
-msgstr "Uppgifter läggs till från ett mötes arbetsyta."
-
-msgid "No tasks match these filters."
-msgstr "Inga uppgifter matchar de här filtren."
-
-msgid "Status: %s"
-msgstr "Status: %s"
-
-msgid "Assignee: %s"
-msgstr "Ansvarig: %s"
-
-msgid "No due date"
-msgstr "Inget förfallodatum"
-
-msgid "Meeting-level task"
-msgstr "Uppgift på mötesnivå"
-
-msgid "View tasks"
-msgstr "Visa uppgifter"
-
-msgid "Task was marked done."
-msgstr "Uppgiften markerades som klar."
-
-msgid "Task was reopened."
-msgstr "Uppgiften öppnades igen."
-
-msgid "The task could not be updated."
-msgstr "Uppgiften kunde inte uppdateras."
-
-msgid "You do not have permission to view tasks."
-msgstr "Du har inte behörighet att se uppgifter."
