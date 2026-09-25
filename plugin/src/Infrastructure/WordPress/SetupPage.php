@@ -216,10 +216,7 @@ final class SetupPage
         echo '<label>' . esc_html__('Day', 'foreningsplugin') . ' <input type="number" name="membership_year_day" min="1" max="31" required value="' . esc_attr((string) $profile->membershipYearStartDay()) . '"></label>';
         echo '</td></tr>';
         echo '</tbody></table>';
-        echo '<p>';
-        echo '<button type="submit">' . esc_html__('Save and continue', 'foreningsplugin') . '</button>';
-        echo '</p></form>';
-        self::backOnly(SetupStep::ASSOCIATION);
+        self::primarySubmit(SetupStep::ASSOCIATION, __('Save and continue', 'foreningsplugin'), true, false);
     }
 
     private static function membership(): void
@@ -233,7 +230,7 @@ final class SetupPage
         echo '<li>' . esc_html__('Company — an organization membership, not a person.', 'foreningsplugin') . '</li>';
         echo '</ul>';
         echo '<p>' . esc_html__('This step does not create members and does not turn kinds on or off.', 'foreningsplugin') . '</p>';
-        self::continueOrSkip(SetupStep::MEMBERSHIP);
+        self::continueStep(SetupStep::MEMBERSHIP);
     }
 
     private static function board(): void
@@ -256,7 +253,7 @@ final class SetupPage
         echo esc_html__('Allow several people to hold this role at the same time', 'foreningsplugin') . '</label></p>';
         echo '<p><button type="submit">' . esc_html__('Add role', 'foreningsplugin') . '</button></p>';
         echo '</form>';
-        self::continueOrSkip(SetupStep::BOARD);
+        self::continueStep(SetupStep::BOARD);
     }
 
     private static function meetings(): void
@@ -276,7 +273,7 @@ final class SetupPage
         echo '<input id="assoc-setup-type" name="meeting_type_name" type="text" required maxlength="100"></p>';
         echo '<p><button type="submit">' . esc_html__('Add meeting type', 'foreningsplugin') . '</button></p>';
         echo '</form>';
-        self::continueOrSkip(SetupStep::MEETINGS);
+        self::continueStep(SetupStep::MEETINGS);
     }
 
     private static function minutes(): void
@@ -303,11 +300,7 @@ final class SetupPage
             $checked = in_array(Capabilities::PUBLISH_MINUTES, $setting->capabilitiesFor($role), true);
             echo '<p><label><input type="checkbox" name="publish_roles[]" value="' . esc_attr($role) . '"' . checked($checked, true, false) . '> ' . esc_html($label) . '</label></p>';
         }
-        echo '<p>';
-        self::navButtons(SetupStep::MINUTES, true, true);
-        echo '<button type="submit">' . esc_html__('Save and continue', 'foreningsplugin') . '</button>';
-        echo '</p></form>';
-        self::navAuxForms(SetupStep::MINUTES, true, true);
+        self::primarySubmit(SetupStep::MINUTES, __('Save and continue', 'foreningsplugin'), true, true);
     }
 
     private static function privacy(): void
@@ -320,11 +313,7 @@ final class SetupPage
         wp_nonce_field('assoc_setup_save_privacy');
         echo '<p><label>' . esc_html__('Years', 'foreningsplugin') . ' <input type="number" name="years" min="1" max="100" required value="' . esc_attr((string) $years) . '"></label></p>';
         echo '<p>' . esc_html__('Saving here only stores the retention setting. It does not apply erasure now.', 'foreningsplugin') . '</p>';
-        echo '<p>';
-        self::navButtons(SetupStep::PRIVACY, true, true);
-        echo '<button type="submit">' . esc_html__('Save and continue', 'foreningsplugin') . '</button>';
-        echo '</p></form>';
-        self::navAuxForms(SetupStep::PRIVACY, true, true);
+        self::primarySubmit(SetupStep::PRIVACY, __('Save and continue', 'foreningsplugin'), true, true);
     }
 
     private static function complete(AssociationProfile $profile, SetupWizard $wizard): void
@@ -341,11 +330,13 @@ final class SetupPage
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_setup_finish">';
         wp_nonce_field('assoc_setup_finish');
-        echo '<p>';
-        self::navButtons(SetupStep::COMPLETE, true, false);
-        echo '<button type="submit"' . ($wizard->canFinish($profile) ? '' : ' disabled') . '>' . esc_html__('Finish setup', 'foreningsplugin') . '</button>';
-        echo '</p></form>';
-        self::navAuxForms(SetupStep::COMPLETE, true, false);
+        self::primarySubmit(
+            SetupStep::COMPLETE,
+            __('Finish setup', 'foreningsplugin'),
+            true,
+            false,
+            $wizard->canFinish($profile)
+        );
     }
 
     private static function progress(string $step): void
@@ -386,26 +377,36 @@ final class SetupPage
         };
     }
 
-    private static function continueOrSkip(string $step): void
+    /**
+     * Close the open primary form with Back/Skip via form= and emit aux forms
+     * after </form>. Nested forms are invalid HTML: browsers close the outer
+     * form early and leave the primary submit with no form association.
+     */
+    private static function primarySubmit(
+        string $step,
+        string $label,
+        bool $back,
+        bool $skip,
+        bool $enabled = true
+    ): void {
+        echo '<p>';
+        self::navButtons($step, $back, $skip);
+        echo '<button type="submit"' . ($enabled ? '' : ' disabled') . '>' . esc_html($label) . '</button>';
+        echo '</p></form>';
+        self::navAuxForms($step, $back, $skip);
+    }
+
+    /**
+     * Informational steps: Continue is the primary submit; Back/Skip use sibling
+     * hidden forms via form= so nothing nests.
+     */
+    private static function continueStep(string $step): void
     {
-        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline">';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_setup_skip">';
         echo '<input type="hidden" name="from_step" value="' . esc_attr($step) . '">';
         wp_nonce_field('assoc_setup_skip');
-        echo '<button type="submit">' . esc_html__('Continue', 'foreningsplugin') . '</button> ';
-        echo '<button type="submit">' . esc_html__('Skip', 'foreningsplugin') . '</button>';
-        echo '</form> ';
-        self::backOnly($step);
-    }
-
-    private static function backOnly(string $step): void
-    {
-        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline">';
-        echo '<input type="hidden" name="action" value="assoc_setup_back">';
-        echo '<input type="hidden" name="from_step" value="' . esc_attr($step) . '">';
-        wp_nonce_field('assoc_setup_back');
-        echo '<button type="submit">' . esc_html__('Back', 'foreningsplugin') . '</button>';
-        echo '</form>';
+        self::primarySubmit($step, __('Continue', 'foreningsplugin'), true, true);
     }
 
     private static function navButtons(string $step, bool $back, bool $skip): void
@@ -419,11 +420,6 @@ final class SetupPage
         }
     }
 
-    /**
-     * Hidden Back/Skip forms must sit outside the step's save form. Nested
-     * forms are invalid HTML: browsers close the outer form early, which leaves
-     * Save and continue with no form association.
-     */
     private static function navAuxForms(string $step, bool $back, bool $skip): void
     {
         if ($back) {

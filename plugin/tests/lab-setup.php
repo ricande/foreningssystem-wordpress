@@ -296,6 +296,90 @@ if (! str_contains($settingsHtml, $roleName) || ! str_contains($settingsHtml, $t
 $lockRoles = [RoleBundles::SECRETARY, RoleBundles::CHAIR];
 $publishRoles = [RoleBundles::CHAIR];
 
+$formDepth = static function (string $html): array {
+    $depth = 0;
+    $max = 0;
+    $nested = 0;
+    $length = strlen($html);
+    $i = 0;
+
+    while ($i < $length) {
+        if (strncasecmp(substr($html, $i, 5), '<form', 5) === 0) {
+            $depth++;
+            $max = max($max, $depth);
+            if ($depth > 1) {
+                $nested++;
+            }
+            $i += 5;
+            continue;
+        }
+
+        if (strncasecmp(substr($html, $i, 7), '</form>', 7) === 0) {
+            $depth = max(0, $depth - 1);
+            $i += 7;
+            continue;
+        }
+
+        $i++;
+    }
+
+    return ['max' => $max, 'nested' => $nested, 'final' => $depth];
+};
+
+$buttonLabelPos = static function (string $html, array $labels): int|false {
+    foreach ($labels as $label) {
+        $pos = strpos($html, $label);
+        if ($pos !== false) {
+            return $pos;
+        }
+    }
+
+    return false;
+};
+
+$wizardSteps = [
+    'welcome' => ['Start setup', 'Starta guiden'],
+    'association' => ['Save and continue', 'Spara och fortsätt'],
+    'membership' => ['Continue', 'Fortsätt'],
+    'board' => ['Continue', 'Fortsätt'],
+    'meetings' => ['Continue', 'Fortsätt'],
+    'minutes' => ['Save and continue', 'Spara och fortsätt'],
+    'privacy' => ['Save and continue', 'Spara och fortsätt'],
+    'complete' => ['Finish setup', 'Avsluta guiden'],
+];
+
+foreach ($wizardSteps as $step => $primaryLabels) {
+    $stepHtml = $capture(static function () use ($step): void {
+        $_GET['step'] = $step;
+        SetupPage::render();
+        unset($_GET['step']);
+    });
+    $depth = $formDepth($stepHtml);
+    $primaryPos = $buttonLabelPos($stepHtml, $primaryLabels);
+
+    if ($depth['max'] > 1 || $depth['nested'] > 0 || $depth['final'] !== 0) {
+        $fail('Setup step ' . $step . ' has nested or unbalanced forms (max=' . $depth['max'] . ', nested=' . $depth['nested'] . ', final=' . $depth['final'] . ').');
+    }
+
+    if ($primaryPos === false) {
+        $fail('Setup step ' . $step . ' is missing its primary action button.');
+    }
+
+    if (in_array($step, ['association', 'membership', 'board', 'meetings', 'minutes', 'privacy', 'complete'], true)) {
+        $backFormPos = strpos($stepHtml, 'id="assoc-setup-back-' . $step . '"');
+        if ($backFormPos === false || $backFormPos < $primaryPos) {
+            $fail('Setup step ' . $step . ' must emit the Back aux form after the primary button (sibling, not nested).');
+        }
+    }
+
+    if (in_array($step, ['membership', 'board', 'meetings', 'minutes', 'privacy'], true)) {
+        $skipFormPos = strpos($stepHtml, 'id="assoc-setup-skip-' . $step . '"');
+        if ($skipFormPos === false || $skipFormPos < $primaryPos) {
+            $fail('Setup step ' . $step . ' must emit the Skip aux form after the primary button (sibling, not nested).');
+        }
+    }
+}
+
 $minutesHtml = $capture(static function (): void {
     $_GET['step'] = 'minutes';
     SetupPage::render();
@@ -303,30 +387,14 @@ $minutesHtml = $capture(static function (): void {
 });
 
 $saveActionPos = strpos($minutesHtml, 'value="assoc_setup_save_minutes"');
-$saveButtonPos = strpos($minutesHtml, 'Save and continue');
-if ($saveButtonPos === false) {
-    $saveButtonPos = strpos($minutesHtml, 'Spara och fortsätt');
-}
-$backFormPos = strpos($minutesHtml, 'id="assoc-setup-back-minutes"');
-$skipFormPos = strpos($minutesHtml, 'id="assoc-setup-skip-minutes"');
+$saveButtonPos = $buttonLabelPos($minutesHtml, ['Save and continue', 'Spara och fortsätt']);
 
-if (
-    $saveActionPos === false
-    || $saveButtonPos === false
-    || $backFormPos === false
-    || $skipFormPos === false
-    || $saveButtonPos < $saveActionPos
-) {
-    $fail('Minutes step is missing the save form, Save and continue, or Back/Skip forms.');
+if ($saveActionPos === false || $saveButtonPos === false || $saveButtonPos < $saveActionPos) {
+    $fail('Minutes step is missing the save form or Save and continue.');
 }
 
-$saveChunk = substr($minutesHtml, $saveActionPos, $saveButtonPos - $saveActionPos);
-if (str_contains($saveChunk, '<form')) {
+if (str_contains(substr($minutesHtml, $saveActionPos, $saveButtonPos - $saveActionPos), '<form')) {
     $fail('Minutes save form nests another form before Save and continue.');
-}
-
-if ($backFormPos < $saveButtonPos || $skipFormPos < $saveButtonPos) {
-    $fail('Minutes Back/Skip forms must come after Save and continue (outside the save form).');
 }
 
 $privacyHtml = $capture(static function (): void {
@@ -336,20 +404,14 @@ $privacyHtml = $capture(static function (): void {
 });
 
 $privacySavePos = strpos($privacyHtml, 'value="assoc_setup_save_privacy"');
-$privacyButtonPos = strpos($privacyHtml, 'Save and continue');
-if ($privacyButtonPos === false) {
-    $privacyButtonPos = strpos($privacyHtml, 'Spara och fortsätt');
-}
-$privacyBackPos = strpos($privacyHtml, 'id="assoc-setup-back-privacy"');
+$privacyButtonPos = $buttonLabelPos($privacyHtml, ['Save and continue', 'Spara och fortsätt']);
 
 if (
     $privacySavePos === false
     || $privacyButtonPos === false
-    || $privacyBackPos === false
     || str_contains(substr($privacyHtml, $privacySavePos, $privacyButtonPos - $privacySavePos), '<form')
-    || $privacyBackPos < $privacyButtonPos
 ) {
-    $fail('Privacy step nests Back/Skip inside the save form or lacks Save and continue.');
+    $fail('Privacy step nests a form before Save and continue or lacks the save action.');
 }
 
 $redirectMinutes = '';
