@@ -20,6 +20,8 @@ A new member account is a WordPress `subscriber`. The plugin asks WordPress for 
 
 An explicit link can attach an existing WordPress user, including an officer, without copying the Person's email and without changing that user's roles. Unlinking clears only the Person link. Ending a membership leaves both the Person and the WordPress user in place. Member-only document access still requires the logged-in user, the explicit Person link, and current active individual coverage. The same email address alone never grants that access.
 
+A WordPress user can be deleted in WordPress while the Person record still stores that user id. The plugin treats that as a broken link. It does not clear the link or create a replacement account in the background, because the plugin cannot tell an intentional deletion from a mistake or a partial restore. An officer with member-edit permission can explicitly clear the stale reference. After that, ordinary provisioning may create a new subscriber account, or the officer can link a different existing WordPress user. This is an identity-safety rule for the account link, not a privacy or legal requirement.
+
 Two unlinked People who share an email are both left unlinked. A WordPress user who already has that email is not linked automatically and a second user is not created. Changing a linked Person's contact email does not change the WordPress account email.
 
 Public WordPress registration is left unchanged. These accounts are created from membership data.

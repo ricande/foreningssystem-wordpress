@@ -354,6 +354,42 @@ clean_user_cache(1);
 $annaPage = lab_account_page($annaId);
 $johan = WordpressPeople::exchange()->import("first_name;last_name;email;person_status;membership_number;membership_type;membership_status;started_on;ended_on\nJohan;Historisk;johan@example.test;known;LAB-ACCT-JOHAN;ordinary;ended;2020-01-01;2024-01-01\n");
 $johanLink = $wpdb->get_var($wpdb->prepare("SELECT wp_user_id FROM {$people} WHERE email = %s", 'johan@example.test'));
+$annaUserRemains = get_userdata($annaUserId) instanceof WP_User;
+require_once ABSPATH . 'wp-admin/includes/user.php';
+wp_delete_user($annaUserId);
+$staleLink = (int) $wpdb->get_var($wpdb->prepare("SELECT wp_user_id FROM {$people} WHERE id = %d", $annaId));
+$brokenPage = lab_account_page($annaId);
+$brokenMailBefore = count(lab_account_messages('anna@example.test'));
+$accounts->reconcile($today);
+$accounts->reconcile($today);
+$staleAfterReconcile = (int) $wpdb->get_var($wpdb->prepare("SELECT wp_user_id FROM {$people} WHERE id = %d", $annaId));
+$brokenMailAfter = count(lab_account_messages('anna@example.test'));
+$annaUsersWhileBroken = count(get_users(['search' => 'anna@example.test', 'search_columns' => ['user_email']]));
+$clearedBroken = $accounts->clearMissingLink($annaId);
+$clearedLink = $wpdb->get_var($wpdb->prepare("SELECT wp_user_id FROM {$people} WHERE id = %d", $annaId));
+$replaced = $accounts->provision($annaId, $today);
+$replacedUserId = (int) $wpdb->get_var($wpdb->prepare("SELECT wp_user_id FROM {$people} WHERE id = %d", $annaId));
+$replacedUser = get_userdata($replacedUserId);
+$replacedMail = count(lab_account_messages('anna@example.test'));
+$replacedAgain = $accounts->provision($annaId, $today);
+$replacedUserAgain = (int) $wpdb->get_var($wpdb->prepare("SELECT wp_user_id FROM {$people} WHERE id = %d", $annaId));
+$replacedMailAgain = count(lab_account_messages('anna@example.test'));
+$replacementPassword = wp_generate_password(24, true, true);
+wp_set_password($replacementPassword, $replacedUserId);
+$replacementAuthenticated = wp_authenticate('anna@example.test', $replacementPassword);
+unset($replacementPassword);
+wp_set_current_user($replacedUserId);
+clean_user_cache($replacedUserId);
+$replacementRead = false;
+
+try {
+    $replacementRead = str_starts_with($archive->read($documentId), '%PDF');
+} catch (NotAllowed) {
+    $replacementRead = false;
+}
+
+wp_set_current_user(1);
+clean_user_cache(1);
 
 $checks = [
     'anna user' => $annaUser instanceof WP_User && in_array('subscriber', $annaUser->roles, true) && $annaUser->user_email === 'anna@example.test',
@@ -363,7 +399,7 @@ $checks = [
     'anna mail' => $annaMessages !== [] && $annaSetup === true,
     'anna page hides password' => ! str_contains($annaPage, 'type="password"') && ! str_contains($annaPage, 'assoc-member-'),
     'anna active document' => $activeRead === true && $activeBlock === true,
-    'anna ended keeps link' => $endedLink === $annaUserId && get_userdata($annaUserId) instanceof WP_User && $endedDenied === true && ! str_contains($endedBlock, 'LAB-ACCOUNT stadgar'),
+    'anna ended keeps link' => $endedLink === $annaUserId && $annaUserRemains === true && $endedDenied === true && ! str_contains($endedBlock, 'LAB-ACCOUNT stadgar'),
     'anna reopened' => $reopenedLink === $annaUserId && $reopenedRead === true && $annaMessagesAfter === count($annaMessages) && $annaUsersAfter === 1,
     'lisa minor' => $lisaLink === null && count($lisaMessages) === $lisaMessagesBefore && str_contains($lisaPage, 'Inget konto skapas automatiskt för medlemmar under 18 år.') && ! str_contains($lisaPage, 'assoc_create_member_account'),
     'erik family account' => $erikUser instanceof WP_User && $erikLink !== $annaUserId && $erikUser->user_email === 'erik@example.test',
@@ -378,6 +414,9 @@ $checks = [
     'import rules' => $imported->errors() !== [] && $importAdult > 0 && $importMinor === null && $importAdultAgain === $importAdult && $importMessages === $importMessagesBefore + 1 && $importMessagesAgain === $importMessages,
     'johan historical' => $johan->errors() === [] && $johanLink === null,
     'same email without link' => $sameEmailDenied === true,
+    'broken link stays' => $staleLink === $annaUserId && $staleAfterReconcile === $annaUserId && $annaUsersWhileBroken === 0 && $brokenMailAfter === $brokenMailBefore && str_contains($brokenPage, 'Det kopplade WordPress-kontot finns inte längre.') && str_contains($brokenPage, 'assoc_clear_broken_member_account') && ! str_contains($brokenPage, 'assoc_create_member_account'),
+    'clear broken link' => $clearedBroken->outcome->value === 'broken_link_cleared' && $clearedLink === null,
+    'replacement account' => $replaced->outcome->value === 'created' && $replacedUser instanceof WP_User && $replacedUserId !== $annaUserId && in_array('subscriber', $replacedUser->roles, true) && $replacedUserAgain === $replacedUserId && $replacedAgain->outcome->value === 'already_linked' && $replacedMail === $brokenMailAfter + 1 && $replacedMailAgain === $replacedMail && $replacementAuthenticated instanceof WP_User && $replacementRead === true,
     'registration unchanged' => get_option('users_can_register') === $registration,
 ];
 $failed = array_keys(array_filter($checks, static fn (bool $passed): bool => $passed !== true));

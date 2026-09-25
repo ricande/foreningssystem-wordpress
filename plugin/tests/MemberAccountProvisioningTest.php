@@ -497,6 +497,116 @@ CSV;
         self::assertCount(1, $accounts->notified);
     }
 
+    public function test_a_live_wordpress_user_stays_already_linked(): void
+    {
+        [$service, $people, $memberships, $accounts] = $this->stack();
+        $person = $people->add(new Person(null, 'Anna', 'Andersson', 'anna@example.test', PersonStatus::Known, 37, AssociationDate::fromIso('1990-05-01')));
+        $accounts->seed(37, 'assoc-member-1', 'anna@example.test', 'Anna Andersson', ['subscriber']);
+        $memberships->grant((int) $person->id(), 'M-LIVE', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null);
+
+        $result = $service->provision((int) $person->id(), $this->on);
+
+        self::assertSame(AccountOutcome::AlreadyLinked, $result->outcome);
+        self::assertSame(37, $people->find((int) $person->id())?->wordpressUserId());
+        self::assertSame([], $accounts->created);
+        self::assertSame([], $accounts->notified);
+    }
+
+    public function test_a_missing_wordpress_user_is_a_broken_link_and_reconciliation_leaves_it(): void
+    {
+        [$service, $people, $memberships, $accounts] = $this->stack();
+        $person = $people->add(new Person(null, 'Anna', 'Andersson', 'anna@example.test', PersonStatus::Known, 37, AssociationDate::fromIso('1990-05-01')));
+        $memberships->grant((int) $person->id(), 'M-BROKEN', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null);
+        $access = new MemberDocumentAccess($people, $memberships);
+
+        $first = $service->reconcile($this->on);
+        $second = $service->reconcile($this->on);
+
+        self::assertSame(AccountOutcome::MissingWordpressUser, $first[0]->outcome);
+        self::assertSame(AccountOutcome::MissingWordpressUser, $second[0]->outcome);
+        self::assertSame(37, $people->find((int) $person->id())?->wordpressUserId());
+        self::assertSame([], $accounts->created);
+        self::assertSame([], $accounts->deleted);
+        self::assertSame([], $accounts->notified);
+        self::assertFalse($access->allows(9, $this->on));
+        self::assertFalse($access->allows(0, $this->on));
+    }
+
+    public function test_clearing_a_broken_link_requires_permission_and_removes_only_the_person_reference(): void
+    {
+        [$service, $people, $memberships, $accounts] = $this->stack();
+        $person = $people->add(new Person(null, 'Anna', 'Andersson', 'anna@example.test', PersonStatus::Known, 37, AssociationDate::fromIso('1990-05-01')));
+        $memberships->grant((int) $person->id(), 'M-CLEAR', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null);
+        $denied = new MemberAccountProvisioning($people, $memberships, $accounts, new AllowMemberEdits(false));
+
+        try {
+            $denied->clearMissingLink((int) $person->id());
+            self::fail('Clearing a broken link without permission should be refused.');
+        } catch (NotAllowed) {
+            self::assertSame(37, $people->find((int) $person->id())?->wordpressUserId());
+        }
+
+        $cleared = $service->clearMissingLink((int) $person->id());
+
+        self::assertSame(AccountOutcome::BrokenLinkCleared, $cleared->outcome);
+        self::assertNull($people->find((int) $person->id())?->wordpressUserId());
+        self::assertSame('anna@example.test', $people->find((int) $person->id())?->email());
+        self::assertSame([], $accounts->deleted);
+        self::assertSame([], $accounts->notified);
+        self::assertSame([], $accounts->created);
+    }
+
+    public function test_clearing_a_broken_link_stops_when_the_wordpress_user_exists_again(): void
+    {
+        [$service, $people, $memberships, $accounts] = $this->stack();
+        $person = $people->add(new Person(null, 'Anna', 'Andersson', 'anna@example.test', PersonStatus::Known, 37, AssociationDate::fromIso('1990-05-01')));
+        $memberships->grant((int) $person->id(), 'M-RACE', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null);
+
+        self::assertSame(AccountOutcome::MissingWordpressUser, $service->status((int) $person->id(), $this->on)->outcome);
+
+        $accounts->seed(37, 'assoc-member-restored', 'anna@example.test', 'Anna Andersson', ['subscriber']);
+        $result = $service->clearMissingLink((int) $person->id());
+
+        self::assertSame(AccountOutcome::LinkStillPresent, $result->outcome);
+        self::assertSame(37, $people->find((int) $person->id())?->wordpressUserId());
+        self::assertSame(['subscriber'], $accounts->roles(37));
+        self::assertSame([], $accounts->deleted);
+        self::assertSame([], $accounts->notified);
+    }
+
+    public function test_provisioning_after_a_cleared_broken_link_creates_one_subscriber_and_still_respects_email_collisions(): void
+    {
+        [$service, $people, $memberships, $accounts] = $this->stack();
+        $person = $people->add(new Person(null, 'Anna', 'Andersson', 'anna@example.test', PersonStatus::Known, 37, AssociationDate::fromIso('1990-05-01')));
+        $memberships->grant((int) $person->id(), 'M-AGAIN', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null);
+        $service->clearMissingLink((int) $person->id());
+        $created = $service->provision((int) $person->id(), $this->on);
+        $again = $service->provision((int) $person->id(), $this->on);
+        $newUserId = (int) $created->wordpressUserId;
+
+        self::assertSame(AccountOutcome::Created, $created->outcome);
+        self::assertNotSame(37, $newUserId);
+        self::assertSame($newUserId, $people->find((int) $person->id())?->wordpressUserId());
+        self::assertSame(['subscriber'], $accounts->roles($newUserId));
+        self::assertSame([$newUserId], $accounts->notified);
+        self::assertSame(AccountOutcome::AlreadyLinked, $again->outcome);
+        self::assertSame($newUserId, $people->find((int) $person->id())?->wordpressUserId());
+        self::assertCount(1, $accounts->created);
+        self::assertCount(1, $accounts->notified);
+
+        $blocked = $people->add(new Person(null, 'Bo', 'Krock', 'bo-stale@example.test', PersonStatus::Known, 44, AssociationDate::fromIso('1991-01-01')));
+        $memberships->grant((int) $blocked->id(), 'M-COLLIDE', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null);
+        $accounts->seed(80, 'other-bo', 'bo-stale@example.test', 'Other Bo', ['editor']);
+        $service->clearMissingLink((int) $blocked->id());
+        $conflict = $service->provision((int) $blocked->id(), $this->on);
+
+        self::assertSame(AccountOutcome::WordpressEmailConflict, $conflict->outcome);
+        self::assertNull($people->find((int) $blocked->id())?->wordpressUserId());
+        self::assertTrue($accounts->userExists(80));
+        self::assertSame(['editor'], $accounts->roles(80));
+        self::assertCount(1, $accounts->notified);
+    }
+
     public function test_linking_requires_member_edit_permission(): void
     {
         [$service] = $this->stack(false);

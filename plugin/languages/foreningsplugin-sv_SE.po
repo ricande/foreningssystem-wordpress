@@ -2114,3 +2114,18 @@ msgstr "WordPress-användare"
 
 msgid "WordPress username or email"
 msgstr "WordPress-användarnamn eller e-post"
+
+msgid "Clear broken account link"
+msgstr "Rensa trasig kontokoppling"
+
+msgid "Clear the broken WordPress account link? This only removes the missing account reference from the member record. It does not create a new account."
+msgstr "Rensa den trasiga WordPress-kontokopplingen? Det tar bara bort den saknade kontoreferensen från medlemsregistret. Det skapar inget nytt konto."
+
+msgid "The broken WordPress account link is cleared. No new account was created."
+msgstr "Den trasiga WordPress-kontokopplingen är rensad. Inget nytt konto skapades."
+
+msgid "The linked WordPress account no longer exists."
+msgstr "Det kopplade WordPress-kontot finns inte längre."
+
+msgid "The WordPress account exists, so the link was not cleared."
+msgstr "WordPress-kontot finns, så kopplingen rensades inte."

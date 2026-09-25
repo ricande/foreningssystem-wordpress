@@ -59,6 +59,7 @@ final class Plugin
         add_action('admin_post_assoc_create_member_account', [MembersPage::class, 'createMemberAccount']);
         add_action('admin_post_assoc_link_member_account', [MembersPage::class, 'linkMemberAccount']);
         add_action('admin_post_assoc_unlink_member_account', [MembersPage::class, 'unlinkMemberAccount']);
+        add_action('admin_post_assoc_clear_broken_member_account', [MembersPage::class, 'clearBrokenMemberAccount']);
         add_action('admin_post_assoc_find_member_account', [MembersPage::class, 'findMemberAccount']);
         add_action('admin_post_assoc_end_participation', [MembersPage::class, 'endParticipation']);
         add_action('admin_post_assoc_add_company_contact', [MembersPage::class, 'addCompanyContact']);

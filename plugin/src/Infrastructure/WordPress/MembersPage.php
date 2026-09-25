@@ -702,6 +702,24 @@ final class MembersPage
         ]);
     }
 
+    public static function clearBrokenMemberAccount(): void
+    {
+        self::guardEdit('assoc_clear_broken_member_account');
+        $personId = self::integer('person_id');
+
+        if (! self::confirmed()) {
+            self::redirect('confirm', ['assoc_person' => (string) $personId]);
+        }
+
+        $result = WordpressMemberAccounts::service()->clearMissingLink($personId);
+        $notice = match ($result->outcome) {
+            AccountOutcome::BrokenLinkCleared => 'account_broken_cleared',
+            AccountOutcome::LinkStillPresent => 'account_link_present',
+            default => 'account_failed',
+        };
+        self::redirect($notice, ['assoc_person' => (string) $personId]);
+    }
+
     public static function notice(): void
     {
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
@@ -753,6 +771,8 @@ final class MembersPage
             'account_unlink_first' => __('Unlink the current WordPress account before linking a different one.', 'foreningsplugin'),
             'account_failed' => __('The WordPress account could not be created.', 'foreningsplugin'),
             'minor_account' => __('No account is created automatically for members under 18.', 'foreningsplugin'),
+            'account_broken_cleared' => __('The broken WordPress account link is cleared. No new account was created.', 'foreningsplugin'),
+            'account_link_present' => __('The WordPress account exists, so the link was not cleared.', 'foreningsplugin'),
         ];
 
         if ($notice === 'import_done') {
@@ -802,6 +822,7 @@ final class MembersPage
             'account_linked',
             'account_unlinked',
             'account_review',
+            'account_broken_cleared',
         ];
         $class = in_array($notice, $success, true) ? 'notice-success' : 'notice-error';
         echo '<div class="notice ' . esc_attr($class) . '"><p>' . esc_html($messages[$notice]) . '</p>';

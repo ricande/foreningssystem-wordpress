@@ -159,6 +159,30 @@ final class MemberAccountProvisioning implements MemberAccountProvisioner
         return new ProvisioningResult(AccountOutcome::Unlinked, $personId, $previous);
     }
 
+    public function clearMissingLink(int $personId): ProvisioningResult
+    {
+        $this->requireEdit();
+        $person = $this->people->find($personId);
+
+        if (! $person instanceof Person || $person->id() === null) {
+            return new ProvisioningResult(AccountOutcome::Failed, $personId);
+        }
+
+        $userId = $person->wordpressUserId();
+
+        if ($userId === null) {
+            return new ProvisioningResult(AccountOutcome::Failed, $personId);
+        }
+
+        if ($this->accounts->userExists($userId)) {
+            return new ProvisioningResult(AccountOutcome::LinkStillPresent, $personId, $userId);
+        }
+
+        $this->people->save($person->withoutWordpressUser());
+
+        return new ProvisioningResult(AccountOutcome::BrokenLinkCleared, $personId);
+    }
+
     /**
      * @param array<string, int> $emailCounts
      * @param list<MembershipParticipant> $participants
@@ -180,7 +204,11 @@ final class MemberAccountProvisioning implements MemberAccountProvisioner
         $outcome = $this->evaluate($person, $on, $emailCounts, $participants, $periods);
 
         if ($outcome !== AccountOutcome::Eligible) {
-            return new ProvisioningResult($outcome, $personId, $outcome === AccountOutcome::AlreadyLinked ? $person->wordpressUserId() : null);
+            $reportedUserId = $outcome === AccountOutcome::AlreadyLinked || $outcome === AccountOutcome::MissingWordpressUser
+                ? $person->wordpressUserId()
+                : null;
+
+            return new ProvisioningResult($outcome, $personId, $reportedUserId);
         }
 
         $login = $this->loginFor($personId);
@@ -224,8 +252,12 @@ final class MemberAccountProvisioning implements MemberAccountProvisioner
         array $participants,
         array $periods,
     ): AccountOutcome {
-        if ($person->wordpressUserId() !== null) {
-            return AccountOutcome::AlreadyLinked;
+        $linkedUserId = $person->wordpressUserId();
+
+        if ($linkedUserId !== null) {
+            return $this->accounts->userExists($linkedUserId)
+                ? AccountOutcome::AlreadyLinked
+                : AccountOutcome::MissingWordpressUser;
         }
 
         if ($person->status() === PersonStatus::Deceased) {

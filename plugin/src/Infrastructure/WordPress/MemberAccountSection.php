@@ -27,6 +27,22 @@ final class MemberAccountSection
             return;
         }
 
+        if ($status->outcome === AccountOutcome::MissingWordpressUser) {
+            echo '<p>' . esc_html__('The linked WordPress account no longer exists.', 'foreningsplugin') . '</p>';
+
+            if ($canEdit) {
+                echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+                echo '<input type="hidden" name="action" value="assoc_clear_broken_member_account">';
+                echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
+                wp_nonce_field('assoc_clear_broken_member_account');
+                echo '<p><label><input type="checkbox" name="confirm" value="1" required> ' . esc_html__('Clear the broken WordPress account link? This only removes the missing account reference from the member record. It does not create a new account.', 'foreningsplugin') . '</label></p>';
+                submit_button(__('Clear broken account link', 'foreningsplugin'));
+                echo '</form>';
+            }
+
+            return;
+        }
+
         if ($status->personEmail !== '') {
             echo '<p>' . esc_html__('Email', 'foreningsplugin') . ': ' . esc_html($status->personEmail) . '</p>';
         }
@@ -125,7 +141,7 @@ final class MemberAccountSection
         return match ($outcome) {
             AccountOutcome::AlreadyLinked => __('Linked', 'foreningsplugin'),
             AccountOutcome::KnownMinor => __('Not automatically created', 'foreningsplugin'),
-            AccountOutcome::SharedPersonEmail, AccountOutcome::WordpressEmailConflict, AccountOutcome::Failed => __('Needs attention', 'foreningsplugin'),
+            AccountOutcome::SharedPersonEmail, AccountOutcome::WordpressEmailConflict, AccountOutcome::MissingWordpressUser, AccountOutcome::Failed => __('Needs attention', 'foreningsplugin'),
             default => __('Not created', 'foreningsplugin'),
         };
     }

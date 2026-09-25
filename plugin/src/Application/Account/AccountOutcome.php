@@ -9,6 +9,9 @@ enum AccountOutcome: string
     case Created = 'created';
     case Eligible = 'eligible';
     case AlreadyLinked = 'already_linked';
+    case MissingWordpressUser = 'missing_wordpress_user';
+    case BrokenLinkCleared = 'broken_link_cleared';
+    case LinkStillPresent = 'link_still_present';
     case NotActiveMember = 'not_active_member';
     case NoEmail = 'no_email';
     case KnownMinor = 'known_minor';
