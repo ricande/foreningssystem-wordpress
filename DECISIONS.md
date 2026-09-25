@@ -79,3 +79,7 @@ After the first public release, released migrations are immutable. All changes u
 - PDF rendering library
 - minutes editor implementation
 - package/dependency strategy
+
+## Proposed communications / setup-help (not locked)
+
+First-run setup wizard, contextual help, handbook/guides, and optional registered-install bulletin pull are **proposed** product direction only. See `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` and the matching items in `OPEN_QUESTIONS.md`. Do not treat that brief as LOCKED. Any future optional registration or poll must still satisfy locked self-hosted / no-mandatory-SaaS / no-secret-telemetry principles.

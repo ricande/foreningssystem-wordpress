@@ -52,8 +52,9 @@ Flera tidiga designfrågor är fortfarande öppna, bland annat migrationspolicyn
 14. `docs/12_TEST_STRATEGY.md`
 15. `docs/13_MIGRATIONS.md`
 16. `docs/14_VM_LAB.md`
-17. `OPEN_QUESTIONS.md`
-18. `CURSOR_START_PROMPT.md`
+17. `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` (product direction / proposal — not implemented)
+18. `OPEN_QUESTIONS.md`
+19. `CURSOR_START_PROMPT.md`
 
 ## Första uppgiften för Cursor
 

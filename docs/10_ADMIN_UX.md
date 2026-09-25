@@ -26,6 +26,7 @@ Future:
 - Activities
 - Membership fees
 - Mail/recipient selection
+- Help & Guides / first-run setup wizard / optional message center — proposed only; see `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` (not implemented, not LOCKED)
 
 ## Settings
 

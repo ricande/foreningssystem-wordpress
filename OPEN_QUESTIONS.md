@@ -85,3 +85,16 @@ These must be answered deliberately. Do not silently turn assumptions into imple
 35. Which blocks are MVP?
 36. Which blocks are always public and which need authentication/association membership checks?
 37. How should caching behave for protected/member-only output?
+
+## Setup, help, guides, and registered-install communications
+
+Product direction only. See `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`. Not implemented. Not LOCKED.
+
+38. What are the exact semantics of a versioned local setup marker such as `assoc_setup_version` (when it increments, how incomplete setups upgrade, relation to schema version)?
+39. Which capability may trigger a first-activation redirect into a setup wizard, and how is “first activation” detected without loops?
+40. What is the Help & Guides information architecture (Swedish/English titles, WordPress screen help vs custom Association pages, handbook outline ownership)?
+41. Does a registered-install message center live under Help or as top-level Association navigation?
+42. Who owns and hosts any voluntary registration / bulletin pull service, and what is the offline default for open-source installs?
+43. What is the bulletin trust model (unsigned vs signed JSON, key ownership/rotation, fail-closed rules for invalid or unsigned payloads)?
+44. If any minimal install telemetry is ever allowed with consent, what is the exact payload, consent UX, default (off), and revoke/unregister path — without sending member/person data and without becoming mandatory or secret?
+45. What is the bulletin JSON schema, allowed render subset, poll interval/backoff, and how outdated-version detection relates to WordPress/core plugin updates without fighting them?

@@ -74,3 +74,7 @@ Implemented areas:
 - fresh ZIP install of 0.1.0 was validated on a separate WordPress, not the development lab. Activation migrated schema 0 to 16, and a small synthetic association flow including minutes PDF worked from the installed archive. That is package and fresh-install validation, not a production-ready claim. The same install showed WordPress 6.7+ warning that association translations were loaded before `init`. The plugin now loads its translations on `init`. Schema 16 is unchanged
 
 Some product decisions remain provisional, including the migration policy and personal-identity encryption. Schema 16 is the current schema, not a claim that every earlier design note is locked.
+
+## Planned product area (docs only) — setup, help, guides, bulletins
+
+Owner product direction for first-run setup wizard, contextual help, handbook/guides, and optional registered-install communications is captured in `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`. That document is proposal status: not implemented and not LOCKED. Open questions are listed in `OPEN_QUESTIONS.md`. This is separate from the existing association Settings setup v1 (board roles / meeting types) already noted above.
