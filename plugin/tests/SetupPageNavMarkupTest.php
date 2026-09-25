@@ -55,11 +55,47 @@ final class SetupPageNavMarkupTest extends TestCase
             $source
         );
 
-        // Regression: never emit a <form after a form= Back/Skip button without
-        // closing the outer form first (the original minutes/privacy bug).
-        self::assertDoesNotMatchRegularExpression(
-            "/form=\"assoc-setup-back-' \\. esc_attr\\(\\\$step\\)[\\s\\S]{0,400}?echo '<form id=\"assoc-setup-back-'/",
-            $source
-        );
+        $navButtons = self::extractMethod($source, 'navButtons');
+        self::assertNotSame('', $navButtons);
+        self::assertStringContainsString('form="assoc-setup-back-', $navButtons);
+        self::assertStringNotContainsString('<form', $navButtons);
+
+        $primarySubmit = self::extractMethod($source, 'primarySubmit');
+        self::assertStringContainsString("</p></form>';", $primarySubmit);
+        self::assertStringContainsString('self::navAuxForms(', $primarySubmit);
+        $closePos = strpos($primarySubmit, "</p></form>';");
+        $auxPos = strpos($primarySubmit, 'self::navAuxForms(');
+        self::assertNotFalse($closePos);
+        self::assertNotFalse($auxPos);
+        self::assertGreaterThan($closePos, $auxPos);
+    }
+
+    private static function extractMethod(string $source, string $name): string
+    {
+        $start = strpos($source, 'private static function ' . $name . '(');
+        if ($start === false) {
+            return '';
+        }
+
+        $brace = strpos($source, '{', $start);
+        if ($brace === false) {
+            return '';
+        }
+
+        $depth = 0;
+        $length = strlen($source);
+        for ($i = $brace; $i < $length; $i++) {
+            $char = $source[$i];
+            if ($char === '{') {
+                $depth++;
+            } elseif ($char === '}') {
+                $depth--;
+                if ($depth === 0) {
+                    return substr($source, $brace, $i - $brace + 1);
+                }
+            }
+        }
+
+        return '';
     }
 }
