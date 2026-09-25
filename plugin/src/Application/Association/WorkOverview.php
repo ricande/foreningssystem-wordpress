@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Foreningssystem\Application\Association;
 
 use Foreningssystem\Domain\Meeting\ActionItem;
-use Foreningssystem\Domain\Meeting\ActionStatus;
 use Foreningssystem\Domain\Meeting\Meeting;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
 use Foreningssystem\Domain\Meeting\MeetingStatus;
@@ -66,9 +65,7 @@ final class WorkOverview
         $overdue = [];
 
         foreach ($items as $item) {
-            $dueOn = $item->dueOn();
-
-            if ($item->status() !== ActionStatus::Open || ! $dueOn instanceof AssociationDate || ! $dueOn->isBefore($today)) {
+            if (! $item->isOverdue($today)) {
                 continue;
             }
 

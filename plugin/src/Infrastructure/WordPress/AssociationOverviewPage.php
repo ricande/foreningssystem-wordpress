@@ -390,6 +390,7 @@ final class AssociationOverviewPage
             __('Open tasks: %d', 'foreningsplugin'),
             (int) $snapshot->openTasks
         )) . '</p>';
+        echo '<p><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-tasks')) . '">' . esc_html__('View tasks', 'foreningsplugin') . '</a></p>';
         echo '<h3>' . esc_html__('Overdue tasks', 'foreningsplugin') . '</h3>';
 
         if ($snapshot->overdueTasks === []) {

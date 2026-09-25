@@ -84,4 +84,11 @@ final class ActionItem
     {
         return new self($this->id, $this->meetingId, $this->agendaItemId, $this->task, $this->assigneePersonId, $this->dueOn, $status);
     }
+
+    public function isOverdue(AssociationDate $today): bool
+    {
+        return $this->status === ActionStatus::Open
+            && $this->dueOn instanceof AssociationDate
+            && $this->dueOn->isBefore($today);
+    }
 }

@@ -2459,3 +2459,45 @@ msgstr "Föregående"
 
 msgid "Next"
 msgstr "Nästa"
+
+msgid "Tasks"
+msgstr "Uppgifter"
+
+msgid "Tasks are recorded from meetings."
+msgstr "Uppgifter antecknas i möten."
+
+msgid "No tasks have been recorded yet."
+msgstr "Inga uppgifter har antecknats ännu."
+
+msgid "Tasks are added from a meeting workspace."
+msgstr "Uppgifter läggs till från ett mötes arbetsyta."
+
+msgid "No tasks match these filters."
+msgstr "Inga uppgifter matchar de här filtren."
+
+msgid "Status: %s"
+msgstr "Status: %s"
+
+msgid "Assignee: %s"
+msgstr "Ansvarig: %s"
+
+msgid "No due date"
+msgstr "Inget förfallodatum"
+
+msgid "Meeting-level task"
+msgstr "Uppgift på mötesnivå"
+
+msgid "View tasks"
+msgstr "Visa uppgifter"
+
+msgid "Task was marked done."
+msgstr "Uppgiften markerades som klar."
+
+msgid "Task was reopened."
+msgstr "Uppgiften öppnades igen."
+
+msgid "The task could not be updated."
+msgstr "Uppgiften kunde inte uppdateras."
+
+msgid "You do not have permission to view tasks."
+msgstr "Du har inte behörighet att se uppgifter."

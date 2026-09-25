@@ -14,10 +14,13 @@ Association
 - Board
 - Meetings
 - Decisions
+- Tasks
 - Documents
 - Settings
 
 Decisions is a cross-meeting view of decisions already recorded in meetings. The meeting decision stays the only record. The screen opens on follow-up that is still open. Each row shows the source meeting title, date, and status, and the agenda number and title when the decision belongs to an agenda item. A decision without an agenda item stays visible as a meeting-level decision. Overdue means the follow-up is still open and the deadline is before today. Done means the follow-up is complete. It does not revoke the decision or change the minutes. Follow-up can be marked done or reopened after the minutes are finalized, and the finalized revision body, payload, number, and visibility stay as they were. Wording, deadline, and the responsible person are changed in the meeting workspace, not on this screen.
+
+Tasks is a cross-meeting view of action items already recorded in meetings. The meeting action item stays the only record. There are no standalone tasks. The screen opens on tasks that are still open. Each row shows the source meeting title, date, and status, and the agenda number and title when the task belongs to an agenda item. A task without an agenda item stays visible as a meeting-level task. Overdue means the task is still open and the due date is before today. Done means the task has been carried out. The task text, assignee, and due date stay in the meeting workspace. Marking a task done or reopening it can make an open minutes draft stale. It does not rewrite a finalized revision.
 
 Future:
 - Activities

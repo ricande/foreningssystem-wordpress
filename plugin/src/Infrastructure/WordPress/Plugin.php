@@ -89,6 +89,7 @@ final class Plugin
         add_action('admin_post_assoc_remove_decision', [MeetingDetailPage::class, 'removeDecision']);
         add_action('admin_post_assoc_add_action_item', [MeetingDetailPage::class, 'addActionItem']);
         add_action('admin_post_assoc_set_action_status', [MeetingDetailPage::class, 'setActionStatus']);
+        add_action('admin_post_assoc_set_global_task_status', [TasksPage::class, 'setStatus']);
         add_action('admin_post_assoc_remove_action_item', [MeetingDetailPage::class, 'removeActionItem']);
         add_action('admin_post_assoc_create_minutes_draft', [MeetingDetailPage::class, 'createMinutesDraft']);
         add_action('admin_post_assoc_replace_minutes_body', [MeetingDetailPage::class, 'replaceMinutesBody']);
@@ -194,6 +195,15 @@ final class Plugin
             Capabilities::VIEW_INTERNAL_MEETINGS,
             'foreningsplugin-decisions',
             [DecisionsPage::class, 'render']
+        );
+
+        add_submenu_page(
+            'foreningsplugin',
+            __('Tasks', 'foreningsplugin'),
+            __('Tasks', 'foreningsplugin'),
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+            'foreningsplugin-tasks',
+            [TasksPage::class, 'render']
         );
 
         add_submenu_page(
