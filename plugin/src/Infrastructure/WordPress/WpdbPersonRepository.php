@@ -88,6 +88,26 @@ final class WpdbPersonRepository implements PersonRepository
         return is_array($row) ? $this->map($row) : null;
     }
 
+    public function findByWordpressUserId(int $userId): ?Person
+    {
+        if ($userId < 1) {
+            return null;
+        }
+
+        global $wpdb;
+
+        $rows = $wpdb->get_results(
+            $wpdb->prepare('SELECT * FROM ' . $this->table() . ' WHERE wp_user_id = %d LIMIT 2', $userId),
+            ARRAY_A
+        );
+
+        if (! is_array($rows) || count($rows) !== 1) {
+            return null;
+        }
+
+        return $this->map($rows[0]);
+    }
+
     public function all(): array
     {
         global $wpdb;

@@ -33,6 +33,7 @@ final class Plugin
         add_action('init', [LatestBoardMeetingBlock::class, 'register']);
         add_action('init', [PublicDocumentsBlock::class, 'register']);
         add_action('init', [MemberDocumentsBlock::class, 'register']);
+        add_action('init', [MemberAreaBlock::class, 'register']);
         add_action('init', [MemberCountBlock::class, 'register']);
         WordpressPrivacy::register();
         PrivateStorageWarning::register();

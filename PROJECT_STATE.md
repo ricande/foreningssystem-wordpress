@@ -66,6 +66,7 @@ Implemented areas:
 - board admin UX v1: current board, upcoming changes, history, replacement, multi-holder roles, and ending an assignment without deleting it
 - meetings admin UX v1: operational overview and a single meeting workspace for preparation, capture, and minutes
 - overview / dashboard UX v1: capability-aware association work overview for attention, counts, meetings, board, tasks, and recent documents
-- member account provisioning v1: an active individual member with a usable email can receive a linked WordPress subscriber login. A missing WordPress user stays a broken link until an officer clears it. Mina sidor and member self-service are not implemented
+- member account provisioning v1: an active individual member with a usable email can receive a linked WordPress subscriber login. A missing WordPress user stays a broken link until an officer clears it. Member-only documents require a live WordPress user, an explicit Person link, and active individual coverage
+- Mina sidor v1: a read-only Gutenberg block shows the logged-in person's own details, effective membership coverage, member documents while the membership is active, a privacy summary, and the WordPress account. Profile editing, guardian access, and member self-service requests are not implemented
 
 Some product decisions remain provisional, including the migration policy and personal-identity encryption. Schema 16 is the current schema, not a claim that every earlier design note is locked.

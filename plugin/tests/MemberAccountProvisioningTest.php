@@ -693,6 +693,11 @@ final class GatewayIdentity implements WordPressIdentity
     {
         return $this->accounts->userExists($userId);
     }
+
+    public function email(int $userId): string
+    {
+        return $this->accounts->email($userId);
+    }
 }
 
 final class AllowMemberEdits implements Authorizer
@@ -730,6 +735,11 @@ final class RejectingLinkPersonRepository implements PersonRepository
     public function find(int $id): ?Person
     {
         return $this->inner->find($id);
+    }
+
+    public function findByWordpressUserId(int $userId): ?Person
+    {
+        return $this->inner->findByWordpressUserId($userId);
     }
 
     public function all(): array

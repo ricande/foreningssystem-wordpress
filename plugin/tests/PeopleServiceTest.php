@@ -291,6 +291,29 @@ final class MemoryPersonRepository implements PersonRepository
         return $this->people[$id] ?? null;
     }
 
+    public function findByWordpressUserId(int $userId): ?Person
+    {
+        if ($userId < 1) {
+            return null;
+        }
+
+        $found = null;
+
+        foreach ($this->people as $person) {
+            if ($person->wordpressUserId() !== $userId) {
+                continue;
+            }
+
+            if ($found instanceof Person) {
+                return null;
+            }
+
+            $found = $person;
+        }
+
+        return $found;
+    }
+
     public function all(): array
     {
         return array_values($this->people);

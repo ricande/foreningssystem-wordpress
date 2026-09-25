@@ -17,4 +17,15 @@ final class WpWordPressIdentity implements WordPressIdentity
 
         return get_userdata($userId) instanceof WP_User;
     }
+
+    public function email(int $userId): string
+    {
+        if ($userId < 1) {
+            return '';
+        }
+
+        $user = get_userdata($userId);
+
+        return $user instanceof WP_User ? (string) $user->user_email : '';
+    }
 }

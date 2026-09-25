@@ -12,6 +12,8 @@ interface PersonRepository
 
     public function find(int $id): ?Person;
 
+    public function findByWordpressUserId(int $userId): ?Person;
+
     /**
      * @return list<Person>
      */

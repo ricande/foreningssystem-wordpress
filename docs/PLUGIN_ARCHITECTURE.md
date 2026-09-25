@@ -48,6 +48,7 @@ MVP blocks are dynamic server-rendered blocks:
 - Latest minutes
 - Document archive
 - Member count
+- Member area (Mina sidor), private to the logged-in linked person and not publicly cacheable
 
 The saved block contains configuration only, such as how many meetings to show. It does not contain member emails or minutes HTML. Editor preview uses the same visibility rules as the front end. A user who cannot see board documents does not see them in a preview response.
 

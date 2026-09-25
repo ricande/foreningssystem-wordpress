@@ -7,4 +7,6 @@ namespace Foreningssystem\Application\Document;
 interface WordPressIdentity
 {
     public function exists(int $userId): bool;
+
+    public function email(int $userId): string;
 }

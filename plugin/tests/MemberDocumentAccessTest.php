@@ -121,4 +121,9 @@ final class KnownWordPressUsers implements WordPressIdentity
     {
         return in_array($userId, $this->userIds, true);
     }
+
+    public function email(int $userId): string
+    {
+        return '';
+    }
 }

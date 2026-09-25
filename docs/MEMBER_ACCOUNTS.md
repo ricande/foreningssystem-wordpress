@@ -25,3 +25,5 @@ A WordPress user can be deleted in WordPress while the Person record still store
 Two unlinked People who share an email are both left unlinked. A WordPress user who already has that email is not linked automatically and a second user is not created. Changing a linked Person's contact email does not change the WordPress account email.
 
 Public WordPress registration is left unchanged. These accounts are created from membership data.
+
+A linked account can open Mina sidor, the read-only member block described in `docs/MEMBER_AREA.md`. That screen does not change provisioning, and it does not turn the account into an officer or into an editable profile.

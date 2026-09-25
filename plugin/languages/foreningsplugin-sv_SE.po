@@ -2129,3 +2129,105 @@ msgstr "Det kopplade WordPress-kontot finns inte längre."
 
 msgid "The WordPress account exists, so the link was not cleared."
 msgstr "WordPress-kontot finns, så kopplingen rensades inte."
+
+msgid "Member area"
+msgstr "Mina sidor"
+
+msgid "Shows the logged-in person's own membership information."
+msgstr "Visar den inloggade personens egna medlemsuppgifter."
+
+msgid "Log in to view your membership."
+msgstr "Logga in för att se ditt medlemskap."
+
+msgid "Log in"
+msgstr "Logga in"
+
+msgid "Log out"
+msgstr "Logga ut"
+
+msgid "This WordPress account is not linked to a member record. Contact the association if you think this is incorrect."
+msgstr "Det här WordPress-kontot är inte kopplat till en medlem. Kontakta föreningen om det verkar fel."
+
+msgid "Your member information is not available."
+msgstr "Dina medlemsuppgifter är inte tillgängliga."
+
+msgid "Hello %s"
+msgstr "Hej %s"
+
+msgid "My details"
+msgstr "Mina uppgifter"
+
+msgid "My membership"
+msgstr "Mitt medlemskap"
+
+msgid "My documents"
+msgstr "Mina dokument"
+
+msgid "My privacy"
+msgstr "Min integritet"
+
+msgid "My account"
+msgstr "Mitt konto"
+
+msgid "Contact email"
+msgstr "Kontakt-e-post"
+
+msgid "Membership status: Active"
+msgstr "Medlemsstatus: Aktivt"
+
+msgid "Membership status: Not currently active"
+msgstr "Medlemsstatus: Inte aktivt"
+
+msgid "Membership number"
+msgstr "Medlemsnummer"
+
+msgid "Membership type"
+msgstr "Medlemskapstyp"
+
+msgid "From"
+msgstr "Från"
+
+msgid "To"
+msgstr "Till"
+
+msgid "Ongoing"
+msgstr "Pågår"
+
+msgid "Future"
+msgstr "Kommande"
+
+msgid "Member-only documents are available while your individual membership is active."
+msgstr "Medlemsdokument visas när ditt enskilda medlemskap är aktivt."
+
+msgid "Contact details"
+msgstr "Kontaktuppgifter"
+
+msgid "Birth date: Recorded"
+msgstr "Födelsedatum: registrerat"
+
+msgid "Birth date: Not recorded"
+msgstr "Födelsedatum: inte registrerat"
+
+msgid "Personal identity number: Not recorded"
+msgstr "Personnummer: inte registrerat"
+
+msgid "Membership history"
+msgstr "Medlemskapshistorik"
+
+msgid "WordPress account link"
+msgstr "Koppling till WordPress-konto"
+
+msgid "The association currently has these basic categories linked to your member record:"
+msgstr "Föreningen har just nu de här grunduppgifterna kopplade till din medlemspost:"
+
+msgid "This is a summary from Mina sidor. You can contact the association if information is incorrect or if you want to exercise privacy rights."
+msgstr "Det här är en sammanfattning från Mina sidor. Kontakta föreningen om något är fel eller om du vill utöva dina integritetsrättigheter."
+
+msgid "Contact the association if your information needs to be corrected."
+msgstr "Kontakta föreningen om uppgifterna behöver rättas."
+
+msgid "Your association contact email and your WordPress account email are different."
+msgstr "Föreningens kontakt-e-post och e-postadressen för WordPress-kontot är olika."
+
+msgid "Logged in as"
+msgstr "Inloggad som"
