@@ -336,7 +336,10 @@ try {
         \WP_CLI::error('The public board did not keep the custom role name private from its slug.');
     }
 
-    $_GET = ['edit_role' => (string) $role->id()];
+    $_GET = [
+        'section' => 'board-roles',
+        'edit_role' => (string) $role->id(),
+    ];
     $locked = $capture(static function (): void {
         AssociationSettingsPage::render();
     });
@@ -404,9 +407,11 @@ try {
         \WP_CLI::error('Budgetmöte did not get a safe custom slug.');
     }
 
+    $_GET['section'] = 'meeting-types';
     $settings = $capture(static function (): void {
         AssociationSettingsPage::render();
     });
+    unset($_GET['section']);
     $meetingList = $capture(static function (): void {
         MeetingsPage::render();
     });
