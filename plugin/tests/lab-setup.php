@@ -295,6 +295,105 @@ if (! str_contains($settingsHtml, $roleName) || ! str_contains($settingsHtml, $t
 
 $lockRoles = [RoleBundles::SECRETARY, RoleBundles::CHAIR];
 $publishRoles = [RoleBundles::CHAIR];
+
+$minutesHtml = $capture(static function (): void {
+    $_GET['step'] = 'minutes';
+    SetupPage::render();
+    unset($_GET['step']);
+});
+
+$saveActionPos = strpos($minutesHtml, 'value="assoc_setup_save_minutes"');
+$saveButtonPos = strpos($minutesHtml, 'Save and continue');
+if ($saveButtonPos === false) {
+    $saveButtonPos = strpos($minutesHtml, 'Spara och fortsätt');
+}
+$backFormPos = strpos($minutesHtml, 'id="assoc-setup-back-minutes"');
+$skipFormPos = strpos($minutesHtml, 'id="assoc-setup-skip-minutes"');
+
+if (
+    $saveActionPos === false
+    || $saveButtonPos === false
+    || $backFormPos === false
+    || $skipFormPos === false
+    || $saveButtonPos < $saveActionPos
+) {
+    $fail('Minutes step is missing the save form, Save and continue, or Back/Skip forms.');
+}
+
+$saveChunk = substr($minutesHtml, $saveActionPos, $saveButtonPos - $saveActionPos);
+if (str_contains($saveChunk, '<form')) {
+    $fail('Minutes save form nests another form before Save and continue.');
+}
+
+if ($backFormPos < $saveButtonPos || $skipFormPos < $saveButtonPos) {
+    $fail('Minutes Back/Skip forms must come after Save and continue (outside the save form).');
+}
+
+$privacyHtml = $capture(static function (): void {
+    $_GET['step'] = 'privacy';
+    SetupPage::render();
+    unset($_GET['step']);
+});
+
+$privacySavePos = strpos($privacyHtml, 'value="assoc_setup_save_privacy"');
+$privacyButtonPos = strpos($privacyHtml, 'Save and continue');
+if ($privacyButtonPos === false) {
+    $privacyButtonPos = strpos($privacyHtml, 'Spara och fortsätt');
+}
+$privacyBackPos = strpos($privacyHtml, 'id="assoc-setup-back-privacy"');
+
+if (
+    $privacySavePos === false
+    || $privacyButtonPos === false
+    || $privacyBackPos === false
+    || str_contains(substr($privacyHtml, $privacySavePos, $privacyButtonPos - $privacySavePos), '<form')
+    || $privacyBackPos < $privacyButtonPos
+) {
+    $fail('Privacy step nests Back/Skip inside the save form or lacks Save and continue.');
+}
+
+$redirectMinutes = '';
+$_POST = [
+    'lock_roles' => [RoleBundles::SECRETARY, RoleBundles::CHAIR],
+    'publish_roles' => [RoleBundles::CHAIR],
+];
+$_REQUEST = $_POST;
+$_REQUEST['_wpnonce'] = wp_create_nonce('assoc_setup_save_minutes');
+$minutesRedirectFilter = static function (string $target) use (&$redirectMinutes): string {
+    $redirectMinutes = $target;
+    throw new \RuntimeException('redirect');
+};
+add_filter('wp_redirect', $minutesRedirectFilter, 1);
+
+try {
+    SetupPage::saveMinutes();
+    remove_filter('wp_redirect', $minutesRedirectFilter, 1);
+    $_POST = [];
+    $_REQUEST = [];
+    $fail('Minutes save did not redirect.');
+} catch (\RuntimeException $error) {
+    remove_filter('wp_redirect', $minutesRedirectFilter, 1);
+    $_POST = [];
+    $_REQUEST = [];
+    if ($error->getMessage() !== 'redirect') {
+        $fail($error->getMessage());
+    }
+}
+
+$access = WordpressAccess::load();
+$stepAfterMinutes = WordpressSetupState::instance()->step();
+
+if (
+    ! in_array(Capabilities::FINALIZE_MINUTES, $access->capabilitiesFor(RoleBundles::SECRETARY), true)
+    || ! in_array(Capabilities::FINALIZE_MINUTES, $access->capabilitiesFor(RoleBundles::CHAIR), true)
+    || ! in_array(Capabilities::PUBLISH_MINUTES, $access->capabilitiesFor(RoleBundles::CHAIR), true)
+    || in_array(Capabilities::PUBLISH_MINUTES, $access->capabilitiesFor(RoleBundles::SECRETARY), true)
+    || $stepAfterMinutes !== 'privacy'
+    || ! str_contains($redirectMinutes, 'step=privacy')
+) {
+    $fail('Saving minutes with secretary finalize did not grant finalize, keep chair publish, and advance to privacy.');
+}
+
 \Foreningssystem\Infrastructure\WordPress\WordpressMinutesLock::update($lockRoles);
 \Foreningssystem\Infrastructure\WordPress\WordpressMinutesPublish::update($publishRoles);
 $access = WordpressAccess::load();

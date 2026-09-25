@@ -93,4 +93,34 @@ final class MinutesLockSettingTest extends TestCase
 
         (new MinutesLockSetting())->change(RoleCapabilitySetting::defaults(), ['administrator']);
     }
+
+    public function test_secretary_finalize_with_empty_publish_selection_is_valid(): void
+    {
+        $lock = (new MinutesLockSetting())->change(
+            RoleCapabilitySetting::defaults(),
+            [RoleBundles::SECRETARY]
+        );
+        $publish = (new MinutesLockSetting())->change(
+            $lock->setting(),
+            [],
+            Capabilities::PUBLISH_MINUTES
+        );
+
+        self::assertContains(
+            Capabilities::FINALIZE_MINUTES,
+            $publish->setting()->capabilitiesFor(RoleBundles::SECRETARY)
+        );
+        self::assertNotContains(
+            Capabilities::FINALIZE_MINUTES,
+            $publish->setting()->capabilitiesFor(RoleBundles::CHAIR)
+        );
+        self::assertNotContains(
+            Capabilities::PUBLISH_MINUTES,
+            $publish->setting()->capabilitiesFor(RoleBundles::CHAIR)
+        );
+        self::assertNotContains(
+            Capabilities::PUBLISH_MINUTES,
+            $publish->setting()->capabilitiesFor(RoleBundles::SECRETARY)
+        );
+    }
 }

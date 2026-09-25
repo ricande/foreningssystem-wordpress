@@ -307,6 +307,7 @@ final class SetupPage
         self::navButtons(SetupStep::MINUTES, true, true);
         echo '<button type="submit">' . esc_html__('Save and continue', 'foreningsplugin') . '</button>';
         echo '</p></form>';
+        self::navAuxForms(SetupStep::MINUTES, true, true);
     }
 
     private static function privacy(): void
@@ -323,6 +324,7 @@ final class SetupPage
         self::navButtons(SetupStep::PRIVACY, true, true);
         echo '<button type="submit">' . esc_html__('Save and continue', 'foreningsplugin') . '</button>';
         echo '</p></form>';
+        self::navAuxForms(SetupStep::PRIVACY, true, true);
     }
 
     private static function complete(AssociationProfile $profile, SetupWizard $wizard): void
@@ -343,6 +345,7 @@ final class SetupPage
         self::navButtons(SetupStep::COMPLETE, true, false);
         echo '<button type="submit"' . ($wizard->canFinish($profile) ? '' : ' disabled') . '>' . esc_html__('Finish setup', 'foreningsplugin') . '</button>';
         echo '</p></form>';
+        self::navAuxForms(SetupStep::COMPLETE, true, false);
     }
 
     private static function progress(string $step): void
@@ -409,6 +412,21 @@ final class SetupPage
     {
         if ($back) {
             echo '<button type="submit" form="assoc-setup-back-' . esc_attr($step) . '">' . esc_html__('Back', 'foreningsplugin') . '</button> ';
+        }
+
+        if ($skip) {
+            echo '<button type="submit" form="assoc-setup-skip-' . esc_attr($step) . '">' . esc_html__('Skip', 'foreningsplugin') . '</button> ';
+        }
+    }
+
+    /**
+     * Hidden Back/Skip forms must sit outside the step's save form. Nested
+     * forms are invalid HTML: browsers close the outer form early, which leaves
+     * Save and continue with no form association.
+     */
+    private static function navAuxForms(string $step, bool $back, bool $skip): void
+    {
+        if ($back) {
             echo '<form id="assoc-setup-back-' . esc_attr($step) . '" method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:none">';
             echo '<input type="hidden" name="action" value="assoc_setup_back">';
             echo '<input type="hidden" name="from_step" value="' . esc_attr($step) . '">';
@@ -417,7 +435,6 @@ final class SetupPage
         }
 
         if ($skip) {
-            echo '<button type="submit" form="assoc-setup-skip-' . esc_attr($step) . '">' . esc_html__('Skip', 'foreningsplugin') . '</button> ';
             echo '<form id="assoc-setup-skip-' . esc_attr($step) . '" method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:none">';
             echo '<input type="hidden" name="action" value="assoc_setup_skip">';
             echo '<input type="hidden" name="from_step" value="' . esc_attr($step) . '">';
