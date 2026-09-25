@@ -70,7 +70,7 @@ $cleanup = static function () use (
     }
 
     if ($typeId > 0) {
-        $wpdb->delete($meetings, ['meeting_type_id' => $typeId], ['%d']);
+        $wpdb->delete($meetings, ['type_id' => $typeId], ['%d']);
         $wpdb->delete($types, ['id' => $typeId], ['%d']);
     }
 
@@ -168,7 +168,12 @@ if (! in_array(SetupPage::PAGE, $incompleteSlugs, true) && ! in_array('forenings
 
 $html = $capture([SetupPage::class, 'render']);
 
-if (! str_contains($html, 'Association setup') && ! str_contains($html, 'Welcome')) {
+if (
+    ! str_contains($html, 'Association setup')
+    && ! str_contains($html, 'Föreningsguiden')
+    && ! str_contains($html, 'Welcome')
+    && ! str_contains($html, 'Välkommen')
+) {
     $fail('The setup page did not render welcome content.');
 }
 
@@ -248,20 +253,16 @@ $membershipHtml = $capture(static function (): void {
     unset($_GET['step']);
 });
 
-foreach (['ordinary', 'youth', 'family', 'company', 'Person', 'Membership', 'WordPress'] as $needle) {
-    if (! str_contains(strtolower($membershipHtml), strtolower($needle)) && ! str_contains($membershipHtml, 'Ordinary') && ! str_contains($membershipHtml, 'Youth')) {
-        // Soft check below.
-    }
-}
+$hasKinds = (
+    (str_contains($membershipHtml, 'Ordinary') || str_contains($membershipHtml, 'Ordinarie'))
+    && (str_contains($membershipHtml, 'Youth') || str_contains($membershipHtml, 'Ungdom'))
+    && (str_contains($membershipHtml, 'Family') || str_contains($membershipHtml, 'Familj'))
+    && (str_contains($membershipHtml, 'Company') || str_contains($membershipHtml, 'Företag'))
+    && (str_contains($membershipHtml, 'Person') || str_contains($membershipHtml, 'person'))
+    && (str_contains($membershipHtml, 'Membership') || str_contains($membershipHtml, 'medlemskap') || str_contains($membershipHtml, 'Medlemskap'))
+);
 
-if (
-    ! str_contains($membershipHtml, 'Ordinary')
-    || ! str_contains($membershipHtml, 'Youth')
-    || ! str_contains($membershipHtml, 'Family')
-    || ! str_contains($membershipHtml, 'Company')
-    || ! str_contains($membershipHtml, 'Person')
-    || ! str_contains($membershipHtml, 'Membership')
-) {
+if (! $hasKinds) {
     $fail('Membership step did not explain kinds and Person vs Membership.');
 }
 
@@ -336,13 +337,19 @@ foreach (['foreningsplugin-members', 'foreningsplugin-board', 'foreningsplugin-m
 
 $settingsAfter = $capture([AssociationSettingsPage::class, 'render']);
 
-if (! str_contains($settingsAfter, 'Run setup guide again')) {
+if (
+    ! str_contains($settingsAfter, 'Run setup guide again')
+    && ! str_contains($settingsAfter, 'Kör installationsguiden igen')
+) {
     $fail('Settings is missing the reopen setup guide link.');
 }
 
 $reopen = $capture([SetupPage::class, 'render']);
 
-if (! str_contains($reopen, 'Association setup') || WordpressSetupState::instance()->version() !== 1) {
+if (
+    (! str_contains($reopen, 'Association setup') && ! str_contains($reopen, 'Föreningsguiden'))
+    || WordpressSetupState::instance()->version() !== 1
+) {
     $fail('Reopening the setup guide reset completion.');
 }
 
