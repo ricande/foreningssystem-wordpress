@@ -17,6 +17,8 @@ Association
 - Documents
 - Settings
 
+Decisions is a cross-meeting view of decisions already recorded in meetings. The meeting decision stays the only record. The screen opens on follow-up that is still open. Each row shows the source meeting title, date, and status, and the agenda number and title when the decision belongs to an agenda item. A decision without an agenda item stays visible as a meeting-level decision. Overdue means the follow-up is still open and the deadline is before today. Done means the follow-up is complete. It does not revoke the decision or change the minutes. Follow-up can be marked done or reopened after the minutes are finalized, and the finalized revision body, payload, number, and visibility stay as they were. Wording, deadline, and the responsible person are changed in the meeting workspace, not on this screen.
+
 Future:
 - Activities
 - Membership fees

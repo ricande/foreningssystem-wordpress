@@ -85,6 +85,7 @@ final class Plugin
         add_action('admin_post_assoc_remove_note', [MeetingDetailPage::class, 'removeNote']);
         add_action('admin_post_assoc_add_decision', [MeetingDetailPage::class, 'addDecision']);
         add_action('admin_post_assoc_set_decision_follow_up', [MeetingDetailPage::class, 'setDecisionFollowUp']);
+        add_action('admin_post_assoc_set_global_decision_follow_up', [DecisionsPage::class, 'setFollowUp']);
         add_action('admin_post_assoc_remove_decision', [MeetingDetailPage::class, 'removeDecision']);
         add_action('admin_post_assoc_add_action_item', [MeetingDetailPage::class, 'addActionItem']);
         add_action('admin_post_assoc_set_action_status', [MeetingDetailPage::class, 'setActionStatus']);
@@ -179,20 +180,29 @@ final class Plugin
 
         add_submenu_page(
             'foreningsplugin',
-            __('Documents', 'foreningsplugin'),
-            __('Documents', 'foreningsplugin'),
-            Capabilities::VIEW_BOARD_DOCUMENTS,
-            'foreningsplugin-documents',
-            [DocumentsPage::class, 'render']
-        );
-
-        add_submenu_page(
-            'foreningsplugin',
             __('Meetings', 'foreningsplugin'),
             __('Meetings', 'foreningsplugin'),
             Capabilities::VIEW_INTERNAL_MEETINGS,
             'foreningsplugin-meetings',
             [MeetingsPage::class, 'render']
+        );
+
+        add_submenu_page(
+            'foreningsplugin',
+            __('Decisions', 'foreningsplugin'),
+            __('Decisions', 'foreningsplugin'),
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+            'foreningsplugin-decisions',
+            [DecisionsPage::class, 'render']
+        );
+
+        add_submenu_page(
+            'foreningsplugin',
+            __('Documents', 'foreningsplugin'),
+            __('Documents', 'foreningsplugin'),
+            Capabilities::VIEW_BOARD_DOCUMENTS,
+            'foreningsplugin-documents',
+            [DocumentsPage::class, 'render']
         );
 
         add_submenu_page(

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Decision\DecisionRegister;
 use Foreningssystem\Application\Meeting\MeetingRecord;
 use Foreningssystem\Application\Meeting\MeetingTemplates;
 use Foreningssystem\Application\Meeting\MinutesComposer;
@@ -92,6 +93,22 @@ final class WordpressMeetings
 
                         throw $error;
                     }
+                }
+            }
+        );
+    }
+
+    public static function register(): DecisionRegister
+    {
+        return new DecisionRegister(
+            new WpdbDecisionRepository(),
+            new WpdbMeetingRepository(),
+            new WpdbAgendaRepository(),
+            new WpdbPersonRepository(),
+            new class implements Authorizer {
+                public function allows(string $capability): bool
+                {
+                    return current_user_can($capability);
                 }
             }
         );

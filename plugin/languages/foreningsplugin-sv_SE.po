@@ -2363,3 +2363,99 @@ msgstr "Du har tillgång till föreningsinställningar."
 
 msgid "Open Settings"
 msgstr "Öppna inställningar"
+
+msgid "Decisions"
+msgstr "Beslut"
+
+msgid "Decisions are recorded in meetings. Follow-up status can change without changing finalized minutes."
+msgstr "Beslut antecknas i möten. Uppföljningsstatus kan ändras utan att ett justerat protokoll ändras."
+
+msgid "Open: %d"
+msgstr "Öppna: %d"
+
+msgid "Overdue: %d"
+msgstr "Försenade: %d"
+
+msgid "Done: %d"
+msgstr "Klara: %d"
+
+msgid "Follow-up"
+msgstr "Uppföljning"
+
+msgid "All"
+msgstr "Alla"
+
+msgid "Urgency"
+msgstr "Brådska"
+
+msgid "Overdue"
+msgstr "Försenad"
+
+msgid "Follow-up: Open"
+msgstr "Uppföljning: Öppen"
+
+msgid "Follow-up: Done"
+msgstr "Uppföljning: Klar"
+
+msgid "Responsible: %s"
+msgstr "Ansvarig: %s"
+
+msgid "Due date: %s"
+msgstr "Senast: %s"
+
+msgid "No deadline"
+msgstr "Inget slutdatum"
+
+msgid "Source"
+msgstr "Källa"
+
+msgid "Meeting unavailable"
+msgstr "Mötet är inte tillgängligt"
+
+msgid "Agenda item unavailable"
+msgstr "Dagordningspunkten är inte tillgänglig"
+
+msgid "Meeting-level decision"
+msgstr "Beslut på mötesnivå"
+
+msgid "View decisions"
+msgstr "Visa beslut"
+
+msgid "No decisions have been recorded yet."
+msgstr "Inga beslut har antecknats ännu."
+
+msgid "Decisions are added from a meeting workspace."
+msgstr "Beslut läggs till från ett mötes arbetsyta."
+
+msgid "Open meetings"
+msgstr "Öppna möten"
+
+msgid "No decisions match these filters."
+msgstr "Inga beslut matchar de här filtren."
+
+msgid "Clear filters"
+msgstr "Rensa filter"
+
+msgid "Follow-up was marked done."
+msgstr "Uppföljningen markerades som klar."
+
+msgid "Follow-up was reopened."
+msgstr "Uppföljningen öppnades igen."
+
+msgid "The decision could not be updated."
+msgstr "Beslutet kunde inte uppdateras."
+
+msgid "You do not have permission to view decisions."
+msgstr "Du har inte behörighet att se beslut."
+
+msgid "Person unavailable"
+msgstr "Personen är inte tillgänglig"
+
+msgid "Page %1$d of %2$d"
+msgstr "Sida %1$d av %2$d"
+
+msgid "Previous"
+msgstr "Föregående"
+
+msgid "Next"
+msgstr "Nästa"

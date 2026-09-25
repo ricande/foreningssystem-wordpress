@@ -384,6 +384,7 @@ final class AssociationOverviewPage
             __('Open decisions: %d', 'foreningsplugin'),
             (int) $snapshot->openDecisions
         )) . '</p>';
+        echo '<p><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-decisions')) . '">' . esc_html__('View decisions', 'foreningsplugin') . '</a></p>';
         echo '<p>' . esc_html(sprintf(
             /* translators: %d: number of open tasks */
             __('Open tasks: %d', 'foreningsplugin'),
