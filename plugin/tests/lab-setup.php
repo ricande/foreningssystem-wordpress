@@ -327,6 +327,84 @@ if (! $state->isComplete() || $state->version() !== 1) {
     $fail('Finish did not set assoc_setup_version to 1.');
 }
 
+$adminCapsBefore = array_keys(array_filter(wp_get_current_user()->allcaps));
+$_GET['page'] = 'foreningsplugin';
+$_GET['assoc_notice'] = 'setup_complete';
+$adminNotice = $capture([Plugin::class, 'setupSuccessNotice']);
+unset($_GET['assoc_notice']);
+$adminCapsAfter = array_keys(array_filter(wp_get_current_user()->allcaps));
+sort($adminCapsBefore);
+sort($adminCapsAfter);
+
+if (
+    ! str_contains($adminNotice, 'notice-success')
+    || (
+        ! str_contains($adminNotice, 'Association setup is complete')
+        && ! str_contains($adminNotice, 'Föreningsguiden är klar')
+    )
+    || ! str_contains($adminNotice, 'page=foreningsplugin-members')
+    || ! str_contains($adminNotice, 'page=foreningsplugin-board')
+    || ! str_contains($adminNotice, 'page=foreningsplugin-meetings')
+    || $adminCapsBefore !== $adminCapsAfter
+) {
+    $fail('Administrator setup success notice missed the message, operational links, or changed capabilities.');
+}
+
+$settingsRole = 'assoc_lab_setup_settings';
+$settingsLogin = 'lab-setup-settings-only';
+$existingSettings = get_user_by('login', $settingsLogin);
+
+if ($existingSettings instanceof WP_User) {
+    wp_delete_user((int) $existingSettings->ID);
+}
+
+remove_role($settingsRole);
+add_role($settingsRole, 'Lab setup settings only', [
+    'read' => true,
+    Capabilities::ACCESS_ASSOCIATION => true,
+    Capabilities::MANAGE_ASSOCIATION => true,
+]);
+$settingsUserId = wp_insert_user([
+    'user_login' => $settingsLogin,
+    'user_pass' => 'test',
+    'user_email' => 'lab-setup-settings-only@example.test',
+    'role' => $settingsRole,
+]);
+
+if (is_wp_error($settingsUserId)) {
+    $fail('Could not create settings-only user for setup success notice.');
+}
+
+clean_user_cache((int) $settingsUserId);
+wp_set_current_user((int) $settingsUserId);
+$settingsCapsBefore = array_keys(array_filter(wp_get_current_user()->allcaps));
+$_GET['page'] = 'foreningsplugin';
+$_GET['assoc_notice'] = 'setup_complete';
+$settingsNotice = $capture([Plugin::class, 'setupSuccessNotice']);
+unset($_GET['page'], $_GET['assoc_notice']);
+$settingsCapsAfter = array_keys(array_filter(wp_get_current_user()->allcaps));
+sort($settingsCapsBefore);
+sort($settingsCapsAfter);
+
+if (
+    ! str_contains($settingsNotice, 'notice-success')
+    || str_contains($settingsNotice, 'page=foreningsplugin-members')
+    || str_contains($settingsNotice, 'page=foreningsplugin-board')
+    || str_contains($settingsNotice, 'page=foreningsplugin-meetings')
+    || str_contains($settingsNotice, '<ul>')
+    || $settingsCapsBefore !== $settingsCapsAfter
+) {
+    wp_set_current_user(1);
+    wp_delete_user((int) $settingsUserId);
+    remove_role($settingsRole);
+    $fail('Settings-only setup success notice exposed operational links, rendered an empty list, or changed capabilities.');
+}
+
+wp_set_current_user(1);
+wp_delete_user((int) $settingsUserId);
+remove_role($settingsRole);
+clean_user_cache(1);
+
 $completeSlugs = $submenuSlugs();
 
 foreach (['foreningsplugin-members', 'foreningsplugin-board', 'foreningsplugin-meetings', 'foreningsplugin-settings'] as $slug) {

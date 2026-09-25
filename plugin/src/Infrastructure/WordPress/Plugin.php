@@ -207,14 +207,65 @@ final class Plugin
             return;
         }
 
+        $steps = self::setupSuccessNextSteps('current_user_can');
+
         echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__(
             'Association setup is complete. Next steps: add members, set up the board, and plan the first meeting.',
             'foreningsplugin'
-        ) . '</p><ul>';
-        echo '<li><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-members')) . '">' . esc_html__('Add members', 'foreningsplugin') . '</a></li>';
-        echo '<li><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-board')) . '">' . esc_html__('Set up the board', 'foreningsplugin') . '</a></li>';
-        echo '<li><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-meetings')) . '">' . esc_html__('Plan the first meeting', 'foreningsplugin') . '</a></li>';
-        echo '</ul></div>';
+        ) . '</p>';
+
+        if ($steps !== []) {
+            echo '<ul>';
+
+            foreach ($steps as $step) {
+                $label = match ($step['page']) {
+                    'foreningsplugin-members' => esc_html__('Add members', 'foreningsplugin'),
+                    'foreningsplugin-board' => esc_html__('Set up the board', 'foreningsplugin'),
+                    default => esc_html__('Plan the first meeting', 'foreningsplugin'),
+                };
+
+                echo '<li><a href="' . esc_url(admin_url('admin.php?page=' . $step['page'])) . '">' . $label . '</a></li>';
+            }
+
+            echo '</ul>';
+        }
+
+        echo '</div>';
+    }
+
+    /**
+     * Operational next-step links after setup. Each link requires the action capability
+     * for that workflow — manage_association alone is not enough.
+     *
+     * @param callable(string): bool $can
+     * @return list<array{capability: string, page: string}>
+     */
+    public static function setupSuccessNextSteps(callable $can): array
+    {
+        $steps = [];
+
+        if ($can(Capabilities::EDIT_MEMBERS)) {
+            $steps[] = [
+                'capability' => Capabilities::EDIT_MEMBERS,
+                'page' => 'foreningsplugin-members',
+            ];
+        }
+
+        if ($can(Capabilities::MANAGE_BOARD)) {
+            $steps[] = [
+                'capability' => Capabilities::MANAGE_BOARD,
+                'page' => 'foreningsplugin-board',
+            ];
+        }
+
+        if ($can(Capabilities::MANAGE_MEETINGS)) {
+            $steps[] = [
+                'capability' => Capabilities::MANAGE_MEETINGS,
+                'page' => 'foreningsplugin-meetings',
+            ];
+        }
+
+        return $steps;
     }
 
     public static function registerAdminMenu(): void
