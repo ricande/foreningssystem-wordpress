@@ -365,7 +365,15 @@ foreach ($wizardSteps as $step => $primaryLabels) {
         $fail('Setup step ' . $step . ' is missing its primary action button.');
     }
 
-    if (in_array($step, ['association', 'membership', 'board', 'meetings', 'minutes', 'privacy', 'complete'], true)) {
+    // Welcome and Association omit Back (Association's only predecessor is Welcome).
+    if (in_array($step, ['welcome', 'association'], true)) {
+        if (str_contains($stepHtml, 'id="assoc-setup-back-' . $step . '"')
+            || str_contains($stepHtml, 'form="assoc-setup-back-' . $step . '"')) {
+            $fail('Setup step ' . $step . ' must not show or emit a Back control.');
+        }
+    }
+
+    if (in_array($step, ['membership', 'board', 'meetings', 'minutes', 'privacy', 'complete'], true)) {
         $backFormPos = strpos($stepHtml, 'id="assoc-setup-back-' . $step . '"');
         if ($backFormPos === false || $backFormPos < $primaryPos) {
             $fail('Setup step ' . $step . ' must emit the Back aux form after the primary button (sibling, not nested).');

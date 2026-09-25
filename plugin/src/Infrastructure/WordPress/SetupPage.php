@@ -62,7 +62,16 @@ final class SetupPage
     {
         self::guard('assoc_setup_back');
         $from = isset($_POST['from_step']) ? sanitize_key((string) $_POST['from_step']) : null;
-        $previous = self::wizard()->goBack($from);
+        $wizard = self::wizard();
+        $step = ($from !== null && $from !== '')
+            ? SetupStep::normalize($from)
+            : $wizard->currentStep();
+        // Welcome and Association have no previous useful step; ignore crafted Back posts.
+        if ($step === SetupStep::WELCOME || $step === SetupStep::ASSOCIATION) {
+            self::redirect($step);
+        }
+
+        $previous = $wizard->goBack($from);
         self::redirect($previous);
     }
 
@@ -216,7 +225,8 @@ final class SetupPage
         echo '<label>' . esc_html__('Day', 'foreningsplugin') . ' <input type="number" name="membership_year_day" min="1" max="31" required value="' . esc_attr((string) $profile->membershipYearStartDay()) . '"></label>';
         echo '</td></tr>';
         echo '</tbody></table>';
-        self::primarySubmit(SetupStep::ASSOCIATION, __('Save and continue', 'foreningsplugin'), true, false);
+        // Association follows Welcome only — no Back (Welcome has nothing to edit).
+        self::primarySubmit(SetupStep::ASSOCIATION, __('Save and continue', 'foreningsplugin'), false, false);
     }
 
     private static function membership(): void

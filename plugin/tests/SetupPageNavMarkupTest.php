@@ -20,8 +20,9 @@ final class SetupPageNavMarkupTest extends TestCase
         self::assertStringNotContainsString('function continueOrSkip', $source);
         self::assertStringNotContainsString('function backOnly', $source);
 
+        // Association: no Back (false), no Skip (false) — predecessor is Welcome only.
         self::assertMatchesRegularExpression(
-            '/self::primarySubmit\(\s*SetupStep::ASSOCIATION,/s',
+            '/self::primarySubmit\(\s*SetupStep::ASSOCIATION,\s*__\([^)]+\),\s*false,\s*false\)/s',
             $source
         );
         self::assertMatchesRegularExpression(
