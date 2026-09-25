@@ -206,27 +206,68 @@ try {
 
     foreach ([
         'Föreningsinställningar',
+        'Föreningsprofil',
         'Styrelseroller',
         'Mötestyper',
-        'Öppna föreningsprofil',
-        'Föreningsprofil',
-        'Kvarhållning',
         'Protokollåsning',
         'Publicering av protokoll',
-        'page=foreningsplugin-profile',
-        'page=foreningsplugin-retention',
-        'page=foreningsplugin-minutes-lock',
-        'page=foreningsplugin-minutes-publish',
-        'Flytta Ordförande uppåt',
-        'Flytta Ordförande nedåt',
+        'Kvarhållning',
+        'Kör installationsguiden igen',
+        'section=profile',
+        'section=board-roles',
+        'section=meeting-types',
+        'section=minutes-lock',
+        'section=minutes-publish',
+        'section=retention',
+        'page=foreningsplugin-setup',
     ] as $needle) {
         if (! str_contains($settings, $needle)) {
-            \WP_CLI::error('Settings did not show: ' . $needle);
+            \WP_CLI::error('Settings hub did not show: ' . $needle);
+        }
+    }
+
+    foreach (['Flytta Ordförande uppåt', 'assoc_add_board_role', 'assoc_add_meeting_type'] as $needle) {
+        if (str_contains($settings, $needle)) {
+            \WP_CLI::error('Settings hub dumped a focused settings form: ' . $needle);
         }
     }
 
     if (str_contains($settings, 'name="slug"')) {
         \WP_CLI::error('Settings asked for an internal slug.');
+    }
+
+    $_GET['section'] = 'board-roles';
+    $boardRoles = $capture(static function (): void {
+        AssociationSettingsPage::render();
+    });
+    unset($_GET['section']);
+
+    foreach ([
+        'Styrelseroller',
+        'Tillbaka till inställningar',
+        'Flytta Ordförande uppåt',
+        'Flytta Ordförande nedåt',
+        'assoc_add_board_role',
+    ] as $needle) {
+        if (! str_contains($boardRoles, $needle)) {
+            \WP_CLI::error('Board roles settings did not show: ' . $needle);
+        }
+    }
+
+    $_GET['section'] = 'meeting-types';
+    $meetingTypes = $capture(static function (): void {
+        AssociationSettingsPage::render();
+    });
+    unset($_GET['section']);
+
+    foreach ([
+        'Mötestyper',
+        'Tillbaka till inställningar',
+        'assoc_add_meeting_type',
+    ] as $needle) {
+        if (! str_contains($meetingTypes, $needle)) {
+            \WP_CLI::error('Meeting types settings did not show: ' . $needle);
+        }
     }
 
     $role = WordpressAssociationSettings::boardRoles()->create('Materialansvarig', false);
@@ -235,9 +276,11 @@ try {
         \WP_CLI::error('Materialansvarig did not get a single-holder custom slug.');
     }
 
+    $_GET['section'] = 'board-roles';
     $settings = $capture(static function (): void {
         AssociationSettingsPage::render();
     });
+    unset($_GET['section']);
 
     if (! str_contains($settings, 'Materialansvarig') || ! str_contains($settings, 'Redigera Materialansvarig') || str_contains($settings, 'custom_materialansvarig')) {
         \WP_CLI::error('The new board role was not shown as association content.');
@@ -522,23 +565,43 @@ try {
 
     $settingsCap = '';
     $membersCap = '';
+    $visibleSettingsSlugs = [];
 
     foreach ($submenu['foreningsplugin'] ?? [] as $item) {
         if (! is_array($item)) {
             continue;
         }
 
-        if (($item[2] ?? '') === 'foreningsplugin-settings') {
+        $slug = (string) ($item[2] ?? '');
+        $visibleSettingsSlugs[] = $slug;
+
+        if ($slug === 'foreningsplugin-settings') {
             $settingsCap = (string) $item[1];
         }
 
-        if (($item[2] ?? '') === 'foreningsplugin-members') {
+        if ($slug === 'foreningsplugin-members') {
             $membersCap = (string) $item[1];
         }
     }
 
     if ($parentCap !== Capabilities::ACCESS_ASSOCIATION || $settingsCap !== Capabilities::MANAGE_ASSOCIATION || $membersCap !== Capabilities::VIEW_MEMBERS) {
         \WP_CLI::error('The Association menu capabilities are not separated.');
+    }
+
+    foreach (['foreningsplugin-profile', 'foreningsplugin-retention', 'foreningsplugin-minutes-lock', 'foreningsplugin-minutes-publish'] as $hidden) {
+        if (in_array($hidden, $visibleSettingsSlugs, true)) {
+            \WP_CLI::error('A settings sub-screen still appears as its own Association menu item: ' . $hidden);
+        }
+    }
+
+    $_GET['section'] = 'profile';
+    $settingsProfile = $capture(static function (): void {
+        AssociationSettingsPage::render();
+    });
+    unset($_GET['section']);
+
+    if (! str_contains($settingsProfile, 'Profil') || ! str_contains($settingsProfile, 'Tillbaka till inställningar')) {
+        \WP_CLI::error('Settings section=profile did not open the profile screen.');
     }
 
     foreach ($navigationRoles as $role) {
@@ -619,6 +682,7 @@ try {
     });
 
     if (! str_contains($settingsPage, 'Föreningsinställningar')
+        || ! str_contains($settingsPage, 'section=board-roles')
         || ! str_contains($profilePage, 'Profil')
         || ! str_contains($retentionPage, 'Kvarhållning')
         || ! str_contains($lockPage, 'Låsa protokoll')

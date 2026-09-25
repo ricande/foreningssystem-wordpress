@@ -13,6 +13,32 @@ use RuntimeException;
 
 final class AssociationSettingsPage
 {
+    public const PAGE = 'foreningsplugin-settings';
+
+    public const SECTION_PROFILE = 'profile';
+
+    public const SECTION_BOARD_ROLES = 'board-roles';
+
+    public const SECTION_MEETING_TYPES = 'meeting-types';
+
+    public const SECTION_MINUTES_LOCK = 'minutes-lock';
+
+    public const SECTION_MINUTES_PUBLISH = 'minutes-publish';
+
+    public const SECTION_RETENTION = 'retention';
+
+    /**
+     * Old top-level page slugs → settings hub sections.
+     *
+     * @var array<string, string>
+     */
+    public const LEGACY_PAGES = [
+        'foreningsplugin-profile' => self::SECTION_PROFILE,
+        'foreningsplugin-minutes-lock' => self::SECTION_MINUTES_LOCK,
+        'foreningsplugin-minutes-publish' => self::SECTION_MINUTES_PUBLISH,
+        'foreningsplugin-retention' => self::SECTION_RETENTION,
+    ];
+
     public static function addBoardRole(): void
     {
         self::guard('assoc_add_board_role');
@@ -72,13 +98,13 @@ final class AssociationSettingsPage
 
         try {
             WordpressAssociationSettings::meetingTypes()->create(self::text('meeting_type_name'));
-            self::redirect('type_added');
+            self::redirect('type_added', self::SECTION_MEETING_TYPES);
         } catch (NotAllowed) {
             self::denied();
         } catch (StructureRuleException $error) {
-            self::redirect(self::ruleNotice($error, 'type'));
+            self::redirect(self::ruleNotice($error, 'type'), self::SECTION_MEETING_TYPES);
         } catch (RuntimeException) {
-            self::redirect('type_failed');
+            self::redirect('type_failed', self::SECTION_MEETING_TYPES);
         }
     }
 
@@ -88,13 +114,13 @@ final class AssociationSettingsPage
 
         try {
             WordpressAssociationSettings::meetingTypes()->rename(self::integer('type_id'), self::text('type_name'));
-            self::redirect('type_renamed');
+            self::redirect('type_renamed', self::SECTION_MEETING_TYPES);
         } catch (NotAllowed) {
             self::denied();
         } catch (StructureRuleException $error) {
-            self::redirect(self::ruleNotice($error, 'type'));
+            self::redirect(self::ruleNotice($error, 'type'), self::SECTION_MEETING_TYPES);
         } catch (RuntimeException) {
-            self::redirect('type_failed');
+            self::redirect('type_failed', self::SECTION_MEETING_TYPES);
         }
     }
 
@@ -104,13 +130,13 @@ final class AssociationSettingsPage
 
         try {
             WordpressAssociationSettings::meetingTypes()->move(self::integer('type_id'), self::direction());
-            self::redirect('type_moved');
+            self::redirect('type_moved', self::SECTION_MEETING_TYPES);
         } catch (NotAllowed) {
             self::denied();
         } catch (StructureRuleException $error) {
-            self::redirect(self::ruleNotice($error, 'type'));
+            self::redirect(self::ruleNotice($error, 'type'), self::SECTION_MEETING_TYPES);
         } catch (RuntimeException) {
-            self::redirect('type_failed');
+            self::redirect('type_failed', self::SECTION_MEETING_TYPES);
         }
     }
 
@@ -120,20 +146,145 @@ final class AssociationSettingsPage
             self::denied();
         }
 
-        $roles = WordpressAssociationSettings::boardRoles();
-        $types = WordpressAssociationSettings::meetingTypes();
-        $editRole = isset($_GET['edit_role']) ? absint($_GET['edit_role']) : 0;
-        $editType = isset($_GET['edit_type']) ? absint($_GET['edit_type']) : 0;
+        $section = self::requestedSection();
 
+        match ($section) {
+            self::SECTION_PROFILE => AssociationProfilePage::render(),
+            self::SECTION_BOARD_ROLES => self::renderBoardRoles(),
+            self::SECTION_MEETING_TYPES => self::renderMeetingTypes(),
+            self::SECTION_MINUTES_LOCK => MinutesLockPage::render(),
+            self::SECTION_MINUTES_PUBLISH => MinutesPublishPage::render(),
+            self::SECTION_RETENTION => RetentionPage::render(),
+            default => self::renderHub(),
+        };
+    }
+
+    public static function redirectLegacyPage(): void
+    {
+        $page = isset($_GET['page']) ? sanitize_key((string) $_GET['page']) : '';
+
+        if (! isset(self::LEGACY_PAGES[$page])) {
+            return;
+        }
+
+        if (! current_user_can(Capabilities::MANAGE_ASSOCIATION)) {
+            self::denied();
+        }
+
+        $args = [
+            'page' => self::PAGE,
+            'section' => self::LEGACY_PAGES[$page],
+        ];
+
+        foreach (['assoc_notice', 'assoc_anonymized', 'assoc_audits', 'edit_role', 'edit_type'] as $key) {
+            if (! isset($_GET[$key])) {
+                continue;
+            }
+
+            $args[$key] = sanitize_text_field(wp_unslash((string) $_GET[$key]));
+        }
+
+        wp_safe_redirect(add_query_arg($args, admin_url('admin.php')));
+        exit;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function knownSections(): array
+    {
+        return [
+            self::SECTION_PROFILE,
+            self::SECTION_BOARD_ROLES,
+            self::SECTION_MEETING_TYPES,
+            self::SECTION_MINUTES_LOCK,
+            self::SECTION_MINUTES_PUBLISH,
+            self::SECTION_RETENTION,
+        ];
+    }
+
+    public static function settingsUrl(string $section = '', array $args = []): string
+    {
+        $query = array_merge(['page' => self::PAGE], $args);
+
+        if ($section !== '') {
+            $query['section'] = $section;
+        }
+
+        return add_query_arg($query, admin_url('admin.php'));
+    }
+
+    public static function backToHub(): void
+    {
+        echo '<p><a href="' . esc_url(self::settingsUrl()) . '">' . esc_html__('Back to settings', 'foreningsplugin') . '</a></p>';
+    }
+
+    private static function renderHub(): void
+    {
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Association settings', 'foreningsplugin') . '</h1>';
-        echo '<p>' . esc_html__('Board roles and meeting types describe how this association organizes its work. Built-in entries keep their system meaning. Add a custom entry when the association needs another one.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('Choose what to configure. Each screen focuses on one part of the association structure and permissions.', 'foreningsplugin') . '</p>';
+
+        $entries = [
+            [
+                'section' => self::SECTION_PROFILE,
+                'title' => __('Association profile', 'foreningsplugin'),
+                'text' => __('The association\'s name, contact details, language, logo, and when the membership year starts.', 'foreningsplugin'),
+            ],
+            [
+                'section' => self::SECTION_BOARD_ROLES,
+                'title' => __('Board roles', 'foreningsplugin'),
+                'text' => __('Board roles describe the structure. You do not assign people here. Built-in roles keep their meaning. You may add a custom role.', 'foreningsplugin'),
+            ],
+            [
+                'section' => self::SECTION_MEETING_TYPES,
+                'title' => __('Meeting types', 'foreningsplugin'),
+                'text' => __('Meeting types describe how the association meets. You do not create meetings here. Built-in types keep their meaning. You may add a custom type.', 'foreningsplugin'),
+            ],
+            [
+                'section' => self::SECTION_MINUTES_LOCK,
+                'title' => __('Minutes locking', 'foreningsplugin'),
+                'text' => __('Choose which association roles may finalize and lock minutes.', 'foreningsplugin'),
+            ],
+            [
+                'section' => self::SECTION_MINUTES_PUBLISH,
+                'title' => __('Minutes publication', 'foreningsplugin'),
+                'text' => __('Choose which association roles may publish locked minutes on the site.', 'foreningsplugin'),
+            ],
+            [
+                'section' => self::SECTION_RETENTION,
+                'title' => __('Retention', 'foreningsplugin'),
+                'text' => __('How long contact details and audit events are kept after a membership has ended.', 'foreningsplugin'),
+            ],
+        ];
+
+        echo '<div class="assoc-settings-hub">';
+
+        foreach ($entries as $entry) {
+            echo '<div class="assoc-settings-hub-item">';
+            echo '<h2><a href="' . esc_url(self::settingsUrl($entry['section'])) . '">' . esc_html($entry['title']) . '</a></h2>';
+            echo '<p>' . esc_html($entry['text']) . '</p>';
+            echo '</div>';
+        }
+
+        echo '<div class="assoc-settings-hub-item">';
+        echo '<h2><a href="' . esc_url(self::pageUrl(SetupPage::PAGE)) . '">' . esc_html__('Run setup guide again', 'foreningsplugin') . '</a></h2>';
+        echo '<p>' . esc_html__('Open the same guided setup again. Reopening it does not mark setup incomplete or reset association data.', 'foreningsplugin') . '</p>';
+        echo '</div>';
+        echo '</div></div>';
+    }
+
+    private static function renderBoardRoles(): void
+    {
+        $roles = WordpressAssociationSettings::boardRoles();
+        $editRole = isset($_GET['edit_role']) ? absint($_GET['edit_role']) : 0;
+
+        echo '<div class="wrap">';
+        echo '<h1>' . esc_html__('Board roles', 'foreningsplugin') . '</h1>';
+        self::backToHub();
+        echo '<p>' . esc_html__('Board roles describe the structure. You do not assign people here. Built-in roles keep their meaning. You may add a custom role.', 'foreningsplugin') . '</p>';
         self::notice();
 
-        echo '<h2>' . esc_html__('Association', 'foreningsplugin') . '</h2>';
-        echo '<p><a class="button" href="' . esc_url(self::pageUrl('foreningsplugin-profile')) . '">' . esc_html__('Open association profile', 'foreningsplugin') . '</a></p>';
-
-        echo '<h2>' . esc_html__('Board roles', 'foreningsplugin') . '</h2>';
         echo '<table class="widefat striped"><thead><tr>';
         echo '<th>' . esc_html__('Role', 'foreningsplugin') . '</th>';
         echo '<th>' . esc_html__('Holders', 'foreningsplugin') . '</th>';
@@ -154,7 +305,7 @@ final class AssociationSettingsPage
             echo '<td>' . esc_html($role->allowsMultiple() ? __('Multiple holders', 'foreningsplugin') : __('One holder', 'foreningsplugin')) . '</td>';
             echo '<td>';
             if (! $builtIn && ! $used) {
-                echo '<a class="button" href="' . esc_url(self::pageUrl('foreningsplugin-settings', ['edit_role' => (string) $id])) . '">' . esc_html(sprintf(
+                echo '<a class="button" href="' . esc_url(self::settingsUrl(self::SECTION_BOARD_ROLES, ['edit_role' => (string) $id])) . '">' . esc_html(sprintf(
                     /* translators: %s: board role name */
                     __('Edit %s', 'foreningsplugin'),
                     $label
@@ -167,8 +318,20 @@ final class AssociationSettingsPage
         echo '</tbody></table>';
         self::boardEditForm($roles->catalog(), $editRole, $roles);
         self::addBoardRoleForm();
+        echo '</div>';
+    }
 
-        echo '<h2>' . esc_html__('Meeting types', 'foreningsplugin') . '</h2>';
+    private static function renderMeetingTypes(): void
+    {
+        $types = WordpressAssociationSettings::meetingTypes();
+        $editType = isset($_GET['edit_type']) ? absint($_GET['edit_type']) : 0;
+
+        echo '<div class="wrap">';
+        echo '<h1>' . esc_html__('Meeting types', 'foreningsplugin') . '</h1>';
+        self::backToHub();
+        echo '<p>' . esc_html__('Meeting types describe how the association meets. You do not create meetings here. Built-in types keep their meaning. You may add a custom type.', 'foreningsplugin') . '</p>';
+        self::notice();
+
         echo '<table class="widefat striped"><thead><tr>';
         echo '<th>' . esc_html__('Meeting type', 'foreningsplugin') . '</th>';
         echo '<th>' . esc_html__('Order', 'foreningsplugin') . '</th>';
@@ -185,7 +348,7 @@ final class AssociationSettingsPage
             }
             echo '</td><td>';
             if (! $builtIn && ! $used) {
-                echo '<a class="button" href="' . esc_url(self::pageUrl('foreningsplugin-settings', ['edit_type' => (string) $id])) . '">' . esc_html(sprintf(
+                echo '<a class="button" href="' . esc_url(self::settingsUrl(self::SECTION_MEETING_TYPES, ['edit_type' => (string) $id])) . '">' . esc_html(sprintf(
                     /* translators: %s: meeting type name */
                     __('Edit %s', 'foreningsplugin'),
                     $label
@@ -198,15 +361,6 @@ final class AssociationSettingsPage
         echo '</tbody></table>';
         self::meetingEditForm($types->catalog(), $editType, $types);
         self::addMeetingTypeForm();
-
-        echo '<h2>' . esc_html__('Other settings', 'foreningsplugin') . '</h2>';
-        echo '<ul>';
-        echo '<li><a href="' . esc_url(self::pageUrl('foreningsplugin-profile')) . '">' . esc_html__('Association profile', 'foreningsplugin') . '</a></li>';
-        echo '<li><a href="' . esc_url(self::pageUrl('foreningsplugin-retention')) . '">' . esc_html__('Retention', 'foreningsplugin') . '</a></li>';
-        echo '<li><a href="' . esc_url(self::pageUrl('foreningsplugin-minutes-lock')) . '">' . esc_html__('Minutes locking', 'foreningsplugin') . '</a></li>';
-        echo '<li><a href="' . esc_url(self::pageUrl('foreningsplugin-minutes-publish')) . '">' . esc_html__('Minutes publication', 'foreningsplugin') . '</a></li>';
-        echo '<li><a href="' . esc_url(self::pageUrl(SetupPage::PAGE)) . '">' . esc_html__('Run setup guide again', 'foreningsplugin') . '</a></li>';
-        echo '</ul>';
         echo '</div>';
     }
 
@@ -349,10 +503,11 @@ final class AssociationSettingsPage
         wp_die(esc_html__('You do not have permission to change association settings.', 'foreningsplugin'), '', ['response' => 403]);
     }
 
-    private static function redirect(string $notice): void
+    private static function redirect(string $notice, string $section = self::SECTION_BOARD_ROLES): void
     {
         wp_safe_redirect(add_query_arg([
-            'page' => 'foreningsplugin-settings',
+            'page' => self::PAGE,
+            'section' => $section,
             'assoc_notice' => $notice,
         ], admin_url('admin.php')));
         exit;
@@ -411,6 +566,13 @@ final class AssociationSettingsPage
     private static function direction(): string
     {
         return isset($_POST['direction']) ? sanitize_key((string) $_POST['direction']) : '';
+    }
+
+    private static function requestedSection(): string
+    {
+        $section = isset($_GET['section']) ? sanitize_key((string) $_GET['section']) : '';
+
+        return in_array($section, self::knownSections(), true) ? $section : '';
     }
 
     /**

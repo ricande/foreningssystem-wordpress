@@ -356,45 +356,21 @@ final class Plugin
             __('Settings', 'foreningsplugin'),
             __('Settings', 'foreningsplugin'),
             Capabilities::MANAGE_ASSOCIATION,
-            'foreningsplugin-settings',
+            AssociationSettingsPage::PAGE,
             [AssociationSettingsPage::class, 'render']
         );
 
-        add_submenu_page(
-            'foreningsplugin',
-            __('Profile', 'foreningsplugin'),
-            __('Profile', 'foreningsplugin'),
-            Capabilities::MANAGE_ASSOCIATION,
-            'foreningsplugin-profile',
-            [AssociationProfilePage::class, 'render']
-        );
-
-        add_submenu_page(
-            'foreningsplugin',
-            __('Retention', 'foreningsplugin'),
-            __('Retention', 'foreningsplugin'),
-            Capabilities::MANAGE_ASSOCIATION,
-            'foreningsplugin-retention',
-            [RetentionPage::class, 'render']
-        );
-
-        add_submenu_page(
-            'foreningsplugin',
-            __('Lock minutes', 'foreningsplugin'),
-            __('Lock minutes', 'foreningsplugin'),
-            Capabilities::MANAGE_ASSOCIATION,
-            'foreningsplugin-minutes-lock',
-            [MinutesLockPage::class, 'render']
-        );
-
-        add_submenu_page(
-            'foreningsplugin',
-            __('Publish minutes', 'foreningsplugin'),
-            __('Publish minutes', 'foreningsplugin'),
-            Capabilities::MANAGE_ASSOCIATION,
-            'foreningsplugin-minutes-publish',
-            [MinutesPublishPage::class, 'render']
-        );
+        // Legacy bookmarks stay reachable but stay off the Association menu.
+        foreach (AssociationSettingsPage::LEGACY_PAGES as $legacyPage => $_section) {
+            add_submenu_page(
+                null,
+                __('Settings', 'foreningsplugin'),
+                __('Settings', 'foreningsplugin'),
+                Capabilities::MANAGE_ASSOCIATION,
+                $legacyPage,
+                [AssociationSettingsPage::class, 'redirectLegacyPage']
+            );
+        }
 
         add_submenu_page(
             null,

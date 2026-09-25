@@ -41,6 +41,7 @@ final class MinutesPublishPage
         $setting = WordpressAccess::load();
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Publish minutes', 'foreningsplugin') . '</h1>';
+        AssociationSettingsPage::backToHub();
         echo '<p>' . esc_html__('The chair may publish locked minutes from the start. The association can give the same permission to another role. Publishing shows the text on the site and leaves the minutes unchanged. The site administrator keeps the permission and can change it back.', 'foreningsplugin') . '</p>';
         self::notice();
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
@@ -68,7 +69,8 @@ final class MinutesPublishPage
     private static function redirect(string $notice): void
     {
         wp_safe_redirect(add_query_arg([
-            'page' => 'foreningsplugin-minutes-publish',
+            'page' => AssociationSettingsPage::PAGE,
+            'section' => AssociationSettingsPage::SECTION_MINUTES_PUBLISH,
             'assoc_notice' => $notice,
         ], admin_url('admin.php')));
         exit;

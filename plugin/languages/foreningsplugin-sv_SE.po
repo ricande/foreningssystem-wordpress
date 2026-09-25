@@ -2678,3 +2678,24 @@ msgstr "Visa historik"
 
 msgid "The board change is saved."
 msgstr "Styrelseändringen är sparad."
+
+msgid "Back to settings"
+msgstr "Tillbaka till inställningar"
+
+msgid "Choose what to configure. Each screen focuses on one part of the association structure and permissions."
+msgstr "Välj vad du vill ställa in. Varje skärm fokuserar på en del av föreningens struktur och behörigheter."
+
+msgid "The association's name, contact details, language, logo, and when the membership year starts."
+msgstr "Föreningens namn, kontaktuppgifter, språk, logotyp och när verksamhetsåret börjar."
+
+msgid "Choose which association roles may finalize and lock minutes."
+msgstr "Välj vilka föreningsroller som får låsa protokoll."
+
+msgid "Choose which association roles may publish locked minutes on the site."
+msgstr "Välj vilka föreningsroller som får publicera låsta protokoll på webbplatsen."
+
+msgid "How long contact details and audit events are kept after a membership has ended."
+msgstr "Hur länge kontaktuppgifter och granskningshändelser sparas efter att ett medlemskap har avslutats."
+
+msgid "Open the same guided setup again. Reopening it does not mark setup incomplete or reset association data."
+msgstr "Öppna samma guidade installation igen. Att öppna den igen markerar inte installationen som ofullständig och återställer inte föreningsdata."

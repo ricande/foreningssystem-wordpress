@@ -43,7 +43,7 @@ final class AssociationOverviewPage
 
         if ($snapshot->needsProfile) {
             echo '<p>' . esc_html__('Add the association name and details.', 'foreningsplugin') . ' ';
-            echo '<a href="' . esc_url(self::pageUrl('foreningsplugin-profile')) . '">' . esc_html__('Open profile', 'foreningsplugin') . '</a></p>';
+            echo '<a href="' . esc_url(AssociationSettingsPage::settingsUrl(AssociationSettingsPage::SECTION_PROFILE)) . '">' . esc_html__('Open profile', 'foreningsplugin') . '</a></p>';
         }
 
         if ($snapshot->isEmpty) {

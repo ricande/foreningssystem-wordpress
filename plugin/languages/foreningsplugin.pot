@@ -1906,3 +1906,24 @@ msgstr ""
 
 msgid "The board change is saved."
 msgstr ""
+
+msgid "Back to settings"
+msgstr ""
+
+msgid "Choose what to configure. Each screen focuses on one part of the association structure and permissions."
+msgstr ""
+
+msgid "The association's name, contact details, language, logo, and when the membership year starts."
+msgstr ""
+
+msgid "Choose which association roles may finalize and lock minutes."
+msgstr ""
+
+msgid "Choose which association roles may publish locked minutes on the site."
+msgstr ""
+
+msgid "How long contact details and audit events are kept after a membership has ended."
+msgstr ""
+
+msgid "Open the same guided setup again. Reopening it does not mark setup incomplete or reset association data."
+msgstr ""

@@ -52,6 +52,7 @@ final class RetentionPage
         $years = WordpressRetention::load()->years();
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Retention', 'foreningsplugin') . '</h1>';
+        AssociationSettingsPage::backToHub();
         echo '<p>' . esc_html__('Contact details are anonymized this many years after the membership has ended. Audit events are removed after the same time. Locked minutes and signed scans are kept.', 'foreningsplugin') . '</p>';
         self::notice();
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
@@ -83,7 +84,8 @@ final class RetentionPage
     private static function redirect(array $args): void
     {
         wp_safe_redirect(add_query_arg(array_merge([
-            'page' => 'foreningsplugin-retention',
+            'page' => AssociationSettingsPage::PAGE,
+            'section' => AssociationSettingsPage::SECTION_RETENTION,
         ], $args), admin_url('admin.php')));
         exit;
     }
