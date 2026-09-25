@@ -14,6 +14,12 @@ fi
 
 echo "Lab schema version is 16."
 
+# Operational labs assume setup is complete. Fresh CI activation leaves the
+# wizard incomplete; adopt deliberately here. lab-setup.php tests incomplete
+# and restores whatever it found.
+docker compose run --rm wpcli eval 'Foreningssystem\Infrastructure\WordPress\WordpressSetupState::instance()->adoptCompleted();'
+echo "Lab setup version adopted as complete for the operational suite."
+
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-access.php
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-people.php
 docker compose run --rm wpcli eval-file /var/www/html/wp-content/plugins/foreningsplugin/tests/lab-board.php
