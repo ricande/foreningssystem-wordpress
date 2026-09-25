@@ -148,12 +148,11 @@ final class Plugin
 
     public static function registerAdminMenu(): void
     {
-        // Every officer bundle already includes view_members. The page then hides
-        // meeting and document sections the current user cannot open.
+        // The parent item is only the menu shell. Each page keeps its own capability.
         add_menu_page(
             __('Association', 'foreningsplugin'),
             __('Association', 'foreningsplugin'),
-            Capabilities::VIEW_MEMBERS,
+            Capabilities::ACCESS_ASSOCIATION,
             'foreningsplugin',
             [self::class, 'renderAdminPage'],
             'dashicons-groups',

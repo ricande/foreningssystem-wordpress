@@ -26,6 +26,8 @@ Future:
 
 Association → Settings is the entry point for association structure. It requires `manage_association`. A person who can edit the board or schedule meetings cannot redefine those structures through `manage_board` or `manage_meetings`.
 
+The Association menu itself uses `access_association`. That capability only shows the menu. Someone who manages association settings can open the menu and Settings without `view_members`. Members, meetings, documents, and the board stay behind their own capabilities.
+
 The screen links to the existing association profile, retention, minutes locking, and minutes publication pages. Those pages stay as they are.
 
 Board roles and meeting types can be reordered. The seeded built-in slugs stay fixed, and their labels stay plugin translations. An association can add its own roles and meeting types. The internal slug is created once and is not edited. A custom role name and holder rule become fixed once any board assignment uses the role. A custom meeting-type name becomes fixed once any meeting or meeting template uses it. Order can still change. Nothing in this screen deletes a role or a meeting type. Schema 16 is unchanged.

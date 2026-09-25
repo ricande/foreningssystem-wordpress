@@ -40,7 +40,7 @@ final class RoleCapabilitySetting
                 }
             }
 
-            $bundles[$role] = array_values(array_unique($capabilities));
+            $bundles[$role] = self::withNavigation($capabilities);
         }
 
         return new self($bundles);
@@ -88,6 +88,26 @@ final class RoleCapabilitySetting
     public function toArray(): array
     {
         return $this->bundles;
+    }
+
+    /**
+     * Menu access follows any real association capability. Older stored bundles
+     * did not contain this navigation capability, and it is not a business permission.
+     *
+     * @param list<string> $capabilities
+     * @return list<string>
+     */
+    private static function withNavigation(array $capabilities): array
+    {
+        $capabilities = array_values(array_unique($capabilities));
+
+        if ($capabilities === [] || in_array(Capabilities::ACCESS_ASSOCIATION, $capabilities, true)) {
+            return $capabilities;
+        }
+
+        $capabilities[] = Capabilities::ACCESS_ASSOCIATION;
+
+        return $capabilities;
     }
 
     private function assertKnown(string $role, string $capability): void

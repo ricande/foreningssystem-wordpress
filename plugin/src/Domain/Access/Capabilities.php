@@ -6,6 +6,11 @@ namespace Foreningssystem\Domain\Access;
 
 final class Capabilities
 {
+    /**
+     * Navigation only. Seeing the Association menu does not authorize association data or changes.
+     */
+    public const ACCESS_ASSOCIATION = 'access_association';
+
     public const MANAGE_ASSOCIATION = 'manage_association';
 
     public const VIEW_MEMBERS = 'view_members';
@@ -46,6 +51,7 @@ final class Capabilities
     public static function all(): array
     {
         return [
+            self::ACCESS_ASSOCIATION,
             self::MANAGE_ASSOCIATION,
             self::VIEW_MEMBERS,
             self::EDIT_MEMBERS,

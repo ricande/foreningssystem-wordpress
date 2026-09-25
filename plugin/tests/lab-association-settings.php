@@ -5,6 +5,16 @@ require __DIR__ . '/lab-membership.php';
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Application\Settings\StructureRuleException;
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Access\RoleBundles;
+use Foreningssystem\Infrastructure\WordPress\AssociationOverviewPage;
+use Foreningssystem\Infrastructure\WordPress\AssociationProfilePage;
+use Foreningssystem\Infrastructure\WordPress\DocumentsPage;
+use Foreningssystem\Infrastructure\WordPress\MembersPage;
+use Foreningssystem\Infrastructure\WordPress\MinutesLockPage;
+use Foreningssystem\Infrastructure\WordPress\MinutesPublishPage;
+use Foreningssystem\Infrastructure\WordPress\Plugin;
+use Foreningssystem\Infrastructure\WordPress\RetentionPage;
+use Foreningssystem\Infrastructure\WordPress\WordpressAccess;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
 use Foreningssystem\Infrastructure\WordPress\AssociationSettingsPage;
@@ -412,4 +422,313 @@ try {
     $cleanup();
 }
 
+$navigationRoles = ['assoc_lab_settings', 'assoc_lab_menu'];
+$navigationUsers = ['lab-settings-only', 'lab-menu-only'];
+$bundleSnapshot = get_option(WordpressAccess::OPTION, null);
+$dieAsException = static function () {
+    return static function ($message): void {
+        $text = is_string($message) ? $message : 'denied';
+
+        throw new \RuntimeException(wp_strip_all_tags($text));
+    };
+};
+
+try {
+    $stored = is_array($bundleSnapshot) ? $bundleSnapshot : [];
+    $stored[RoleBundles::SECRETARY] = [
+        Capabilities::VIEW_INTERNAL_MEETINGS,
+        Capabilities::MANAGE_MEETINGS,
+        Capabilities::RECORD_MEETING,
+        Capabilities::MANAGE_DOCUMENTS,
+        Capabilities::VIEW_BOARD_DOCUMENTS,
+        Capabilities::VIEW_MEMBERS,
+    ];
+    update_option(WordpressAccess::OPTION, $stored);
+    $loaded = WordpressAccess::load();
+    WordpressAccess::sync();
+    WordpressAccess::sync();
+    $secretary = get_user_by('login', 'lab-secretary');
+
+    if (! $secretary instanceof WP_User) {
+        \WP_CLI::error('lab-secretary is missing.');
+    }
+
+    clean_user_cache((int) $secretary->ID);
+    $secretary = get_user_by('id', (int) $secretary->ID);
+
+    if (! $secretary instanceof WP_User
+        || ! user_can($secretary, Capabilities::ACCESS_ASSOCIATION)
+        || ! user_can($secretary, Capabilities::VIEW_MEMBERS)
+        || ! user_can($secretary, Capabilities::MANAGE_MEETINGS)
+        || ! user_can($secretary, Capabilities::VIEW_INTERNAL_MEETINGS)
+        || user_can($secretary, Capabilities::MANAGE_ASSOCIATION)
+        || ! in_array(Capabilities::ACCESS_ASSOCIATION, $loaded->capabilitiesFor(RoleBundles::SECRETARY), true)
+    ) {
+        \WP_CLI::error('An older secretary bundle did not keep its access and gain only menu navigation.');
+    }
+
+    if (! function_exists('add_menu_page')) {
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+
+    global $menu, $submenu;
+
+    if (! is_array($menu)) {
+        $menu = [];
+    }
+
+    $parentCap = '';
+
+    if (is_array($menu)) {
+        foreach ($menu as $item) {
+            if (is_array($item) && ($item[2] ?? '') === 'foreningsplugin') {
+                $parentCap = (string) $item[1];
+            }
+        }
+    }
+
+    if ($parentCap === '') {
+        Plugin::registerAdminMenu();
+
+        foreach ($menu as $item) {
+            if (is_array($item) && ($item[2] ?? '') === 'foreningsplugin') {
+                $parentCap = (string) $item[1];
+            }
+        }
+    }
+
+    $settingsCap = '';
+    $membersCap = '';
+
+    foreach ($submenu['foreningsplugin'] ?? [] as $item) {
+        if (! is_array($item)) {
+            continue;
+        }
+
+        if (($item[2] ?? '') === 'foreningsplugin-settings') {
+            $settingsCap = (string) $item[1];
+        }
+
+        if (($item[2] ?? '') === 'foreningsplugin-members') {
+            $membersCap = (string) $item[1];
+        }
+    }
+
+    if ($parentCap !== Capabilities::ACCESS_ASSOCIATION || $settingsCap !== Capabilities::MANAGE_ASSOCIATION || $membersCap !== Capabilities::VIEW_MEMBERS) {
+        \WP_CLI::error('The Association menu capabilities are not separated.');
+    }
+
+    foreach ($navigationRoles as $role) {
+        remove_role($role);
+    }
+
+    add_role('assoc_lab_settings', 'Lab settings only', [
+        'read' => true,
+        Capabilities::ACCESS_ASSOCIATION => true,
+        Capabilities::MANAGE_ASSOCIATION => true,
+    ]);
+    add_role('assoc_lab_menu', 'Lab menu only', [
+        'read' => true,
+        Capabilities::ACCESS_ASSOCIATION => true,
+    ]);
+
+    $settingsUser = wp_insert_user([
+        'user_login' => 'lab-settings-only',
+        'user_pass' => wp_generate_password(24),
+        'user_email' => 'lab-settings-only@example.test',
+        'role' => 'assoc_lab_settings',
+    ]);
+    $menuUser = wp_insert_user([
+        'user_login' => 'lab-menu-only',
+        'user_pass' => wp_generate_password(24),
+        'user_email' => 'lab-menu-only@example.test',
+        'role' => 'assoc_lab_menu',
+    ]);
+
+    if (is_wp_error($settingsUser) || is_wp_error($menuUser)) {
+        \WP_CLI::error('The navigation lab users could not be created.');
+    }
+
+    clean_user_cache((int) $settingsUser);
+    $settingsUser = get_user_by('id', (int) $settingsUser);
+    wp_set_current_user((int) $settingsUser->ID);
+
+    if (! current_user_can(Capabilities::ACCESS_ASSOCIATION)
+        || ! current_user_can(Capabilities::MANAGE_ASSOCIATION)
+        || current_user_can(Capabilities::VIEW_MEMBERS)
+        || current_user_can(Capabilities::MANAGE_BOARD)
+        || current_user_can(Capabilities::VIEW_INTERNAL_MEETINGS)
+        || current_user_can(Capabilities::VIEW_BOARD_DOCUMENTS)
+    ) {
+        \WP_CLI::error('The settings-only user has the wrong capabilities.');
+    }
+
+    if (! user_can(1, Capabilities::ACCESS_ASSOCIATION) || ! user_can(1, Capabilities::MANAGE_ASSOCIATION)) {
+        \WP_CLI::error('The administrator lost association capabilities.');
+    }
+
+    $home = $capture(static function (): void {
+        AssociationOverviewPage::render();
+    });
+
+    if (! str_contains($home, 'Du har tillgång till föreningsinställningar')
+        || ! str_contains($home, 'page=foreningsplugin-settings')
+        || str_contains($home, 'Behöver uppmärksamhet')
+        || str_contains($home, 'I korthet')
+    ) {
+        \WP_CLI::error('The association home exposed operational data to a settings-only user.');
+    }
+
+    $settingsPage = $capture(static function (): void {
+        AssociationSettingsPage::render();
+    });
+    $profilePage = $capture(static function (): void {
+        AssociationProfilePage::render();
+    });
+    $retentionPage = $capture(static function (): void {
+        RetentionPage::render();
+    });
+    $lockPage = $capture(static function (): void {
+        MinutesLockPage::render();
+    });
+    $publishPage = $capture(static function (): void {
+        MinutesPublishPage::render();
+    });
+
+    if (! str_contains($settingsPage, 'Föreningsinställningar')
+        || ! str_contains($profilePage, 'Profil')
+        || ! str_contains($retentionPage, 'Kvarhållning')
+        || ! str_contains($lockPage, 'Låsa protokoll')
+        || ! str_contains($publishPage, 'Publicera protokoll')
+    ) {
+        \WP_CLI::error('A settings-only user could not open the association settings pages.');
+    }
+
+    add_filter('wp_die_handler', $dieAsException);
+    $deniedPages = 0;
+
+    foreach ([
+        [MembersPage::class, 'render'],
+        [MeetingsPage::class, 'render'],
+        [DocumentsPage::class, 'render'],
+    ] as $callback) {
+        try {
+            call_user_func($callback);
+        } catch (\RuntimeException) {
+            $deniedPages++;
+        }
+    }
+
+    $_POST = [
+        'action' => 'assoc_add_board_role',
+        'board_role_name' => 'Lab navigation',
+    ];
+    $nonceDenied = false;
+
+    try {
+        AssociationSettingsPage::addBoardRole();
+    } catch (\RuntimeException) {
+        $nonceDenied = true;
+    }
+
+    $_POST = [];
+    $_REQUEST = [];
+    remove_filter('wp_die_handler', $dieAsException);
+
+    if ($deniedPages !== 3 || ! $nonceDenied) {
+        \WP_CLI::error('Protected pages or a settings change without a nonce were allowed.');
+    }
+
+    $_REQUEST['_wpnonce'] = wp_create_nonce('assoc_add_board_role');
+
+    if (check_admin_referer('assoc_add_board_role') < 1) {
+        \WP_CLI::error('A valid settings nonce was rejected.');
+    }
+
+    $_REQUEST = [];
+    $created = WordpressAssociationSettings::boardRoles()->create('Lab navigation', false);
+
+    if ($created->slug() !== 'custom_lab_navigation') {
+        \WP_CLI::error('The settings-only user could not add a board role.');
+    }
+
+    wp_set_current_user((int) $menuUser);
+    $menuDenied = false;
+
+    try {
+        WordpressAssociationSettings::boardRoles()->create('Lab menu role', false);
+    } catch (NotAllowed) {
+        $menuDenied = true;
+    }
+
+    $menuHome = $capture(static function (): void {
+        AssociationOverviewPage::render();
+    });
+
+    if (! $menuDenied || str_contains($menuHome, 'Du har tillgång till föreningsinställningar') || str_contains($menuHome, 'I korthet')) {
+        \WP_CLI::error('Menu access alone could change settings or see the dashboard.');
+    }
+
+    wp_set_current_user((int) $secretary->ID);
+    $secretaryHome = $capture(static function (): void {
+        AssociationOverviewPage::render();
+    });
+    $secretaryMembers = $capture(static function (): void {
+        MembersPage::render();
+    });
+    add_filter('wp_die_handler', $dieAsException);
+    $secretarySettingsDenied = false;
+
+    try {
+        AssociationSettingsPage::render();
+    } catch (\RuntimeException) {
+        $secretarySettingsDenied = true;
+    }
+
+    remove_filter('wp_die_handler', $dieAsException);
+
+    if (! current_user_can(Capabilities::ACCESS_ASSOCIATION)
+        || ! current_user_can(Capabilities::VIEW_MEMBERS)
+        || ! current_user_can(Capabilities::VIEW_INTERNAL_MEETINGS)
+        || current_user_can(Capabilities::MANAGE_ASSOCIATION)
+        || ! str_contains($secretaryHome, 'Behöver uppmärksamhet')
+        || ! str_contains($secretaryMembers, 'Medlemmar')
+        || ! $secretarySettingsDenied
+    ) {
+        \WP_CLI::error('The secretary lost association access or gained settings.');
+    }
+} finally {
+    $_GET = [];
+    $_POST = [];
+    $_REQUEST = [];
+    remove_filter('wp_die_handler', $dieAsException);
+    wp_set_current_user(1);
+
+    foreach ($navigationUsers as $login) {
+        $user = get_user_by('login', $login);
+
+        if ($user instanceof WP_User) {
+            wp_delete_user((int) $user->ID);
+        }
+    }
+
+    foreach ($navigationRoles as $role) {
+        remove_role($role);
+    }
+
+    $roleId = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$roles} WHERE slug = %s", 'custom_lab_navigation'));
+
+    if ($roleId > 0) {
+        $wpdb->delete($assignments, ['role_id' => $roleId], ['%d']);
+        $wpdb->delete($roles, ['id' => $roleId], ['%d']);
+    }
+
+    if (is_array($bundleSnapshot)) {
+        update_option(WordpressAccess::OPTION, $bundleSnapshot);
+    }
+
+    WordpressAccess::sync();
+}
+
 \WP_CLI::success('Association settings lab passed.');
+

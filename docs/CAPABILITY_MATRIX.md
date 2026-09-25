@@ -6,6 +6,7 @@ Status: **proposed**. Names match the candidates in `docs/08_CAPABILITIES.md` an
 
 | Capability | Allows |
 |---|---|
+| `access_association` | Navigation-only capability for the Association admin menu. It grants no access to association data or mutations by itself. Each page still requires its own capability |
 | `manage_association` | Association profile, board-role and meeting-type definitions, retention, and minutes lock/publication settings |
 | `view_members` | Read person and membership records |
 | `edit_members` | Create and update people and memberships, including ending a membership |
@@ -30,10 +31,10 @@ These bundles are the initial contents of an association setting. They are not a
 
 | Association role | Capabilities |
 |---|---|
-| Secretary | `view_internal_meetings`, `manage_meetings`, `record_meeting`, `manage_documents`, `view_board_documents`, `view_members` |
+| Secretary | `access_association`, `view_internal_meetings`, `manage_meetings`, `record_meeting`, `manage_documents`, `view_board_documents`, `view_members` |
 | Chair | Secretary capabilities plus `manage_board`, `finalize_minutes`, `publish_minutes` |
-| Treasurer | `view_members`, `export_members`. `manage_fees` only when fees exist |
-| Board member | `view_internal_meetings`, `view_board_documents`, `view_members` |
+| Treasurer | `access_association`, `view_members`, `export_members`. `manage_fees` only when fees exist |
+| Board member | `access_association`, `view_internal_meetings`, `view_board_documents`, `view_members` |
 | Member with a linked account | No association capability by default. Member-visible content is checked through an active Membership, not through a capability |
 
 The chair bundle includes `finalize_minutes` only as the starting suggestion. A secretary, or any other role, can receive it in settings. The capability check stays the same either way.

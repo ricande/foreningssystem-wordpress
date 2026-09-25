@@ -17,7 +17,13 @@ final class AssociationOverviewPage
 {
     public static function render(): void
     {
-        if (! current_user_can(Capabilities::VIEW_MEMBERS)) {
+        if (! current_user_can(Capabilities::ACCESS_ASSOCIATION)) {
+            wp_die(esc_html__('You do not have permission to view the association.', 'foreningsplugin'), '', ['response' => 403]);
+        }
+
+        if (! self::hasOperationalOverview()) {
+            self::renderSettingsHome();
+
             return;
         }
 
@@ -58,6 +64,27 @@ final class AssociationOverviewPage
         self::renderBoard($snapshot);
         self::renderWork($snapshot);
         self::renderDocuments($snapshot);
+        echo '</div>';
+    }
+
+    private static function hasOperationalOverview(): bool
+    {
+        return current_user_can(Capabilities::VIEW_MEMBERS)
+            || current_user_can(Capabilities::VIEW_INTERNAL_MEETINGS)
+            || current_user_can(Capabilities::VIEW_BOARD_DOCUMENTS)
+            || current_user_can(Capabilities::MANAGE_DOCUMENTS);
+    }
+
+    private static function renderSettingsHome(): void
+    {
+        echo '<div class="wrap">';
+        echo '<h1>' . esc_html__('Association', 'foreningsplugin') . '</h1>';
+
+        if (current_user_can(Capabilities::MANAGE_ASSOCIATION)) {
+            echo '<p>' . esc_html__('You have access to association settings.', 'foreningsplugin') . '</p>';
+            echo '<p><a class="button button-primary" href="' . esc_url(self::pageUrl('foreningsplugin-settings')) . '">' . esc_html__('Open Settings', 'foreningsplugin') . '</a></p>';
+        }
+
         echo '</div>';
     }
 

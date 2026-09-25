@@ -49,6 +49,7 @@ final class RoleBundles
     public static function defaults(): array
     {
         $secretary = [
+            Capabilities::ACCESS_ASSOCIATION,
             Capabilities::VIEW_INTERNAL_MEETINGS,
             Capabilities::MANAGE_MEETINGS,
             Capabilities::RECORD_MEETING,
@@ -65,10 +66,12 @@ final class RoleBundles
                 Capabilities::PUBLISH_MINUTES,
             ]),
             self::TREASURER => [
+                Capabilities::ACCESS_ASSOCIATION,
                 Capabilities::VIEW_MEMBERS,
                 Capabilities::EXPORT_MEMBERS,
             ],
             self::BOARD_MEMBER => [
+                Capabilities::ACCESS_ASSOCIATION,
                 Capabilities::VIEW_INTERNAL_MEETINGS,
                 Capabilities::VIEW_BOARD_DOCUMENTS,
                 Capabilities::VIEW_MEMBERS,

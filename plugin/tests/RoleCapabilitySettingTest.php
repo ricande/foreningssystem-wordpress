@@ -72,7 +72,7 @@ final class RoleCapabilitySettingTest extends TestCase
         ]);
 
         self::assertSame(
-            [Capabilities::FINALIZE_MINUTES],
+            [Capabilities::FINALIZE_MINUTES, Capabilities::ACCESS_ASSOCIATION],
             $setting->capabilitiesFor(RoleBundles::SECRETARY)
         );
     }
@@ -89,6 +89,7 @@ final class RoleCapabilitySettingTest extends TestCase
         $store = new RecordingRoleStore();
         (new RoleSynchronizer($store))->sync(RoleCapabilitySetting::defaults(), []);
 
+        self::assertContains(Capabilities::ACCESS_ASSOCIATION, Capabilities::all());
         self::assertSame(Capabilities::all(), $store->capabilities['administrator']);
         self::assertNotContains('install_plugins', $store->capabilities['administrator']);
         self::assertNotContains('edit_themes', $store->capabilities['administrator']);
