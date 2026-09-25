@@ -41,6 +41,7 @@ final class MinutesLockPage
         $setting = WordpressAccess::load();
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Lock minutes', 'foreningsplugin') . '</h1>';
+        AssociationSettingsPage::backToHub();
         echo '<p>' . esc_html__('The chair may lock minutes from the start. The association can give the same permission to another role. The person who records minutes can still write drafts. The site administrator keeps the permission and can change it back.', 'foreningsplugin') . '</p>';
         self::notice();
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
@@ -68,7 +69,8 @@ final class MinutesLockPage
     private static function redirect(string $notice): void
     {
         wp_safe_redirect(add_query_arg([
-            'page' => 'foreningsplugin-minutes-lock',
+            'page' => AssociationSettingsPage::PAGE,
+            'section' => AssociationSettingsPage::SECTION_MINUTES_LOCK,
             'assoc_notice' => $notice,
         ], admin_url('admin.php')));
         exit;

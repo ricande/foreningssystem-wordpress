@@ -287,10 +287,24 @@ if (! $roleFound || ! $typeFound) {
     $fail('Custom board role or meeting type from setup services did not appear in the catalog.');
 }
 
-$settingsHtml = $capture([AssociationSettingsPage::class, 'render']);
+$_GET['section'] = 'board-roles';
+$boardRolesHtml = $capture([AssociationSettingsPage::class, 'render']);
+$_GET['section'] = 'meeting-types';
+$meetingTypesHtml = $capture([AssociationSettingsPage::class, 'render']);
+unset($_GET['section']);
 
-if (! str_contains($settingsHtml, $roleName) || ! str_contains($settingsHtml, $typeName)) {
+if (! str_contains($boardRolesHtml, $roleName) || ! str_contains($meetingTypesHtml, $typeName)) {
     $fail('Custom setup role/type did not appear on Settings.');
+}
+
+$hubHtml = $capture([AssociationSettingsPage::class, 'render']);
+
+if (
+    ! str_contains($hubHtml, 'section=board-roles')
+    || ! str_contains($hubHtml, 'section=meeting-types')
+    || str_contains($hubHtml, 'assoc_add_board_role')
+) {
+    $fail('Settings hub did not link to focused structure screens.');
 }
 
 $lockRoles = [RoleBundles::SECRETARY, RoleBundles::CHAIR];

@@ -45,6 +45,7 @@ final class AssociationProfilePage
         $year = $profile->membershipYear(AssociationDate::fromIso(wp_date('Y-m-d')));
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Profile', 'foreningsplugin') . '</h1>';
+        AssociationSettingsPage::backToHub();
         echo '<p>' . esc_html__('The association\'s name, contact details, and when the membership year starts. The logo is an image in the media library. A membership year can start on a day other than 1 January. The setting does not change membership periods that already exist.', 'foreningsplugin') . '</p>';
         self::notice();
         echo '<p>' . esc_html(sprintf(
@@ -103,7 +104,8 @@ final class AssociationProfilePage
     private static function redirect(string $notice): void
     {
         wp_safe_redirect(add_query_arg([
-            'page' => 'foreningsplugin-profile',
+            'page' => AssociationSettingsPage::PAGE,
+            'section' => AssociationSettingsPage::SECTION_PROFILE,
             'assoc_notice' => $notice,
         ], admin_url('admin.php')));
         exit;

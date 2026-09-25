@@ -35,7 +35,17 @@ Association → Settings is the entry point for association structure. It requir
 
 The Association menu itself uses `access_association`. That capability only shows the menu. Someone who manages association settings can open the menu and Settings without `view_members`. Members, meetings, documents, and the board stay behind their own capabilities.
 
-The screen links to the existing association profile, retention, minutes locking, and minutes publication pages. Those pages stay as they are. When setup is complete, Settings also links to **Run setup guide again**. Reopening the guide does not mark setup incomplete, hide menus, or reset domain data.
+Settings is a hub, not one long page. The landing screen links to focused sub-screens via `admin.php?page=foreningsplugin-settings&section=…`:
+
+- Association profile (`section=profile`)
+- Board roles (`section=board-roles`) — list, reorder, add, and edit unused custom roles
+- Meeting types (`section=meeting-types`) — list, reorder, add, and rename unused custom types
+- Minutes locking (`section=minutes-lock`)
+- Minutes publication (`section=minutes-publish`)
+- Retention (`section=retention`)
+- Run setup guide again (opens the existing setup page; reopening does not mark setup incomplete, hide menus, or reset domain data)
+
+Profile, retention, minutes locking, and minutes publication no longer appear as their own Association submenu items. Old bookmarks such as `page=foreningsplugin-profile` redirect into the matching Settings section. Each focused screen links back to the Settings hub.
 
 Board roles and meeting types can be reordered. The seeded built-in slugs stay fixed, and their labels stay plugin translations. An association can add its own roles and meeting types. The internal slug is created once and is not edited. A custom role name and holder rule become fixed once any board assignment uses the role. A custom meeting-type name becomes fixed once any meeting or meeting template uses it. Order can still change. Nothing in this screen deletes a role or a meeting type. Schema 16 is unchanged.
 
