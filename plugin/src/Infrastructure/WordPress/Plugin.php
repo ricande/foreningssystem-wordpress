@@ -11,8 +11,11 @@ final class Plugin
 {
     public const VERSION = '0.1.0';
 
+    private static string $file = '';
+
     public static function register(string $pluginFile): void
     {
+        self::$file = $pluginFile;
         register_activation_hook($pluginFile, [self::class, 'activate']);
 
         add_action('init', static function () use ($pluginFile): void {
@@ -44,6 +47,7 @@ final class Plugin
         add_action('admin_init', [self::class, 'migrateInAdmin']);
         add_action('admin_init', [self::class, 'maybeRedirectToSetup']);
         add_action('admin_menu', [self::class, 'registerAdminMenu']);
+        add_action('admin_enqueue_scripts', [self::class, 'enqueueAdminAssets']);
         add_action('admin_notices', [self::class, 'setupSuccessNotice']);
         add_action('admin_post_assoc_setup_start', [SetupPage::class, 'start']);
         add_action('admin_post_assoc_setup_back', [SetupPage::class, 'back']);
@@ -266,6 +270,52 @@ final class Plugin
         }
 
         return $steps;
+    }
+
+    public static function enqueueAdminAssets(string $hookSuffix): void
+    {
+        if (self::$file === '' || ! self::isAssociationAdminScreen($hookSuffix)) {
+            return;
+        }
+
+        wp_enqueue_style(
+            'foreningsplugin-admin',
+            plugins_url('assets/admin.css', self::$file),
+            [],
+            self::VERSION
+        );
+    }
+
+    public static function isAssociationAdminScreen(string $hookSuffix): bool
+    {
+        foreach (self::associationAdminPageSlugs() as $slug) {
+            if ($hookSuffix === 'toplevel_page_' . $slug || str_ends_with($hookSuffix, '_page_' . $slug)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function associationAdminPageSlugs(): array
+    {
+        return array_merge(
+            [
+                'foreningsplugin',
+                SetupPage::PAGE,
+                AssociationSettingsPage::PAGE,
+                'foreningsplugin-members',
+                'foreningsplugin-board',
+                'foreningsplugin-meetings',
+                'foreningsplugin-decisions',
+                'foreningsplugin-tasks',
+                'foreningsplugin-documents',
+            ],
+            array_keys(AssociationSettingsPage::LEGACY_PAGES)
+        );
     }
 
     public static function registerAdminMenu(): void

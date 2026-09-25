@@ -209,10 +209,11 @@ try {
         'Föreningsprofil',
         'Styrelseroller',
         'Mötestyper',
-        'Protokollåsning',
-        'Publicering av protokoll',
-        'Kvarhållning',
-        'Kör installationsguiden igen',
+        'Låsa protokoll',
+        'Publicera protokoll',
+        'Gallring',
+        'Öppna föreningsguiden igen',
+        'assoc-settings-card-link',
         'section=profile',
         'section=board-roles',
         'section=meeting-types',
@@ -224,6 +225,10 @@ try {
         if (! str_contains($settings, $needle)) {
             \WP_CLI::error('Settings hub did not show: ' . $needle);
         }
+    }
+
+    if (str_contains($settings, 'onclick=') || ! str_contains($settings, '<a class="assoc-settings-card-link"')) {
+        \WP_CLI::error('Settings hub cards are not semantic links.');
     }
 
     foreach (['Flytta Ordförande uppåt', 'assoc_add_board_role', 'assoc_add_meeting_type'] as $needle) {
@@ -689,7 +694,7 @@ try {
     if (! str_contains($settingsPage, 'Föreningsinställningar')
         || ! str_contains($settingsPage, 'section=board-roles')
         || ! str_contains($profilePage, 'Profil')
-        || ! str_contains($retentionPage, 'Kvarhållning')
+        || ! str_contains($retentionPage, 'Gallring')
         || ! str_contains($lockPage, 'Låsa protokoll')
         || ! str_contains($publishPage, 'Publicera protokoll')
     ) {

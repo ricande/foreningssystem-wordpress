@@ -31,7 +31,7 @@ final class SetupPage
         $step = $wizard->resolveStep(isset($_GET['step']) ? sanitize_key((string) $_GET['step']) : null);
         $profile = WordpressAssociationProfile::load();
 
-        echo '<div class="wrap">';
+        echo '<div class="wrap assoc-setup">';
         echo '<h1>' . esc_html__('Association setup', 'foreningsplugin') . '</h1>';
         self::progress($step);
         self::notice();
@@ -261,7 +261,7 @@ final class SetupPage
         echo '<input id="assoc-setup-role" name="board_role_name" type="text" required maxlength="100"></p>';
         echo '<p><label><input type="checkbox" name="allows_multiple" value="1"> ';
         echo esc_html__('Allow several people to hold this role at the same time', 'foreningsplugin') . '</label></p>';
-        echo '<p><button type="submit">' . esc_html__('Add role', 'foreningsplugin') . '</button></p>';
+        echo '<p><button type="submit" class="button">' . esc_html__('Add role', 'foreningsplugin') . '</button></p>';
         echo '</form>';
         self::continueStep(SetupStep::BOARD);
     }
@@ -281,7 +281,7 @@ final class SetupPage
         wp_nonce_field('assoc_setup_add_meeting_type');
         echo '<p><label for="assoc-setup-type">' . esc_html__('Name', 'foreningsplugin') . '</label><br>';
         echo '<input id="assoc-setup-type" name="meeting_type_name" type="text" required maxlength="100"></p>';
-        echo '<p><button type="submit">' . esc_html__('Add meeting type', 'foreningsplugin') . '</button></p>';
+        echo '<p><button type="submit" class="button">' . esc_html__('Add meeting type', 'foreningsplugin') . '</button></p>';
         echo '</form>';
         self::continueStep(SetupStep::MEETINGS);
     }
@@ -330,10 +330,15 @@ final class SetupPage
     {
         echo '<h2>' . esc_html__('Complete', 'foreningsplugin') . '</h2>';
         echo '<p>' . esc_html__('Review the association setup, then finish. Finishing requires a non-empty association name.', 'foreningsplugin') . '</p>';
-        echo '<ul>';
-        echo '<li>' . esc_html__('Name', 'foreningsplugin') . ': ' . esc_html($profile->name() !== '' ? $profile->name() : __('(missing)', 'foreningsplugin')) . '</li>';
-        echo '<li>' . esc_html__('Retention', 'foreningsplugin') . ': ' . esc_html((string) WordpressRetention::load()->years()) . ' ' . esc_html__('years', 'foreningsplugin') . '</li>';
-        echo '</ul>';
+        echo '<div class="assoc-setup-summary">';
+        self::associationSummary($profile);
+        self::membershipSummary();
+        self::boardSummary();
+        self::meetingSummary();
+        self::minutesSummary();
+        echo '<h3>' . esc_html__('Retention', 'foreningsplugin') . '</h3>';
+        echo '<p>' . esc_html((string) WordpressRetention::load()->years()) . ' ' . esc_html__('years', 'foreningsplugin') . '</p>';
+        echo '</div>';
         if (! $wizard->canFinish($profile)) {
             echo '<div class="notice notice-error inline"><p>' . esc_html__('Enter the association name on the Association step before finishing.', 'foreningsplugin') . '</p></div>';
         }
@@ -354,7 +359,8 @@ final class SetupPage
         $all = SetupStep::all();
         $current = SetupStep::index($step) + 1;
         $total = count($all);
-        echo '<p>' . esc_html(sprintf(
+        echo '<nav class="assoc-setup-progress" aria-label="' . esc_attr__('Setup progress', 'foreningsplugin') . '">';
+        echo '<p class="assoc-setup-progress-status">' . esc_html(sprintf(
             /* translators: 1: current step number, 2: total steps */
             __('Step %1$d of %2$d', 'foreningsplugin'),
             $current,
@@ -364,12 +370,12 @@ final class SetupPage
         foreach ($all as $candidate) {
             $label = self::stepLabel($candidate);
             if ($candidate === $step) {
-                echo '<li><strong>' . esc_html($label) . '</strong></li>';
+                echo '<li class="is-current" aria-current="step">' . esc_html($label) . '</li>';
             } else {
                 echo '<li>' . esc_html($label) . '</li>';
             }
         }
-        echo '</ol>';
+        echo '</ol></nav>';
     }
 
     private static function stepLabel(string $step): string
@@ -399,16 +405,19 @@ final class SetupPage
         bool $skip,
         bool $enabled = true
     ): void {
-        echo '<p>';
-        self::navButtons($step, $back, $skip);
-        echo '<button type="submit"' . ($enabled ? '' : ' disabled') . '>' . esc_html($label) . '</button>';
+        echo '<p class="assoc-setup-actions">';
+        self::navButtons($step, $back);
+        echo '<button type="submit" class="button button-primary"' . ($enabled ? '' : ' disabled') . '>' . esc_html($label) . '</button>';
+        if ($skip) {
+            echo ' <button type="submit" class="button-link" form="assoc-setup-skip-' . esc_attr($step) . '">' . esc_html__('Skip', 'foreningsplugin') . '</button>';
+        }
         echo '</p></form>';
         self::navAuxForms($step, $back, $skip);
     }
 
     /**
-     * Informational steps: Continue is the primary submit; Back/Skip use sibling
-     * hidden forms via form= so nothing nests.
+     * Informational steps advance with Continue. Back uses a sibling form.
+     * Skip is omitted: it would post the same advance action as Continue.
      */
     private static function continueStep(string $step): void
     {
@@ -416,17 +425,13 @@ final class SetupPage
         echo '<input type="hidden" name="action" value="assoc_setup_skip">';
         echo '<input type="hidden" name="from_step" value="' . esc_attr($step) . '">';
         wp_nonce_field('assoc_setup_skip');
-        self::primarySubmit($step, __('Continue', 'foreningsplugin'), true, true);
+        self::primarySubmit($step, __('Continue', 'foreningsplugin'), true, false);
     }
 
-    private static function navButtons(string $step, bool $back, bool $skip): void
+    private static function navButtons(string $step, bool $back): void
     {
         if ($back) {
-            echo '<button type="submit" form="assoc-setup-back-' . esc_attr($step) . '">' . esc_html__('Back', 'foreningsplugin') . '</button> ';
-        }
-
-        if ($skip) {
-            echo '<button type="submit" form="assoc-setup-skip-' . esc_attr($step) . '">' . esc_html__('Skip', 'foreningsplugin') . '</button> ';
+            echo '<button type="submit" class="button" form="assoc-setup-back-' . esc_attr($step) . '">' . esc_html__('Back', 'foreningsplugin') . '</button> ';
         }
     }
 
@@ -454,7 +459,7 @@ final class SetupPage
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="' . esc_attr($action) . '">';
         wp_nonce_field($action);
-        echo '<p><button type="submit">' . esc_html($label) . '</button></p>';
+        echo '<p><button type="submit" class="button button-primary">' . esc_html($label) . '</button></p>';
         echo '</form>';
     }
 
@@ -517,6 +522,9 @@ final class SetupPage
 
     private static function postedProfile(): AssociationProfile
     {
+        $existing = WordpressAssociationProfile::load();
+        $logo = $existing->logoAttachmentId() ?? WordpressAssociationProfile::storedLogoAttachmentId();
+
         return new AssociationProfile(
             sanitize_text_field(wp_unslash((string) ($_POST['name'] ?? ''))),
             sanitize_text_field(wp_unslash((string) ($_POST['organization_number'] ?? ''))),
@@ -524,10 +532,107 @@ final class SetupPage
             sanitize_email(wp_unslash((string) ($_POST['email'] ?? ''))),
             sanitize_text_field(wp_unslash((string) ($_POST['phone'] ?? ''))),
             sanitize_key((string) ($_POST['language'] ?? '')),
-            null,
+            $logo,
             isset($_POST['membership_year_month']) ? (int) $_POST['membership_year_month'] : 0,
             isset($_POST['membership_year_day']) ? (int) $_POST['membership_year_day'] : 0
         );
+    }
+
+    private static function associationSummary(AssociationProfile $profile): void
+    {
+        $months = self::months();
+        $month = $months[$profile->membershipYearStartMonth()] ?? (string) $profile->membershipYearStartMonth();
+        $language = $profile->language() === AssociationProfile::LANGUAGE_ENGLISH
+            ? __('English', 'foreningsplugin')
+            : __('Swedish', 'foreningsplugin');
+
+        echo '<h3>' . esc_html__('Association', 'foreningsplugin') . '</h3><ul>';
+        echo '<li>' . esc_html__('Name', 'foreningsplugin') . ': ' . esc_html($profile->name() !== '' ? $profile->name() : __('(missing)', 'foreningsplugin')) . '</li>';
+
+        if ($profile->organizationNumber() !== '') {
+            echo '<li>' . esc_html__('Organization number', 'foreningsplugin') . ': ' . esc_html($profile->organizationNumber()) . '</li>';
+        }
+
+        echo '<li>' . esc_html__('Language', 'foreningsplugin') . ': ' . esc_html($language) . '</li>';
+        echo '<li>' . esc_html__('The membership year starts', 'foreningsplugin') . ': ' . esc_html($profile->membershipYearStartDay() . ' ' . $month) . '</li>';
+        echo '</ul>';
+    }
+
+    private static function membershipSummary(): void
+    {
+        echo '<h3>' . esc_html__('Membership', 'foreningsplugin') . '</h3><ul>';
+        echo '<li>' . esc_html__('Ordinary', 'foreningsplugin') . '</li>';
+        echo '<li>' . esc_html__('Youth', 'foreningsplugin') . '</li>';
+        echo '<li>' . esc_html__('Family', 'foreningsplugin') . '</li>';
+        echo '<li>' . esc_html__('Company', 'foreningsplugin') . '</li>';
+        echo '</ul>';
+        echo '<p>' . esc_html__('This step does not create members and does not turn kinds on or off.', 'foreningsplugin') . '</p>';
+    }
+
+    private static function boardSummary(): void
+    {
+        $names = [];
+
+        foreach (WordpressAssociationSettings::boardRoles()->catalog() as $role) {
+            $names[] = BoardScreen::roleLabel($role->slug(), $role->name());
+        }
+
+        echo '<h3>' . esc_html__('Board', 'foreningsplugin') . '</h3>';
+        self::summaryList($names, __('No board roles yet.', 'foreningsplugin'));
+    }
+
+    private static function meetingSummary(): void
+    {
+        $names = [];
+
+        foreach (WordpressAssociationSettings::meetingTypes()->catalog() as $type) {
+            $names[] = MeetingLabels::type($type);
+        }
+
+        echo '<h3>' . esc_html__('Meetings', 'foreningsplugin') . '</h3>';
+        self::summaryList($names, __('No meeting types yet.', 'foreningsplugin'));
+    }
+
+    private static function minutesSummary(): void
+    {
+        $setting = WordpressAccess::load();
+        $finalize = [];
+        $publish = [];
+
+        foreach (self::roleLabels() as $role => $label) {
+            if (in_array(Capabilities::FINALIZE_MINUTES, $setting->capabilitiesFor($role), true)) {
+                $finalize[] = $label;
+            }
+
+            if (in_array(Capabilities::PUBLISH_MINUTES, $setting->capabilitiesFor($role), true)) {
+                $publish[] = $label;
+            }
+        }
+
+        echo '<h3>' . esc_html__('Finalize minutes', 'foreningsplugin') . '</h3>';
+        self::summaryList($finalize, __('No role may finalize minutes.', 'foreningsplugin'));
+        echo '<h3>' . esc_html__('Publish minutes', 'foreningsplugin') . '</h3>';
+        self::summaryList($publish, __('No role may publish minutes.', 'foreningsplugin'));
+    }
+
+    /**
+     * @param list<string> $items
+     */
+    private static function summaryList(array $items, string $empty): void
+    {
+        if ($items === []) {
+            echo '<p>' . esc_html($empty) . '</p>';
+
+            return;
+        }
+
+        echo '<ul>';
+
+        foreach ($items as $item) {
+            echo '<li>' . esc_html($item) . '</li>';
+        }
+
+        echo '</ul>';
     }
 
     private static function wizard(): SetupWizard

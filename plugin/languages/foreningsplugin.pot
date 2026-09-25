@@ -1927,3 +1927,24 @@ msgstr ""
 
 msgid "Open the same guided setup again. Reopening it does not mark setup incomplete or reset association data."
 msgstr ""
+
+msgid "A built-in board role keeps its name and whether one or several people may hold it."
+msgstr ""
+
+msgid "This role has been used in a board assignment. Its name, and whether one or several people may hold it, stay unchanged so earlier assignments remain clear. You can still change the display order."
+msgstr ""
+
+msgid "No role may finalize minutes."
+msgstr ""
+
+msgid "No role may publish minutes."
+msgstr ""
+
+msgid "No board roles yet."
+msgstr ""
+
+msgid "No meeting types yet."
+msgstr ""
+
+msgid "Setup progress"
+msgstr ""

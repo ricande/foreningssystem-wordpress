@@ -46,6 +46,8 @@ final class AssociationSettingsHubTest extends TestCase
         self::assertStringContainsString('public static function backToHub', $source);
         self::assertStringContainsString("self::settingsUrl(\$entry['section'])", $source);
         self::assertStringContainsString('Run setup guide again', $source);
+        self::assertStringContainsString('assoc-settings-card-link', $source);
+        self::assertStringContainsString('private static function hubCard', $source);
         self::assertStringNotContainsString('Open association profile', $source);
         self::assertStringNotContainsString('Other settings', $source);
     }

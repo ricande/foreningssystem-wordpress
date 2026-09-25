@@ -15,7 +15,7 @@ if [ "$header" != "$expected" ] || [ "$constant" != "$expected" ]; then
   exit 1
 fi
 
-for required in plugin/foreningsplugin.php plugin/autoload.php plugin/src plugin/assets plugin/languages plugin/assets/profile.js plugin/languages/foreningsplugin-sv_SE.mo plugin/languages/foreningsplugin-sv_SE.po; do
+for required in plugin/foreningsplugin.php plugin/autoload.php plugin/src plugin/assets plugin/languages plugin/assets/profile.js plugin/assets/admin.css plugin/languages/foreningsplugin-sv_SE.mo plugin/languages/foreningsplugin-sv_SE.po; do
   if [ ! -e "$required" ]; then
     echo "Missing runtime file: $required" >&2
     exit 1
@@ -93,6 +93,7 @@ require_prefix() {
 require_entry "foreningsplugin/foreningsplugin.php"
 require_entry "foreningsplugin/autoload.php"
 require_entry "foreningsplugin/assets/profile.js"
+require_entry "foreningsplugin/assets/admin.css"
 require_entry "foreningsplugin/languages/foreningsplugin-sv_SE.mo"
 require_entry "foreningsplugin/languages/foreningsplugin-sv_SE.po"
 require_prefix "foreningsplugin/src/"

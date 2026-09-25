@@ -221,7 +221,7 @@ final class AssociationSettingsPage
 
     private static function renderHub(): void
     {
-        echo '<div class="wrap">';
+        echo '<div class="wrap assoc-settings">';
         echo '<h1>' . esc_html__('Association settings', 'foreningsplugin') . '</h1>';
         echo '<p>' . esc_html__('Choose what to configure. Each screen focuses on one part of the association structure and permissions.', 'foreningsplugin') . '</p>';
 
@@ -243,12 +243,12 @@ final class AssociationSettingsPage
             ],
             [
                 'section' => self::SECTION_MINUTES_LOCK,
-                'title' => __('Minutes locking', 'foreningsplugin'),
+                'title' => __('Lock minutes', 'foreningsplugin'),
                 'text' => __('Choose which association roles may finalize and lock minutes.', 'foreningsplugin'),
             ],
             [
                 'section' => self::SECTION_MINUTES_PUBLISH,
-                'title' => __('Minutes publication', 'foreningsplugin'),
+                'title' => __('Publish minutes', 'foreningsplugin'),
                 'text' => __('Choose which association roles may publish locked minutes on the site.', 'foreningsplugin'),
             ],
             [
@@ -258,20 +258,18 @@ final class AssociationSettingsPage
             ],
         ];
 
-        echo '<div class="assoc-settings-hub">';
+        echo '<ul class="assoc-settings-hub">';
 
         foreach ($entries as $entry) {
-            echo '<div class="assoc-settings-hub-item">';
-            echo '<h2><a href="' . esc_url(self::settingsUrl($entry['section'])) . '">' . esc_html($entry['title']) . '</a></h2>';
-            echo '<p>' . esc_html($entry['text']) . '</p>';
-            echo '</div>';
+            self::hubCard(self::settingsUrl($entry['section']), $entry['title'], $entry['text']);
         }
 
-        echo '<div class="assoc-settings-hub-item">';
-        echo '<h2><a href="' . esc_url(self::pageUrl(SetupPage::PAGE)) . '">' . esc_html__('Run setup guide again', 'foreningsplugin') . '</a></h2>';
-        echo '<p>' . esc_html__('Open the same guided setup again. Reopening it does not mark setup incomplete or reset association data.', 'foreningsplugin') . '</p>';
-        echo '</div>';
-        echo '</div></div>';
+        self::hubCard(
+            self::pageUrl(SetupPage::PAGE),
+            __('Run setup guide again', 'foreningsplugin'),
+            __('Open the same guided setup again. Reopening it does not mark setup incomplete or reset association data.', 'foreningsplugin')
+        );
+        echo '</ul></div>';
     }
 
     private static function renderBoardRoles(): void
@@ -299,7 +297,7 @@ final class AssociationSettingsPage
             echo '<tr>';
             echo '<td>' . esc_html($label);
             if (! $builtIn && $used) {
-                echo '<p class="description">' . esc_html__('This role has been used by a board assignment. Its name and holder rule are now preserved for history. You can still change its display order.', 'foreningsplugin') . '</p>';
+                echo '<p class="description">' . esc_html__('This role has been used in a board assignment. Its name, and whether one or several people may hold it, stay unchanged so earlier assignments remain clear. You can still change the display order.', 'foreningsplugin') . '</p>';
             }
             echo '</td>';
             echo '<td>' . esc_html($role->allowsMultiple() ? __('Multiple holders', 'foreningsplugin') : __('One holder', 'foreningsplugin')) . '</td>';
@@ -531,8 +529,8 @@ final class AssociationSettingsPage
             'role_updated' => __('The board role was saved.', 'foreningsplugin'),
             'role_moved' => __('The board role order was saved.', 'foreningsplugin'),
             'role_duplicate' => __('A board role with that name already exists.', 'foreningsplugin'),
-            'role_builtin' => __('A built-in board role keeps its name and holder rule.', 'foreningsplugin'),
-            'role_used' => __('This role has been used by a board assignment. Its name and holder rule are now preserved for history. You can still change its display order.', 'foreningsplugin'),
+            'role_builtin' => __('A built-in board role keeps its name and whether one or several people may hold it.', 'foreningsplugin'),
+            'role_used' => __('This role has been used in a board assignment. Its name, and whether one or several people may hold it, stay unchanged so earlier assignments remain clear. You can still change the display order.', 'foreningsplugin'),
             'role_invalid' => __('Enter a board role name.', 'foreningsplugin'),
             'role_failed' => __('The board role could not be saved.', 'foreningsplugin'),
             'type_added' => __('The meeting type was added.', 'foreningsplugin'),
@@ -573,6 +571,15 @@ final class AssociationSettingsPage
         $section = isset($_GET['section']) ? sanitize_key((string) $_GET['section']) : '';
 
         return in_array($section, self::knownSections(), true) ? $section : '';
+    }
+
+    private static function hubCard(string $url, string $title, string $text): void
+    {
+        echo '<li class="assoc-settings-card">';
+        echo '<a class="assoc-settings-card-link" href="' . esc_url($url) . '">';
+        echo '<h2 class="assoc-settings-card-title">' . esc_html($title) . '</h2>';
+        echo '<p class="assoc-settings-card-text">' . esc_html($text) . '</p>';
+        echo '</a></li>';
     }
 
     /**

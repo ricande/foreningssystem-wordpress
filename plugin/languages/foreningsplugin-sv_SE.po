@@ -36,8 +36,8 @@ msgstr "Ett styrelseuppdrag slutar nu %s."
 msgid "A board role with that name already exists."
 msgstr "En styrelseroll med det namnet finns redan."
 
-msgid "A built-in board role keeps its name and holder rule."
-msgstr "En inbyggd styrelseroll behåller sitt namn och sin innehavarregel."
+msgid "A built-in board role keeps its name and whether one or several people may hold it."
+msgstr "En inbyggd styrelseroll behåller sitt namn och om en eller flera personer får ha rollen."
 
 msgid "A built-in meeting type keeps its name."
 msgstr "En inbyggd mötestyp behåller sitt namn."
@@ -364,7 +364,7 @@ msgid "Board roles and meeting types describe how this association organizes its
 msgstr "Styrelseroller och mötestyper beskriver hur föreningen organiserar sitt arbete. Inbyggda poster behåller sin systembetydelse. Lägg till en egen post när föreningen behöver en annan."
 
 msgid "Board roles describe the structure. You do not assign people here. Built-in roles keep their meaning. You may add a custom role."
-msgstr "Styrelseroller beskriver strukturen. Du tilldelar inte personer här. Inbyggda roller behåller sin betydelse. Du kan lägga till en egen roll."
+msgstr "Styrelseroller är uppdragen i styrelsen. Du tilldelar inte personer här. Inbyggda roller behåller sin betydelse. Du kan lägga till en egen roll."
 
 msgid "Cancel %1$s's scheduled %2$s assignment starting %3$s? This assignment has not started and will not be kept as board history."
 msgstr "Avbryt det planerade uppdraget som %2$s för %1$s med start %3$s? Uppdraget har inte börjat och sparas inte som styrelsehistorik."
@@ -412,7 +412,7 @@ msgid "Choose type"
 msgstr "Välj typ"
 
 msgid "Choose which association roles may finalize minutes and which may publish them. Document files stay private; downloads check authorization."
-msgstr "Välj vilka föreningsroller som får justera protokoll och vilka som får publicera dem. Dokumentfiler förblir privata; nedladdningar kontrollerar behörighet."
+msgstr "Välj vilka föreningsroller som får låsa protokoll och vilka som får publicera dem. Dokumentfiler förblir privata, och nedladdning kontrollerar behörighet."
 
 msgid "Choosing a person here is explicit. People are not merged because they share an email address."
 msgstr "Att välja en person här är ett aktivt val. Personer slås inte ihop för att de har samma e-postadress."
@@ -799,7 +799,7 @@ msgid "History"
 msgstr "Historik"
 
 msgid "Holders"
-msgstr "Innehavare"
+msgstr "Personer"
 
 msgid "If the role can have only one holder, the open assignment ends the day before the new start date."
 msgstr "Om rollen bara kan ha en innehavare avslutas det öppna uppdraget dagen före det nya startdatumet."
@@ -1090,7 +1090,7 @@ msgid "Move up"
 msgstr "Flytta upp"
 
 msgid "Multiple holders"
-msgstr "Flera innehavare"
+msgstr "Flera personer"
 
 msgid "My account"
 msgstr "Mitt konto"
@@ -1309,7 +1309,7 @@ msgid "October"
 msgstr "oktober"
 
 msgid "One holder"
-msgstr "En innehavare"
+msgstr "En person"
 
 msgid "Ongoing"
 msgstr "Pågår"
@@ -1597,7 +1597,7 @@ msgid "Retained records"
 msgstr "Behållna handlingar"
 
 msgid "Retention"
-msgstr "Kvarhållning"
+msgstr "Gallring"
 
 msgid "Retention must be between 1 and 100 years."
 msgstr "Gallring måste vara mellan 1 och 100 år."
@@ -1624,7 +1624,7 @@ msgid "Role"
 msgstr "Roll"
 
 msgid "Run setup guide again"
-msgstr "Kör installationsguiden igen"
+msgstr "Öppna föreningsguiden igen"
 
 msgid "Save and continue"
 msgstr "Spara och fortsätt"
@@ -1669,7 +1669,7 @@ msgid "Save profile"
 msgstr "Spara profil"
 
 msgid "Save retention"
-msgstr "Spara kvarhållning"
+msgstr "Spara gallring"
 
 msgid "Save role"
 msgstr "Spara roll"
@@ -2164,7 +2164,7 @@ msgid "The plugin is active."
 msgstr "Pluginet är aktivt."
 
 msgid "The product supports ordinary, youth, family, and company memberships. A Person is not the same as a Membership, and neither is the same as a WordPress account."
-msgstr "Produkten stöder ordinarie, ungdoms-, familje- och företagsmedlemskap. En person är inte samma sak som ett medlemskap, och ingen av dem är samma sak som ett WordPress-konto."
+msgstr "Föreningen kan ha ordinarie, ungdoms-, familje- och företagsmedlemskap. En person är inte samma sak som ett medlemskap, och inget av dem är samma sak som ett WordPress-konto."
 
 msgid "The profile could not be saved. Check the email, phone, language, logo, and start day."
 msgstr "Profilen kunde inte sparas. Kontrollera e-post, telefon, språk, logotyp och startdag."
@@ -2173,10 +2173,10 @@ msgid "The public contact on the assignment is removed."
 msgstr "Den offentliga kontaktuppgiften på uppdraget är borttagen."
 
 msgid "The retention has been applied. %1$d people were anonymized. %2$d audit events were removed."
-msgstr "Kvarhållningen är tillämpad. %1$d personer avidentifierades. %2$d granskningshändelser togs bort."
+msgstr "Gallringen är genomförd. %1$d personer avidentifierades. %2$d granskningshändelser togs bort."
 
 msgid "The retention period is saved."
-msgstr "Kvarhållningen är sparad."
+msgstr "Gallringsinställningen är sparad."
 
 msgid "The revision is back as a draft."
 msgstr "Revisionen är tillbaka som utkast."
@@ -2302,7 +2302,7 @@ msgid "This guardian relationship already covers that time."
 msgstr "Den här vårdnadshavarrelationen täcker redan den tiden."
 
 msgid "This guide helps you configure the association structure: profile, membership kinds, board roles, meeting types, minutes permissions, and retention. It does not add members, board assignments, meetings, documents, decisions, or tasks."
-msgstr "Den här guiden hjälper dig att konfigurera föreningens struktur: profil, medlemskapstyper, styrelseroller, mötestyper, protokollbehörigheter och gallring. Den lägger inte till medlemmar, styrelseuppdrag, möten, dokument, beslut eller uppgifter."
+msgstr "Den här guiden hjälper dig att ställa in föreningen: profil, medlemskap, styrelseroller, mötestyper, vem som får hantera protokoll, och gallring. Guiden lägger inte till medlemmar, styrelseuppdrag, möten, dokument, beslut eller uppgifter."
 
 msgid "This is a correction of a locked revision."
 msgstr "Det här är en rättelse av en låst revision."
@@ -2334,8 +2334,8 @@ msgstr "Den här revisionen bevaras. Ytterligare rättelser görs i en ny revisi
 msgid "This role already has a scheduled assignment. Cancel that assignment before adding another."
 msgstr "Den här rollen har redan ett planerat uppdrag. Avbryt det innan ett nytt läggs till."
 
-msgid "This role has been used by a board assignment. Its name and holder rule are now preserved for history. You can still change its display order."
-msgstr "Den här rollen har använts i ett styrelseuppdrag. Namn och innehavarregel bevaras för historiken. Du kan fortfarande ändra visningsordningen."
+msgid "This role has been used in a board assignment. Its name, and whether one or several people may hold it, stay unchanged so earlier assignments remain clear. You can still change the display order."
+msgstr "Den här rollen har använts i ett styrelseuppdrag. Namnet och om en eller flera personer får ha rollen ändras inte, så att tidigare uppdrag fortfarande går att förstå. Du kan fortfarande ändra visningsordningen."
 
 msgid "This step does not create members and does not turn kinds on or off."
 msgstr "Det här steget skapar inga medlemmar och slår inte på eller av medlemskapstyper."
@@ -2671,7 +2671,7 @@ msgid "Scheduled: %1$s — %2$s starts %3$s."
 msgstr "Planerat: %1$s — %2$s börjar %3$s."
 
 msgid "Several holders allowed"
-msgstr "Flera innehavare tillåtna"
+msgstr "Flera personer kan ha rollen"
 
 msgid "Show history"
 msgstr "Visa historik"
@@ -2683,7 +2683,7 @@ msgid "Back to settings"
 msgstr "Tillbaka till inställningar"
 
 msgid "Choose what to configure. Each screen focuses on one part of the association structure and permissions."
-msgstr "Välj vad du vill ställa in. Varje skärm fokuserar på en del av föreningens struktur och behörigheter."
+msgstr "Välj vad du vill ändra. Varje sida tar upp en del: föreningsprofil, styrelse, möten, protokoll eller gallring."
 
 msgid "The association's name, contact details, language, logo, and when the membership year starts."
 msgstr "Föreningens namn, kontaktuppgifter, språk, logotyp och när verksamhetsåret börjar."
@@ -2698,4 +2698,19 @@ msgid "How long contact details and audit events are kept after a membership has
 msgstr "Hur länge kontaktuppgifter och granskningshändelser sparas efter att ett medlemskap har avslutats."
 
 msgid "Open the same guided setup again. Reopening it does not mark setup incomplete or reset association data."
-msgstr "Öppna samma guidade installation igen. Att öppna den igen markerar inte installationen som ofullständig och återställer inte föreningsdata."
+msgstr "Öppna föreningsguiden igen. Det markerar inte guiden som ofullständig och återställer inte föreningens uppgifter."
+
+msgid "No role may finalize minutes."
+msgstr "Ingen roll får låsa protokoll."
+
+msgid "No role may publish minutes."
+msgstr "Ingen roll får publicera protokoll."
+
+msgid "No board roles yet."
+msgstr "Inga styrelseroller är angivna."
+
+msgid "No meeting types yet."
+msgstr "Inga mötestyper är angivna."
+
+msgid "Setup progress"
+msgstr "Guidens steg"

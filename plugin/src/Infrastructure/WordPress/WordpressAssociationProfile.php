@@ -48,6 +48,11 @@ final class WordpressAssociationProfile
         }
     }
 
+    public static function storedLogoAttachmentId(): ?int
+    {
+        return self::logo();
+    }
+
     public static function save(AssociationProfile $profile): void
     {
         if (! current_user_can(Capabilities::MANAGE_ASSOCIATION)) {

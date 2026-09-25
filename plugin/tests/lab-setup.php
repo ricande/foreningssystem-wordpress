@@ -40,6 +40,7 @@ $savedNotice = get_option(WordpressSetupState::OPTION_SUCCESS_NOTICE, false);
 $savedProfile = WordpressAssociationProfile::load();
 $savedRetention = WordpressRetention::load()->years();
 $savedAccess = WordpressAccess::load();
+$logoAttachmentId = 0;
 
 $cleanup = static function () use (
     $wpdb,
@@ -56,10 +57,16 @@ $cleanup = static function () use (
     $savedNotice,
     $savedProfile,
     $savedRetention,
-    $savedAccess
+    $savedAccess,
+    &$logoAttachmentId
 ): void {
     wp_set_current_user(1);
     clean_user_cache(1);
+
+    if ($logoAttachmentId > 0) {
+        wp_delete_attachment($logoAttachmentId, true);
+        $logoAttachmentId = 0;
+    }
 
     $roleId = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$roles} WHERE slug = %s", $roleSlug));
     $typeId = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$types} WHERE slug = %s", $typeSlug));
@@ -247,6 +254,135 @@ if ($loaded->name() !== 'Lab Setup Association' || $loaded->email() !== 'lab-set
     $fail('Wizard profile save did not use the canonical association profile store.');
 }
 
+$png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+$upload = wp_upload_bits('lab-setup-logo.png', null, $png === false ? '' : $png);
+
+if (! is_array($upload) || ! empty($upload['error']) || ! is_string($upload['file'] ?? null)) {
+    $fail('Could not store a lab logo file.');
+}
+
+$logoAttachmentId = (int) wp_insert_attachment([
+    'post_mime_type' => 'image/png',
+    'post_title' => 'Lab setup logo',
+    'post_status' => 'inherit',
+], $upload['file']);
+
+if ($logoAttachmentId < 1 || ! wp_attachment_is_image($logoAttachmentId)) {
+    $fail('Could not create a lab logo attachment.');
+}
+
+WordpressAssociationProfile::save(new AssociationProfile(
+    'Lab Setup Association',
+    '802001-9999',
+    "Labgatan 1\n111 22 Lab",
+    'lab-setup@example.test',
+    '08-123 45',
+    AssociationProfile::LANGUAGE_SWEDISH,
+    $logoAttachmentId,
+    1,
+    1
+));
+
+$_POST = [
+    'name' => 'Lab Setup Association',
+    'organization_number' => '802001-8888',
+    'address' => "Labgatan 1\n111 22 Lab",
+    'email' => 'lab-setup@example.test',
+    'phone' => '070-111 22 33',
+    'language' => 'en',
+    'membership_year_month' => '9',
+    'membership_year_day' => '15',
+];
+$_REQUEST = $_POST;
+$_REQUEST['_wpnonce'] = wp_create_nonce('assoc_setup_save_association');
+$associationRedirect = '';
+$associationRedirectFilter = static function (string $target) use (&$associationRedirect): string {
+    $associationRedirect = $target;
+    throw new \RuntimeException('redirect');
+};
+add_filter('wp_redirect', $associationRedirectFilter, 1);
+
+try {
+    SetupPage::saveAssociation();
+    remove_filter('wp_redirect', $associationRedirectFilter, 1);
+    $_POST = [];
+    $_REQUEST = [];
+    $fail('Association setup save did not redirect.');
+} catch (\RuntimeException $error) {
+    remove_filter('wp_redirect', $associationRedirectFilter, 1);
+    $_POST = [];
+    $_REQUEST = [];
+
+    if ($error->getMessage() !== 'redirect') {
+        $fail($error->getMessage());
+    }
+}
+
+$afterAssociationSave = WordpressAssociationProfile::load();
+
+if (
+    $afterAssociationSave->logoAttachmentId() !== $logoAttachmentId
+    || $afterAssociationSave->name() !== 'Lab Setup Association'
+    || $afterAssociationSave->organizationNumber() !== '802001-8888'
+    || $afterAssociationSave->address() !== "Labgatan 1\n111 22 Lab"
+    || $afterAssociationSave->email() !== 'lab-setup@example.test'
+    || $afterAssociationSave->phone() !== '070-111 22 33'
+    || $afterAssociationSave->language() !== AssociationProfile::LANGUAGE_ENGLISH
+    || $afterAssociationSave->membershipYearStartMonth() !== 9
+    || $afterAssociationSave->membershipYearStartDay() !== 15
+    || ! str_contains($associationRedirect, 'step=membership')
+) {
+    $fail('Association setup save cleared the logo or failed to update a field the step shows.');
+}
+
+update_option(WordpressAssociationProfile::OPTION_NAME, "Bad\x01Name");
+$collapsed = WordpressAssociationProfile::load();
+
+if ($collapsed->name() !== '' || $collapsed->logoAttachmentId() !== null) {
+    $fail('A corrupt association name did not collapse profile load, so logo preservation was not proved.');
+}
+
+$_POST = [
+    'name' => 'Lab Setup Association',
+    'organization_number' => '802001-8888',
+    'address' => "Labgatan 1\n111 22 Lab",
+    'email' => 'lab-setup@example.test',
+    'phone' => '070-111 22 33',
+    'language' => 'en',
+    'membership_year_month' => '9',
+    'membership_year_day' => '15',
+];
+$_REQUEST = $_POST;
+$_REQUEST['_wpnonce'] = wp_create_nonce('assoc_setup_save_association');
+add_filter('wp_redirect', $associationRedirectFilter, 1);
+
+try {
+    SetupPage::saveAssociation();
+    remove_filter('wp_redirect', $associationRedirectFilter, 1);
+    $_POST = [];
+    $_REQUEST = [];
+    $fail('Association save after a corrupt profile did not redirect.');
+} catch (\RuntimeException $error) {
+    remove_filter('wp_redirect', $associationRedirectFilter, 1);
+    $_POST = [];
+    $_REQUEST = [];
+
+    if ($error->getMessage() !== 'redirect') {
+        $fail($error->getMessage());
+    }
+}
+
+$recovered = WordpressAssociationProfile::load();
+
+if (
+    $recovered->logoAttachmentId() !== $logoAttachmentId
+    || $recovered->name() !== 'Lab Setup Association'
+    || $recovered->phone() !== '070-111 22 33'
+    || $recovered->email() !== 'lab-setup@example.test'
+) {
+    $fail('A collapsed profile load cleared the stored logo or dropped a field the wizard posted.');
+}
+
 $membershipHtml = $capture(static function (): void {
     $_GET['step'] = 'membership';
     SetupPage::render();
@@ -394,11 +530,26 @@ foreach ($wizardSteps as $step => $primaryLabels) {
         }
     }
 
-    if (in_array($step, ['membership', 'board', 'meetings', 'minutes', 'privacy'], true)) {
+    if (in_array($step, ['minutes', 'privacy'], true)) {
         $skipFormPos = strpos($stepHtml, 'id="assoc-setup-skip-' . $step . '"');
         if ($skipFormPos === false || $skipFormPos < $primaryPos) {
             $fail('Setup step ' . $step . ' must emit the Skip aux form after the primary button (sibling, not nested).');
         }
+    }
+
+    if (in_array($step, ['welcome', 'association', 'membership', 'board', 'meetings', 'complete'], true)) {
+        if (str_contains($stepHtml, 'id="assoc-setup-skip-' . $step . '"')
+            || str_contains($stepHtml, 'form="assoc-setup-skip-' . $step . '"')) {
+            $fail('Setup step ' . $step . ' must not offer Skip when it does the same thing as the primary button.');
+        }
+    }
+
+    if (! str_contains($stepHtml, 'aria-current="step"') || ! str_contains($stepHtml, 'is-current') || str_contains($stepHtml, 'is-complete')) {
+        $fail('Setup step ' . $step . ' progress did not mark only the current step.');
+    }
+
+    if (! str_contains($stepHtml, 'button-primary')) {
+        $fail('Setup step ' . $step . ' is missing a primary button.');
     }
 }
 
@@ -494,6 +645,69 @@ WordpressRetention::save(new RetentionPeriod(7));
 if (WordpressRetention::load()->years() !== 7) {
     $fail('Retention 7 years was not stored.');
 }
+
+$completeHtml = $capture(static function (): void {
+    $_GET['step'] = 'complete';
+    SetupPage::render();
+    unset($_GET['step']);
+});
+
+$summaryHas = static function (string $html, array $needles): bool {
+    foreach ($needles as $needle) {
+        if (str_contains($html, $needle)) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+if (
+    ! str_contains($completeHtml, 'Lab Setup Association')
+    || ! str_contains($completeHtml, '802001-8888')
+    || ! $summaryHas($completeHtml, ['English', 'Engelska'])
+    || ! $summaryHas($completeHtml, ['15 September', '15 september'])
+    || str_contains($completeHtml, 'Labgatan')
+    || str_contains($completeHtml, 'lab-setup@example.test')
+    || str_contains($completeHtml, '070-111 22 33')
+    || ! $summaryHas($completeHtml, ['Ordinary', 'Ordinarie'])
+    || ! $summaryHas($completeHtml, ['Youth', 'Ungdom'])
+    || ! $summaryHas($completeHtml, ['Family', 'Familj'])
+    || ! $summaryHas($completeHtml, ['Company', 'Företag'])
+    || ! str_contains($completeHtml, $roleName)
+    || ! str_contains($completeHtml, $typeName)
+    || str_contains($completeHtml, $roleSlug)
+    || str_contains($completeHtml, $typeSlug)
+    || str_contains($completeHtml, 'assoc_secretary')
+    || ! $summaryHas($completeHtml, ['Secretary', 'Sekreterare'])
+    || ! $summaryHas($completeHtml, ['Chair', 'Ordförande'])
+    || ! $summaryHas($completeHtml, ['7 years', '7 år'])
+    || str_contains($completeHtml, 'name="years"')
+    || str_contains($completeHtml, 'name="address"')
+    || str_contains($completeHtml, '<textarea')
+) {
+    $fail('Complete summary missed a read-only fact, showed an unexposed profile field, or exposed a slug.');
+}
+
+\Foreningssystem\Infrastructure\WordPress\WordpressMinutesLock::update([]);
+\Foreningssystem\Infrastructure\WordPress\WordpressMinutesPublish::update([]);
+$emptyMinutesHtml = $capture(static function (): void {
+    $_GET['step'] = 'complete';
+    SetupPage::render();
+    unset($_GET['step']);
+});
+
+if (
+    ! $summaryHas($emptyMinutesHtml, ['No role may finalize minutes.', 'Ingen roll får låsa protokoll.'])
+    || ! $summaryHas($emptyMinutesHtml, ['No role may publish minutes.', 'Ingen roll får publicera protokoll.'])
+) {
+    \Foreningssystem\Infrastructure\WordPress\WordpressMinutesLock::update($lockRoles);
+    \Foreningssystem\Infrastructure\WordPress\WordpressMinutesPublish::update($publishRoles);
+    $fail('Complete summary did not say when no role may finalize or publish minutes.');
+}
+
+\Foreningssystem\Infrastructure\WordPress\WordpressMinutesLock::update($lockRoles);
+\Foreningssystem\Infrastructure\WordPress\WordpressMinutesPublish::update($publishRoles);
 
 $afterPeopleMid = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$people}");
 $afterAssignmentsMid = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$assignments}");
@@ -600,7 +814,7 @@ $settingsAfter = $capture([AssociationSettingsPage::class, 'render']);
 
 if (
     ! str_contains($settingsAfter, 'Run setup guide again')
-    && ! str_contains($settingsAfter, 'Kör installationsguiden igen')
+    && ! str_contains($settingsAfter, 'Öppna föreningsguiden igen')
 ) {
     $fail('Settings is missing the reopen setup guide link.');
 }
@@ -612,6 +826,77 @@ if (
     || WordpressSetupState::instance()->version() !== 1
 ) {
     $fail('Reopening the setup guide reset completion.');
+}
+
+$_POST = [
+    'name' => 'Lab Setup Association',
+    'organization_number' => '802001-8888',
+    'address' => "Labgatan 1\n111 22 Lab",
+    'email' => 'lab-setup-reopen@example.test',
+    'phone' => '070-111 22 33',
+    'language' => 'en',
+    'membership_year_month' => '9',
+    'membership_year_day' => '15',
+];
+$_REQUEST = $_POST;
+$_REQUEST['_wpnonce'] = wp_create_nonce('assoc_setup_save_association');
+$reopenRedirect = '';
+$reopenRedirectFilter = static function (string $target) use (&$reopenRedirect): string {
+    $reopenRedirect = $target;
+    throw new \RuntimeException('redirect');
+};
+add_filter('wp_redirect', $reopenRedirectFilter, 1);
+
+try {
+    SetupPage::saveAssociation();
+    remove_filter('wp_redirect', $reopenRedirectFilter, 1);
+    $_POST = [];
+    $_REQUEST = [];
+    $fail('Reopened association save did not redirect.');
+} catch (\RuntimeException $error) {
+    remove_filter('wp_redirect', $reopenRedirectFilter, 1);
+    $_POST = [];
+    $_REQUEST = [];
+
+    if ($error->getMessage() !== 'redirect') {
+        $fail($error->getMessage());
+    }
+}
+
+$reopenedProfile = WordpressAssociationProfile::load();
+
+if (
+    $reopenedProfile->logoAttachmentId() !== $logoAttachmentId
+    || $reopenedProfile->name() !== 'Lab Setup Association'
+    || $reopenedProfile->email() !== 'lab-setup-reopen@example.test'
+    || $reopenedProfile->organizationNumber() !== '802001-8888'
+    || $reopenedProfile->address() !== "Labgatan 1\n111 22 Lab"
+    || WordpressSetupState::instance()->version() !== 1
+    || ! WordpressSetupState::instance()->isComplete()
+) {
+    $fail('Reopening setup and saving Association destroyed the profile or completion state.');
+}
+
+wp_dequeue_style('foreningsplugin-admin');
+wp_deregister_style('foreningsplugin-admin');
+Plugin::enqueueAdminAssets('index.php');
+Plugin::enqueueAdminAssets('plugins.php');
+$styles = wp_styles();
+
+if (in_array('foreningsplugin-admin', $styles->queue, true)) {
+    $fail('Association admin CSS was enqueued on a non-plugin admin screen.');
+}
+
+Plugin::enqueueAdminAssets('foreningsplugin_page_foreningsplugin-settings');
+Plugin::enqueueAdminAssets('foreningsplugin_page_foreningsplugin-setup');
+$style = $styles->registered['foreningsplugin-admin'] ?? null;
+
+if (
+    ! in_array('foreningsplugin-admin', $styles->queue, true)
+    || ! is_object($style)
+    || ! str_contains((string) $style->src, 'admin.css')
+) {
+    $fail('Association admin CSS was not enqueued on Settings and setup.');
 }
 
 $afterPeople = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$people}");

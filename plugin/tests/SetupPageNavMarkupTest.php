@@ -38,11 +38,11 @@ final class SetupPageNavMarkupTest extends TestCase
             $source
         );
         self::assertMatchesRegularExpression(
-            '/self::primarySubmit\(\s*SetupStep::MINUTES,/s',
+            '/self::primarySubmit\(\s*SetupStep::MINUTES,\s*__\([^)]+\),\s*true,\s*true\)/s',
             $source
         );
         self::assertMatchesRegularExpression(
-            '/self::primarySubmit\(\s*SetupStep::PRIVACY,/s',
+            '/self::primarySubmit\(\s*SetupStep::PRIVACY,\s*__\([^)]+\),\s*true,\s*true\)/s',
             $source
         );
         self::assertMatchesRegularExpression(
@@ -60,6 +60,16 @@ final class SetupPageNavMarkupTest extends TestCase
         self::assertNotSame('', $navButtons);
         self::assertStringContainsString('form="assoc-setup-back-', $navButtons);
         self::assertStringNotContainsString('<form', $navButtons);
+        self::assertStringNotContainsString('assoc-setup-skip-', $navButtons);
+
+        $continue = self::extractMethod($source, 'continueStep');
+        self::assertStringContainsString("'assoc_setup_skip'", $continue);
+        self::assertMatchesRegularExpression('/primarySubmit\(\$step,[^;]+,\s*true,\s*false\)/s', $continue);
+
+        $posted = self::extractMethod($source, 'postedProfile');
+        self::assertStringContainsString('WordpressAssociationProfile::load()', $posted);
+        self::assertStringContainsString('storedLogoAttachmentId()', $posted);
+        self::assertStringNotContainsString('null,', $posted);
 
         $primarySubmit = self::extractMethod($source, 'primarySubmit');
         self::assertStringContainsString("</p></form>';", $primarySubmit);

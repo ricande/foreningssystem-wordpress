@@ -40,8 +40,8 @@ Settings is a hub, not one long page. The landing screen links to focused sub-sc
 - Association profile (`section=profile`)
 - Board roles (`section=board-roles`) — list, reorder, add, and edit unused custom roles
 - Meeting types (`section=meeting-types`) — list, reorder, add, and rename unused custom types
-- Minutes locking (`section=minutes-lock`)
-- Minutes publication (`section=minutes-publish`)
+- Lock minutes (`section=minutes-lock`)
+- Publish minutes (`section=minutes-publish`)
 - Retention (`section=retention`)
 - Run setup guide again (opens the existing setup page; reopening does not mark setup incomplete, hide menus, or reset domain data)
 
@@ -55,7 +55,7 @@ Decisions, activities, fees, and mailings are not part of this screen.
 
 Fresh installs keep `assoc_setup_version` incomplete until Wizard v1 is finished. While incomplete, Association navigation shows **Get started** / **Kom igång** instead of the operational screens. Direct URLs keep their existing capability checks. The wizard is server-rendered WordPress admin HTML and reuses the same profile, structure, minutes-permission, and retention services as the ordinary Settings pages.
 
-**Markup rule (all steps):** nested HTML `<form>` elements break **Save and continue**. HTML5 closes the outer form at the first nested `</form>`, so the primary submit can end up outside any form and do nothing. Minutes and Privacy hit this when Back/Skip were nested inside the save form (Skip could still work via surviving aux association). Every wizard step now uses one pattern: open one primary form (fields + primary submit); Back/Skip are `<button form="…">` controls that target hidden sibling forms emitted **after** the primary form closes — never nest Back/Skip forms inside the save form. Welcome has no Back; Association also omits Back (its only predecessor is Welcome). Membership and later steps keep Back.
+**Markup rule (all steps):** nested HTML `<form>` elements break **Save and continue**. HTML5 closes the outer form at the first nested `</form>`, so the primary submit can end up outside any form and do nothing. Minutes and Privacy hit this when Back/Skip were nested inside the save form (Skip could still work via surviving aux association). Every wizard step now uses one pattern: open one primary form (fields + primary submit); Back/Skip are `<button form="…">` controls that target hidden sibling forms emitted **after** the primary form closes — never nest Back/Skip forms inside the save form. Welcome has no Back; Association also omits Back (its only predecessor is Welcome). Later steps keep Back. Membership, Board, and Meetings are informational or optional-add steps: Back and Continue only, because Continue and Skip would do the same thing. Minutes and Privacy keep Skip, which advances without writing. A step that writes uses **Save and continue**. The Association step does not edit the logo; saving it reloads the canonical profile and keeps `logoAttachmentId`. The Complete step is a read-only summary (association name, organization number when set, language, membership-year start, membership kinds, board-role and meeting-type names, who may finalize and publish minutes, retention years). Finish still only writes setup completion state.
 
 Completing the wizard sets setup version `1`, restores the full Association menu, and shows a success notice on Overview. Next-step links for members, board, and the first meeting appear only when the current user has the matching action capability (`edit_members`, `manage_board`, `manage_meetings`). `manage_association` alone still shows the success message without an empty link list. Help & Guides is not part of this flow.
 
