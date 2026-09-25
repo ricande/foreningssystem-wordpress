@@ -4,9 +4,11 @@ This describes how to build a WordPress plugin ZIP and install that ZIP in a cle
 
 No Git tag or GitHub Release is created by these commands.
 
-## Development lab and release-test lab
+## Development lab, clean baseline, and release-test lab
 
 The development lab in `docker-compose.yml` bind-mounts `./plugin` into WordPress. It proves the source tree. It does not prove that a distributable archive installs.
+
+The **clean WordPress baseline** lives in `labs/wordpress-clean/` (Compose project `wordpress-clean`). It uses named volumes only — no bind mount of `./plugin`, project root, `src`, `dist`, or any foreningssystem plugin path. After `make clean-lab-install` the site has no foreningsplugin and no `assoc_*` options. Mailpit is provided by an MU-plugin **copied into the volume** (source file shipped under `labs/wordpress-clean/mu-plugins/`, installed by script). Snapshot name: `wordpress-clean-before-foreningsplugin`. Restore: `make clean-lab-restore` or `labs/wordpress-clean/scripts/restore.sh`. Default ports are 8088 / 8025 and therefore conflict with the bind-mount lab if both are up; change ports in `labs/wordpress-clean/.env` or stop one stack. See `labs/wordpress-clean/README.md`.
 
 The release-test lab is a separate Compose project, `foreningsplugin-release-test`, defined in `docker-compose.release-test.yml`. It uses its own database, WordPress files, and Mailpit data. It does not mount `./plugin`. The plugin arrives only through:
 
@@ -16,15 +18,15 @@ wp plugin install /packages/foreningsplugin-0.1.0.zip --activate
 
 WP-CLI may read `./dist` at `/packages` so it can see the ZIP. The web container does not.
 
-| | Development lab | Release-test lab |
-| --- | --- | --- |
-| Compose project | `foreningsplugin` | `foreningsplugin-release-test` |
-| Site | http://localhost:8088 | http://localhost:8090 |
-| Mailpit | http://localhost:8025 | http://localhost:8026 |
-| Plugin | bind-mounted source | installed ZIP |
-| Volumes | `db_data`, `wp_data`, `mailpit_data` | `release_db`, `release_wp`, `release_mailpit` |
+| | Development lab | Clean baseline | Release-test lab |
+| --- | --- | --- | --- |
+| Compose project | `foreningsplugin` | `wordpress-clean` | `foreningsplugin-release-test` |
+| Site | http://localhost:8088 | http://localhost:8088 (default; may clash) | http://localhost:8090 |
+| Mailpit | http://localhost:8025 | http://localhost:8025 (default; may clash) | http://localhost:8026 |
+| Plugin | bind-mounted source | none | installed ZIP |
+| Volumes | `db_data`, `wp_data`, `mailpit_data` | `wp_data`, `db_data` (project-prefixed) | `release_db`, `release_wp`, `release_mailpit` |
 
-`make release-test` destroys any previous release-test containers and volumes, then starts new ones. It does not run `make restore` and it does not touch the development lab.
+`make release-test` destroys any previous release-test containers and volumes, then starts new ones. It does not run `make restore` / `make clean-lab-restore` and it does not touch the development lab or the clean baseline.
 
 The scratch administrator is the disposable `admin` / `admin` account from `.env.example`. Those values are hardcoded in the release Compose file so the test does not read the development `.env`.
 

@@ -82,3 +82,13 @@ Some product decisions remain provisional, including the migration policy and pe
 Wizard markup uses one pattern on every step: a single primary form plus sibling Back/Skip forms via `form=` buttons. Nested forms previously broke Save and continue on Minutes and Privacy; that is fixed. See `docs/10_ADMIN_UX.md` and `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`.
 
 Help & Guides, contextual help, and optional registered-install communications remain proposal-only in `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` and `OPEN_QUESTIONS.md` (Q40–Q45). They are not implemented and not LOCKED.
+
+## Lab stacks (in-repo)
+
+Three Docker labs are documented in-repo:
+
+1. **Bind-mount development lab** — root `docker-compose.yml` / `make up` / `make install` (plugin source mounted).
+2. **Clean WordPress baseline** — `labs/wordpress-clean/` / `make clean-lab-*` (named volumes only; snapshot `wordpress-clean-before-foreningsplugin`; no foreningsplugin). See `labs/wordpress-clean/README.md` and `docs/17_RELEASE_PACKAGING.md`.
+3. **Release-test** — `docker-compose.release-test.yml` / `make release-test` (fresh ZIP install on :8090).
+
+An older outside-repo copy of the clean stack may still exist at `/home/ricande/projects/wordpress-clean/`; the canonical definition is now under `labs/wordpress-clean/`.

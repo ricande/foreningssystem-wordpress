@@ -1,5 +1,7 @@
 .env
 snapshots/
+labs/wordpress-clean/snapshots/
+labs/wordpress-clean/.env
 .DS_Store
 foreningsplugin-cursor-handoff.zip
 /vendor/

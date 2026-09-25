@@ -90,6 +90,8 @@ Licens: GPL-2.0-or-later. Se `LICENSE`.
 
 Labbet är Docker på utvecklingsdatorn, inte en separat virtuell maskin. Inventering finns i `docs/16_LAB_INVENTORY.md`.
 
+**Bind-mount development lab** (plugin source mounted; day-to-day work):
+
 ```text
 make up
 make install
@@ -100,6 +102,17 @@ make test
 ```
 
 Webbplatsen körs på `http://localhost:8088` när containrarna är igång. Mailpit tar emot all utgående post på `http://localhost:8025`. Lokala lösenord ligger i `.env`, som inte ska committas.
+
+**Clean WordPress baseline** (no plugin bind-mount; snap/restore before plugin work) lives in-repo at `labs/wordpress-clean/`:
+
+```text
+make clean-lab-up
+make clean-lab-install
+make clean-lab-snap
+make clean-lab-restore
+```
+
+Default ports are also 8088 / 8025 — stop the bind-mount lab first, or change ports in `labs/wordpress-clean/.env`. See `labs/wordpress-clean/README.md`.
 
 Paketering och ett separat installationsprov, som inte använder labbets plugin-montering:
 

@@ -1,4 +1,7 @@
-.PHONY: help up down install snap restore wp test package release-test release-test-down
+.PHONY: help up down install snap restore wp test package release-test release-test-down \
+	clean-lab-up clean-lab-down clean-lab-install clean-lab-snap clean-lab-restore
+
+CLEAN_LAB := labs/wordpress-clean
 
 help:
 	@printf '%s\n' \
@@ -12,8 +15,13 @@ help:
 		'make package' \
 		'make release-test' \
 		'make release-test-down' \
+		'make clean-lab-up' \
+		'make clean-lab-install' \
+		'make clean-lab-snap' \
+		'make clean-lab-restore' \
 		'Mailpit: http://localhost:8025' \
-		'Release scratch site: http://localhost:8090'
+		'Release scratch site: http://localhost:8090' \
+		'Clean baseline: labs/wordpress-clean (ports in its .env; default 8088/8025)'
 
 up:
 	docker compose up -d --wait
@@ -54,3 +62,21 @@ release-test:
 
 release-test-down:
 	docker compose -p foreningsplugin-release-test -f docker-compose.release-test.yml down -v --remove-orphans
+
+# Separate clean WordPress baseline (no plugin bind-mount). See labs/wordpress-clean/README.md
+clean-lab-up:
+	@if [ ! -f $(CLEAN_LAB)/.env ]; then cp $(CLEAN_LAB)/.env.example $(CLEAN_LAB)/.env; fi
+	docker compose --project-directory $(CLEAN_LAB) --env-file $(CLEAN_LAB)/.env up -d db mailpit wordpress
+
+clean-lab-down:
+	@if [ ! -f $(CLEAN_LAB)/.env ]; then cp $(CLEAN_LAB)/.env.example $(CLEAN_LAB)/.env; fi
+	docker compose --project-directory $(CLEAN_LAB) --env-file $(CLEAN_LAB)/.env down
+
+clean-lab-install:
+	bash $(CLEAN_LAB)/scripts/install.sh
+
+clean-lab-snap:
+	bash $(CLEAN_LAB)/scripts/snapshot.sh
+
+clean-lab-restore:
+	bash $(CLEAN_LAB)/scripts/restore.sh
