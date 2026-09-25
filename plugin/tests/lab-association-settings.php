@@ -687,15 +687,25 @@ try {
 
     remove_filter('wp_die_handler', $dieAsException);
 
+    $secretarySeesOverview = str_contains($secretaryHome, 'Behöver uppmärksamhet')
+        || str_contains($secretaryHome, 'I korthet')
+        || str_contains($secretaryHome, 'Kom igång med föreningen')
+        || str_contains($secretaryHome, 'Föreningen har inga poster ännu.');
+
     if (! current_user_can(Capabilities::ACCESS_ASSOCIATION)
         || ! current_user_can(Capabilities::VIEW_MEMBERS)
         || ! current_user_can(Capabilities::VIEW_INTERNAL_MEETINGS)
         || current_user_can(Capabilities::MANAGE_ASSOCIATION)
-        || ! str_contains($secretaryHome, 'Behöver uppmärksamhet')
-        || ! str_contains($secretaryMembers, 'Medlemmar')
-        || ! $secretarySettingsDenied
     ) {
         \WP_CLI::error('The secretary lost association access or gained settings.');
+    }
+
+    if (! $secretarySeesOverview || str_contains($secretaryHome, 'Du har tillgång till föreningsinställningar')) {
+        \WP_CLI::error('The secretary did not get the association overview.');
+    }
+
+    if (! str_contains($secretaryMembers, 'Medlemmar') || ! $secretarySettingsDenied) {
+        \WP_CLI::error('The secretary lost Members or gained Settings.');
     }
 } finally {
     $_GET = [];
