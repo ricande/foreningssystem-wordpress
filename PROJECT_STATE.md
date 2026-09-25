@@ -79,4 +79,6 @@ Some product decisions remain provisional, including the migration policy and pe
 
 **First-run Setup Wizard v1 is implemented** (ADR-0023). Local options `assoc_setup_version`, `assoc_setup_step`, and `assoc_setup_redirect_pending` track completion and first-run redirect. Schema remains 16. Plugin version remains 0.1.0.
 
+Wizard markup uses one pattern on every step: a single primary form plus sibling Back/Skip forms via `form=` buttons. Nested forms previously broke Save and continue on Minutes and Privacy; that is fixed. See `docs/10_ADMIN_UX.md` and `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`.
+
 Help & Guides, contextual help, and optional registered-install communications remain proposal-only in `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` and `OPEN_QUESTIONS.md` (Q40–Q45). They are not implemented and not LOCKED.

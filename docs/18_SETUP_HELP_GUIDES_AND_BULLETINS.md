@@ -39,6 +39,7 @@ Approved and implemented. Details in ADR-0023 and `docs/10_ADMIN_UX.md`.
 - Existing pre-wizard (schema `> 0`, setup option never written): adopt setup `1`, do not force wizard.
 - While incomplete: Association → Get started / Förening → Kom igång. Direct URLs keep page caps. Application services are not blocked.
 - Reopen from Settings after complete does not mark incomplete or reset data.
+- No nested HTML forms in wizard markup. Nesting orphaned **Save and continue** on Minutes and Privacy; all steps now use one primary form plus sibling Back/Skip forms via `form=` buttons (see `docs/10_ADMIN_UX.md`).
 
 **Wizard steps:** Welcome → Association → Membership (educational) → Board → Meetings → Minutes and documents → Privacy → Complete.
 
