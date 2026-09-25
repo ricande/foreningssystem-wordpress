@@ -31,3 +31,11 @@ jobs:
         run: bash scripts/install.sh
       - name: Run the lab suite
         run: bash scripts/test-lab.sh
+
+  package-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the packaged ZIP in a fresh WordPress
+        run: bash scripts/test-release-install.sh

@@ -22,4 +22,18 @@ final class PluginBootstrapTest extends TestCase
         self::assertStringContainsString('License:           GPL-2.0-or-later', $header);
         self::assertStringContainsString("require_once __DIR__ . '/autoload.php';", $header);
     }
+
+    public function test_translations_load_on_init(): void
+    {
+        $source = (string) file_get_contents(dirname(__DIR__) . '/src/Infrastructure/WordPress/Plugin.php');
+
+        self::assertDoesNotMatchRegularExpression("/add_action\\(\\s*'plugins_loaded'/", $source);
+
+        $init = strpos($source, "add_action('init', static function () use (\$pluginFile): void {");
+        $load = strpos($source, 'load_plugin_textdomain(');
+
+        self::assertNotFalse($init);
+        self::assertNotFalse($load);
+        self::assertLessThan($load, $init);
+    }
 }

@@ -1,0 +1,114 @@
+# Isolated scratch WordPress for installing dist/foreningsplugin-*.zip.
+# This project must not mount the plugin source tree.
+# Credentials are the disposable local account, hardcoded so this file
+# does not read the development lab .env or reuse its volumes.
+name: foreningsplugin-release-test
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - release_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  wordpress:
+    image: wordpress:php8.3-apache
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DEBUG: "1"
+      MAILPIT_SMTP_HOST: mailpit
+      MAILPIT_SMTP_PORT: 1025
+      WORDPRESS_CONFIG_EXTRA: |
+        if (!defined('WP_DEBUG_LOG')) {
+          define('WP_DEBUG_LOG', true);
+        }
+        if (!defined('WP_DEBUG_DISPLAY')) {
+          define('WP_DEBUG_DISPLAY', false);
+        }
+        define('WP_HOME', 'http://localhost:8090');
+        define('WP_SITEURL', 'http://localhost:8090');
+    volumes:
+      - release_wp:/var/www/html
+      - ./mu-plugins/local-mailpit.php:/var/www/html/wp-content/mu-plugins/local-mailpit.php:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/80'"]
+      interval: 5s
+      timeout: 5s
+      retries: 36
+      start_period: 40s
+
+  wpcli:
+    image: wordpress:cli-php8.3
+    profiles: ["cli"]
+    entrypoint: ["wp"]
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DEBUG: "1"
+      HOME: /tmp
+      MAILPIT_SMTP_HOST: mailpit
+      MAILPIT_SMTP_PORT: 1025
+      WORDPRESS_CONFIG_EXTRA: |
+        if (!defined('WP_DEBUG_LOG')) {
+          define('WP_DEBUG_LOG', true);
+        }
+        if (!defined('WP_DEBUG_DISPLAY')) {
+          define('WP_DEBUG_DISPLAY', false);
+        }
+        define('WP_HOME', 'http://localhost:8090');
+        define('WP_SITEURL', 'http://localhost:8090');
+    volumes:
+      - release_wp:/var/www/html
+      - ./dist:/packages:ro
+      - ./scripts/release-smoke.php:/release-smoke.php:ro
+      - ./mu-plugins/local-mailpit.php:/var/www/html/wp-content/mu-plugins/local-mailpit.php:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  mailpit:
+    image: axllent/mailpit
+    restart: unless-stopped
+    ports:
+      - "8026:8025"
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - release_mailpit:/data
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+volumes:
+  release_db:
+  release_wp:
+  release_mailpit:

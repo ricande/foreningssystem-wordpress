@@ -99,3 +99,13 @@ make test
 ```
 
 Webbplatsen körs på `http://localhost:8088` när containrarna är igång. Mailpit tar emot all utgående post på `http://localhost:8025`. Lokala lösenord ligger i `.env`, som inte ska committas.
+
+Paketering och ett separat installationsprov, som inte använder labbets plugin-montering:
+
+```text
+make package
+make release-test
+make release-test-down
+```
+
+`make package` bygger `dist/foreningsplugin-0.1.0.zip`. `make release-test` installerar det zip-arkivet i en ny WordPress på `http://localhost:8090`. Det är inte en publicerad release. Se `docs/17_RELEASE_PACKAGING.md`.

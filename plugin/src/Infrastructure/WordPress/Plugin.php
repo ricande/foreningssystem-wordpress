@@ -15,7 +15,7 @@ final class Plugin
     {
         register_activation_hook($pluginFile, [self::class, 'activate']);
 
-        add_action('plugins_loaded', static function () use ($pluginFile): void {
+        add_action('init', static function () use ($pluginFile): void {
             load_plugin_textdomain(
                 'foreningsplugin',
                 false,
@@ -26,7 +26,7 @@ final class Plugin
                 WordpressMigrations::migrateIfNeeded();
                 WordpressAccess::sync();
             }
-        });
+        }, 0);
 
         add_action('init', [LatestMinutesBlock::class, 'register']);
         add_action('init', [CurrentBoardBlock::class, 'register']);

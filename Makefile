@@ -1,4 +1,4 @@
-.PHONY: help up down install snap restore wp test
+.PHONY: help up down install snap restore wp test package release-test release-test-down
 
 help:
 	@printf '%s\n' \
@@ -9,7 +9,11 @@ help:
 		'make restore name=ren-install' \
 		'make wp plugin list' \
 		'make test' \
-		'Mailpit: http://localhost:8025'
+		'make package' \
+		'make release-test' \
+		'make release-test-down' \
+		'Mailpit: http://localhost:8025' \
+		'Release scratch site: http://localhost:8090'
 
 up:
 	docker compose up -d --wait
@@ -41,3 +45,12 @@ test:
 	fi
 	docker run --rm --user "$(shell id -u):$(shell id -g)" -v "$(CURDIR)":/app -w /app php:8.3-cli vendor/bin/phpunit
 	bash scripts/test-lab.sh
+
+package:
+	bash scripts/build-plugin-zip.sh
+
+release-test:
+	bash scripts/test-release-install.sh
+
+release-test-down:
+	docker compose -p foreningsplugin-release-test -f docker-compose.release-test.yml down -v --remove-orphans

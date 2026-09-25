@@ -4,3 +4,6 @@ snapshots/
 foreningsplugin-cursor-handoff.zip
 /vendor/
 .phpunit.cache/
+dist/*.zip
+dist/*.sha256
+dist/.build-*
