@@ -82,7 +82,21 @@ Dangerous actions must distinguish:
 Key task:
 “Replace treasurer without destroying history.”
 
-The board screen shows the current board first, then upcoming changes, history, and the actions that change it. A single-holder role offers replacement for whoever is current today, including when that assignment already has an end date. If a successor is already scheduled, the screen asks the officer to cancel that plan before adding another. A role that allows several holders offers another holder instead, and the existing holders stay. Ending an assignment that has started asks for a date and confirmation. The earlier row remains. A future assignment is shown as starting on its date, and cancelling it removes the plan without reopening the current holder. An open current assignment is shown as continuing until it is changed, not as a distant end date.
+The board screen is a guided wizard, not one long page of every form at once.
+
+**Overview** shows who sits now, upcoming changes, and coverage warnings (vacant single-holder roles when the board already has holders; scheduled successors). The primary CTA is **Get started** when the board is empty, otherwise **Change the board**. History is a separate view via **Show history**, not the middle of the start page. Board role definitions stay in Association Settings; the wizard only creates and changes assignments.
+
+**Change / Get started** steps, one task at a time:
+
+1. Choose task — Replace role | Add holder | End assignment | Cancel scheduled change (only tasks that currently apply)
+2. Choose role — single-holder vs multi-holder made clear
+3. Person and dates — same membership-coverage rules as before
+4. Confirm — explicit consequence (current row may close; history preserved; scheduled cancel is not kept as history)
+5. Done — back to overview
+
+A single-holder role offers replacement for whoever is current today, including when that assignment already has an end date. If a successor is already scheduled, replace is unavailable until that plan is cancelled. A role that allows several holders offers add holder instead, and existing holders stay. Ending an assignment that has started asks for a date and confirmation; the earlier row remains. Cancelling a future assignment removes the plan without reopening the current holder. An open current assignment is shown as continuing until it is changed, not as a distant end date.
+
+The wizard is server-rendered WordPress admin HTML. Navigation between steps uses links and GET forms; mutations POST through the existing admin-post handlers. Nested forms are avoided (same rule as the setup wizard).
 
 ## Meeting flow
 

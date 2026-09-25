@@ -157,7 +157,12 @@ if (
 $html = $render();
 $upcoming = $section($html, 'assoc-board-upcoming');
 $current = $section($html, 'assoc-board-current');
-$roleBox = $section($html, 'assoc-role-' . $treasurerId);
+$_GET['assoc_board_step'] = 'role';
+$_GET['assoc_board_task'] = 'cancel';
+$cancelRoles = $render();
+$_GET['assoc_board_task'] = 'replace';
+$replaceRoles = $render();
+unset($_GET['assoc_board_step'], $_GET['assoc_board_task']);
 
 if (
     ! str_contains($current, 'Anna Schedule')
@@ -171,12 +176,11 @@ if (
 }
 
 if (
-    ! str_contains($roleBox, 'Karin Schedule')
-    || ! str_contains($roleBox, 'assoc-cancel-form')
-    || str_contains($roleBox, 'assoc-replace-form')
-    || str_contains($roleBox, 'assoc-end-form')
+    ! str_contains($cancelRoles, 'Treasurer')
+    || ! str_contains($cancelRoles, 'assoc-board-wizard-role')
+    || str_contains($replaceRoles, 'Treasurer')
 ) {
-    $fail('The treasurer role did not show the scheduled successor instead of another replacement.');
+    $fail('The treasurer role did not require cancelling the scheduled successor before replacement.');
 }
 
 $karinOpen = static function () use ($wpdb, $assignments, $karinId): ?string {
@@ -236,9 +240,12 @@ if (
 }
 
 $after = $render();
-$roleBox = $section($after, 'assoc-role-' . $treasurerId);
+$_GET['assoc_board_step'] = 'role';
+$_GET['assoc_board_task'] = 'replace';
+$replaceRoles = $render();
+unset($_GET['assoc_board_step'], $_GET['assoc_board_task']);
 
-if (! str_contains($roleBox, 'assoc-replace-form') || ! str_contains($section($after, 'assoc-board-current'), 'Anna Schedule')) {
+if (! str_contains($replaceRoles, 'Treasurer') || ! str_contains($section($after, 'assoc-board-current'), 'Anna Schedule')) {
     $fail('Anna was no longer replaceable after the scheduled successor was cancelled.');
 }
 

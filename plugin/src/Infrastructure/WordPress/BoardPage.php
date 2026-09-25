@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Board\BoardWizardStep;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Board\BoardRuleException;
@@ -26,11 +27,11 @@ final class BoardPage
                 self::text('term_label'),
                 AssociationDate::fromIso(wp_date('Y-m-d'))
             );
-            self::redirect($result);
+            self::redirect($result, self::doneQuery());
         } catch (NotAllowed $error) {
             throw $error;
         } catch (BoardRuleException | \InvalidArgumentException | \RuntimeException $error) {
-            self::redirect(self::failure($error));
+            self::redirect(self::failure($error), self::wizardQuery());
         }
     }
 
@@ -39,7 +40,7 @@ final class BoardPage
         self::guard('assoc_end_assignment');
 
         if (self::text('confirm') !== '1') {
-            self::redirect('confirm');
+            self::redirect('confirm', self::fromWizard() ? self::wizardQuery() : []);
         }
 
         try {
@@ -47,11 +48,11 @@ final class BoardPage
                 self::integer('assignment_id'),
                 AssociationDate::fromIso(self::text('ended_on'))
             );
-            self::redirect('ended');
+            self::redirect('ended', self::doneQuery());
         } catch (NotAllowed $error) {
             throw $error;
         } catch (BoardRuleException | \InvalidArgumentException | \RuntimeException $error) {
-            self::redirect(self::failure($error));
+            self::redirect(self::failure($error), self::fromWizard() ? self::wizardQuery() : []);
         }
     }
 
@@ -60,7 +61,7 @@ final class BoardPage
         self::guard('assoc_cancel_assignment');
 
         if (self::text('confirm') !== '1') {
-            self::redirect('cancel_confirm');
+            self::redirect('cancel_confirm', self::fromWizard() ? self::wizardQuery() : []);
         }
 
         try {
@@ -68,15 +69,15 @@ final class BoardPage
                 self::integer('assignment_id'),
                 AssociationDate::fromIso(wp_date('Y-m-d'))
             );
-            self::redirect('cancelled', [
+            self::redirect('cancelled', array_merge(self::doneQuery(), [
                 'assoc_role' => $result->roleSlug(),
                 'assoc_role_name' => $result->roleName(),
                 'assoc_end' => $result->currentEnd() ?? '',
-            ]);
+            ]));
         } catch (NotAllowed $error) {
             throw $error;
         } catch (BoardRuleException | \InvalidArgumentException | \RuntimeException $error) {
-            self::redirect(self::failure($error));
+            self::redirect(self::failure($error), self::fromWizard() ? self::wizardQuery() : []);
         }
     }
 
@@ -93,8 +94,110 @@ final class BoardPage
             $directory->roles(),
             $directory->people($today),
             current_user_can(Capabilities::MANAGE_BOARD),
-            self::notice()
+            self::notice(),
+            self::context()
         );
+    }
+
+    /**
+     * @return array{
+     *     view: string,
+     *     step: string,
+     *     task: ?string,
+     *     role_id: ?int,
+     *     assignment_id: ?int,
+     *     person_id: ?int,
+     *     started_on: string,
+     *     ended_on: string,
+     *     public_contact: string,
+     *     term_label: string
+     * }
+     */
+    private static function context(): array
+    {
+        $role = isset($_GET['assoc_role']) ? (string) $_GET['assoc_role'] : '';
+        $assignment = isset($_GET['assoc_assignment']) ? (string) $_GET['assoc_assignment'] : '';
+        $person = isset($_GET['assoc_person']) ? (string) $_GET['assoc_person'] : '';
+
+        return [
+            'view' => isset($_GET['assoc_view']) ? sanitize_key((string) $_GET['assoc_view']) : '',
+            'step' => isset($_GET['assoc_board_step']) ? sanitize_key((string) $_GET['assoc_board_step']) : BoardWizardStep::OVERVIEW,
+            'task' => isset($_GET['assoc_board_task']) ? sanitize_key((string) $_GET['assoc_board_task']) : null,
+            'role_id' => ctype_digit($role) ? (int) $role : null,
+            'assignment_id' => ctype_digit($assignment) ? (int) $assignment : null,
+            'person_id' => ctype_digit($person) ? (int) $person : null,
+            'started_on' => isset($_GET['assoc_start']) ? sanitize_text_field(wp_unslash((string) $_GET['assoc_start'])) : '',
+            'ended_on' => isset($_GET['assoc_end']) ? sanitize_text_field(wp_unslash((string) $_GET['assoc_end'])) : '',
+            'public_contact' => isset($_GET['assoc_contact']) ? sanitize_text_field(wp_unslash((string) $_GET['assoc_contact'])) : '',
+            'term_label' => isset($_GET['assoc_term']) ? sanitize_text_field(wp_unslash((string) $_GET['assoc_term'])) : '',
+        ];
+    }
+
+    private static function fromWizard(): bool
+    {
+        return self::text('wizard') === '1';
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function doneQuery(): array
+    {
+        return [
+            'assoc_board_step' => BoardWizardStep::DONE,
+        ];
+    }
+
+    /**
+     * Preserve wizard draft fields on failure redirects when posted from confirm.
+     *
+     * @return array<string, string>
+     */
+    private static function wizardQuery(): array
+    {
+        if (! self::fromWizard()) {
+            return [];
+        }
+
+        $query = [
+            'assoc_board_step' => BoardWizardStep::CONFIRM,
+        ];
+
+        $task = self::text('assoc_board_task');
+
+        if ($task === '' && self::integer('assignment_id') > 0) {
+            $task = self::text('ended_on') !== '' ? 'end' : 'cancel';
+        }
+
+        if ($task === '' && self::integer('person_id') > 0) {
+            $task = self::text('ended_on') !== '' ? 'add' : 'replace';
+        }
+
+        if ($task !== '') {
+            $query['assoc_board_task'] = sanitize_key($task);
+        }
+
+        if (self::integer('role_id') > 0) {
+            $query['assoc_role'] = (string) self::integer('role_id');
+        }
+
+        if (self::integer('assignment_id') > 0) {
+            $query['assoc_assignment'] = (string) self::integer('assignment_id');
+        }
+
+        if (self::integer('person_id') > 0) {
+            $query['assoc_person'] = (string) self::integer('person_id');
+        }
+
+        foreach (['started_on' => 'assoc_start', 'ended_on' => 'assoc_end', 'public_contact' => 'assoc_contact', 'term_label' => 'assoc_term'] as $post => $get) {
+            $value = self::text($post);
+
+            if ($value !== '') {
+                $query[$get] = $value;
+            }
+        }
+
+        return $query;
     }
 
     private static function guard(string $nonce): void

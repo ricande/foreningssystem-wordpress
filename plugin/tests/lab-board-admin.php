@@ -121,6 +121,28 @@ if (
     $fail('The empty board did not offer the first assignment.');
 }
 
+if (
+    ! str_contains($empty, 'Get started')
+    && ! str_contains($empty, 'Kom igång')
+) {
+    $fail('The empty board did not offer Get started.');
+}
+
+if (
+    str_contains($empty, 'assoc-replace-form')
+    || str_contains($empty, 'assoc-place-form')
+    || str_contains($empty, 'id="assoc-board-history"')
+) {
+    $fail('The overview still rendered mutation forms or inline history.');
+}
+
+if (
+    ! str_contains($empty, 'assoc-board-history-link')
+    || (! str_contains($empty, 'Show history') && ! str_contains($empty, 'Visa historik'))
+) {
+    $fail('The overview did not link to the history view.');
+}
+
 if ($wpdb->insert($roles, [
     'slug' => 'lab_ux_treasurer',
     'name' => 'Treasurer',
@@ -153,7 +175,10 @@ $dina = $peopleService->register('Dina', 'Lab', 'lab-board-ux-dina@example.test'
 $board->place($anna, $treasurerId, AssociationDate::fromIso('2025-03-10'), null, 'kassor-anna@example.test', '2025–2026');
 $first = $render();
 $current = $section($first, 'assoc-board-current');
-$history = $section($first, 'assoc-board-history');
+$_GET['assoc_view'] = 'history';
+$historyPage = $render();
+unset($_GET['assoc_view']);
+$history = $section($historyPage, 'assoc-board-history');
 
 if (! str_contains($current, 'Anna Lab') || ! str_contains($current, '2025-03-10') || ! str_contains($current, 'Treasurer')) {
     $fail('The current board did not show Anna as treasurer.');
@@ -163,8 +188,37 @@ if (str_contains($history, 'Anna Lab')) {
     $fail('The current treasurer was listed as history.');
 }
 
-if (! str_contains($first, 'assoc-replace-form') || str_contains($first, '>Replace Board member<') || str_contains($first, '>Ersätt Board member<')) {
-    $fail('The single-holder role did not offer replacement, or the multi-holder role was labeled replace.');
+if (
+    ! str_contains($first, 'Change the board')
+    && ! str_contains($first, 'Ändra styrelsen')
+) {
+    $fail('A populated board did not offer Change the board.');
+}
+
+if (str_contains($first, 'assoc-replace-form') || str_contains($first, 'assoc-place-form')) {
+    $fail('The overview still showed assignment forms instead of the wizard.');
+}
+
+$_GET['assoc_board_step'] = 'task';
+$taskPage = $render();
+unset($_GET['assoc_board_step']);
+
+if (
+    (! str_contains($taskPage, 'Replace role') && ! str_contains($taskPage, 'Ersätt roll'))
+    || (! str_contains($taskPage, 'Add holder') && ! str_contains($taskPage, 'Lägg till innehavare'))
+    || str_contains($taskPage, '>Replace Board member<')
+    || str_contains($taskPage, '>Ersätt Board member<')
+) {
+    $fail('The wizard task step did not offer replace and add correctly.');
+}
+
+$_GET['assoc_board_step'] = 'role';
+$_GET['assoc_board_task'] = 'replace';
+$replaceRoles = $render();
+unset($_GET['assoc_board_step'], $_GET['assoc_board_task']);
+
+if (! str_contains($replaceRoles, 'Treasurer') || str_contains($replaceRoles, 'Board member')) {
+    $fail('Replace role listed the wrong roles.');
 }
 
 $replaced = $board->place($karin, $treasurerId, AssociationDate::fromIso('2026-03-10'), null, 'kassor@example.test', '2026–2027');
@@ -199,7 +253,9 @@ if (
 
 $after = $render();
 $current = $section($after, 'assoc-board-current');
-$history = $section($after, 'assoc-board-history');
+$_GET['assoc_view'] = 'history';
+$history = $section($render(), 'assoc-board-history');
+unset($_GET['assoc_view']);
 
 if (! str_contains($current, 'Karin Lab') || str_contains($current, 'Anna Lab')) {
     $fail('Karin was not the current treasurer.');
@@ -373,7 +429,13 @@ $livEnded = $wpdb->get_var($wpdb->prepare(
     $liv,
     $memberRoleId
 ));
-$history = $section($render(), 'assoc-board-history');
+$history = $section((static function () use ($render): string {
+    $_GET['assoc_view'] = 'history';
+    $html = $render();
+    unset($_GET['assoc_view']);
+
+    return $html;
+})(), 'assoc-board-history');
 
 if (
     ! str_contains($ended, 'assoc_notice=ended')

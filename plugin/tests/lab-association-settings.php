@@ -247,9 +247,32 @@ try {
         BoardPage::render();
     });
 
-    foreach (['Materialansvarig', 'Aktuell styrelse', 'assoc-board-current', 'assoc-board-history', 'Historik'] as $needle) {
+    foreach (['Aktuell styrelse', 'assoc-board-current', 'Visa historik', 'assoc-board-history-link'] as $needle) {
         if (! str_contains($board, $needle)) {
             \WP_CLI::error('Board administration did not show: ' . $needle);
+        }
+    }
+
+    $_GET['assoc_board_step'] = 'role';
+    $_GET['assoc_board_task'] = 'add';
+    $addRoles = $capture(static function (): void {
+        BoardPage::render();
+    });
+    unset($_GET['assoc_board_step'], $_GET['assoc_board_task']);
+
+    if (! str_contains($addRoles, 'Materialansvarig')) {
+        \WP_CLI::error('Board wizard add-holder step did not list Materialansvarig.');
+    }
+
+    $_GET['assoc_view'] = 'history';
+    $history = $capture(static function (): void {
+        BoardPage::render();
+    });
+    unset($_GET['assoc_view']);
+
+    foreach (['assoc-board-history', 'Historik'] as $needle) {
+        if (! str_contains($history, $needle)) {
+            \WP_CLI::error('Board history view did not show: ' . $needle);
         }
     }
 

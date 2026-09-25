@@ -1822,3 +1822,87 @@ msgstr ""
 
 msgid "Enter the association name before finishing setup."
 msgstr ""
+
+msgid "An end date is required."
+msgstr ""
+
+msgid "Back to board overview"
+msgstr ""
+
+msgid "Board roles are defined in Association Settings. This guide only creates and changes assignments."
+msgstr ""
+
+msgid "Cancel scheduled change"
+msgstr ""
+
+msgid "Change the board"
+msgstr ""
+
+msgid "Choose a role first."
+msgstr ""
+
+msgid "Choose an assignment first."
+msgstr ""
+
+msgid "Choose assignment"
+msgstr ""
+
+msgid "Choose one change at a time."
+msgstr ""
+
+msgid "Confirm"
+msgstr ""
+
+msgid "Confirm: %1$s's current assignment closes the day before %3$s if that date falls inside it. %2$s starts on %3$s. History is preserved."
+msgstr ""
+
+msgid "Confirm: add %1$s as %2$s starting %3$s. Existing holders of multi-holder roles stay in place. History is preserved."
+msgstr ""
+
+msgid "Confirm: cancel %1$s's scheduled %2$s assignment starting %3$s? This assignment has not started and will not be kept as board history."
+msgstr ""
+
+msgid "Confirm: end %1$s's %2$s assignment on %3$s. The historical assignment will remain."
+msgstr ""
+
+msgid "Continue to confirm"
+msgstr ""
+
+msgid "Coverage"
+msgstr ""
+
+msgid "I understand the current row may close and history is preserved."
+msgstr ""
+
+msgid "No assignments match this change."
+msgstr ""
+
+msgid "No board changes are available right now. Add members with covering membership, or define roles in Association Settings."
+msgstr ""
+
+msgid "No current holder for %s."
+msgstr ""
+
+msgid "No roles are available for this change."
+msgstr ""
+
+msgid "Person and dates"
+msgstr ""
+
+msgid "Person and start date are required."
+msgstr ""
+
+msgid "Replace role"
+msgstr ""
+
+msgid "Scheduled: %1$s — %2$s starts %3$s."
+msgstr ""
+
+msgid "Several holders allowed"
+msgstr ""
+
+msgid "Show history"
+msgstr ""
+
+msgid "The board change is saved."
+msgstr ""

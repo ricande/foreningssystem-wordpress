@@ -2595,3 +2595,86 @@ msgstr "Ungdom"
 msgid "Youth — an individual membership for a younger person."
 msgstr "Ungdom — ett enskilt medlemskap för en yngre person."
 
+msgid "An end date is required."
+msgstr "Ett slutdatum krävs."
+
+msgid "Back to board overview"
+msgstr "Tillbaka till styrelseöversikten"
+
+msgid "Board roles are defined in Association Settings. This guide only creates and changes assignments."
+msgstr "Styrelseroller definieras under Föreningsinställningar. Den här guiden skapar och ändrar bara uppdrag."
+
+msgid "Cancel scheduled change"
+msgstr "Avbryt planerad ändring"
+
+msgid "Change the board"
+msgstr "Ändra styrelsen"
+
+msgid "Choose a role first."
+msgstr "Välj en roll först."
+
+msgid "Choose an assignment first."
+msgstr "Välj ett uppdrag först."
+
+msgid "Choose assignment"
+msgstr "Välj uppdrag"
+
+msgid "Choose one change at a time."
+msgstr "Välj en ändring i taget."
+
+msgid "Confirm"
+msgstr "Bekräfta"
+
+msgid "Confirm: %1$s's current assignment closes the day before %3$s if that date falls inside it. %2$s starts on %3$s. History is preserved."
+msgstr "Bekräfta: uppdraget för %1$s stängs dagen före %3$s om det datumet ligger inom uppdraget. %2$s börjar %3$s. Historiken bevaras."
+
+msgid "Confirm: add %1$s as %2$s starting %3$s. Existing holders of multi-holder roles stay in place. History is preserved."
+msgstr "Bekräfta: lägg till %1$s som %2$s med start %3$s. Befintliga innehavare av roller med flera innehavare är kvar. Historiken bevaras."
+
+msgid "Confirm: cancel %1$s's scheduled %2$s assignment starting %3$s? This assignment has not started and will not be kept as board history."
+msgstr "Bekräfta: avbryt det planerade uppdraget som %2$s för %1$s med start %3$s? Uppdraget har inte börjat och sparas inte som styrelsehistorik."
+
+msgid "Confirm: end %1$s's %2$s assignment on %3$s. The historical assignment will remain."
+msgstr "Bekräfta: avsluta uppdraget som %2$s för %1$s den %3$s. Det historiska uppdraget finns kvar."
+
+msgid "Continue to confirm"
+msgstr "Fortsätt till bekräftelse"
+
+msgid "Coverage"
+msgstr "Täckning"
+
+msgid "I understand the current row may close and history is preserved."
+msgstr "Jag förstår att den aktuella raden kan stängas och att historiken bevaras."
+
+msgid "No assignments match this change."
+msgstr "Inga uppdrag matchar den här ändringen."
+
+msgid "No board changes are available right now. Add members with covering membership, or define roles in Association Settings."
+msgstr "Inga styrelseändringar är tillgängliga just nu. Lägg till medlemmar med täckande medlemskap, eller definiera roller under Föreningsinställningar."
+
+msgid "No current holder for %s."
+msgstr "Ingen aktuell innehavare för %s."
+
+msgid "No roles are available for this change."
+msgstr "Inga roller är tillgängliga för den här ändringen."
+
+msgid "Person and dates"
+msgstr "Person och datum"
+
+msgid "Person and start date are required."
+msgstr "Person och startdatum krävs."
+
+msgid "Replace role"
+msgstr "Ersätt roll"
+
+msgid "Scheduled: %1$s — %2$s starts %3$s."
+msgstr "Planerat: %1$s — %2$s börjar %3$s."
+
+msgid "Several holders allowed"
+msgstr "Flera innehavare tillåtna"
+
+msgid "Show history"
+msgstr "Visa historik"
+
+msgid "The board change is saved."
+msgstr "Styrelseändringen är sparad."

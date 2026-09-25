@@ -63,7 +63,7 @@ Implemented areas:
 - privacy export, erase and retention
 - schema migrations through version 16
 - members admin UX v1: list, detail, typed create flows, guardians, protected identity display and membership history
-- board admin UX v1: current board, upcoming changes, history, replacement, multi-holder roles, and ending an assignment without deleting it
+- board admin UX v1: guided board wizard (overview, one task at a time, confirm, separate history view) over the same BoardService rules for replacement, multi-holder roles, ending, and cancelling scheduled changes without deleting history
 - meetings admin UX v1: operational overview and a single meeting workspace for preparation, capture, and minutes
 - overview / dashboard UX v1: capability-aware association work overview for attention, counts, meetings, board, tasks, and recent documents
 - member account provisioning v1: an active individual member with a usable email can receive a linked WordPress subscriber login. A missing WordPress user stays a broken link until an officer clears it. Member-only documents require a live WordPress user, an explicit Person link, and active individual coverage
@@ -78,6 +78,8 @@ Some product decisions remain provisional, including the migration policy and pe
 ## Planned product area — setup, help, guides, bulletins
 
 **First-run Setup Wizard v1 is implemented** (ADR-0023). Local options `assoc_setup_version`, `assoc_setup_step`, and `assoc_setup_redirect_pending` track completion and first-run redirect. Schema remains 16. Plugin version remains 0.1.0.
+
+**Board Admin Wizard v1 is implemented** (ADR-0024). Association → Board is a guided flow (Get started / Change the board) with one task per run and a separate history view. BoardService semantics and schema 16 are unchanged.
 
 Wizard markup uses one pattern on every step: a single primary form plus sibling Back/Skip forms via `form=` buttons. Nested forms previously broke Save and continue on Minutes and Privacy; that is fixed. See `docs/10_ADMIN_UX.md` and `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`.
 
