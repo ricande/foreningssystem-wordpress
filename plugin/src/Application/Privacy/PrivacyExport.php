@@ -34,62 +34,32 @@ final class PrivacyExport
 
     public function collect(string $email, ?int $linkedUserId, int $actorUserId): PersonalDataReport
     {
-        $people = [];
+        $person = PrivacySubject::resolve($this->people, $email, $linkedUserId);
+        $id = $person instanceof Person ? $person->id() : null;
 
-        foreach ($this->matches($email, $linkedUserId) as $person) {
-            $id = $person->id();
-
-            if ($id === null) {
-                continue;
-            }
-
-            $people[] = new ExportedPerson(
-                $id,
-                $person->firstName(),
-                $person->lastName(),
-                $person->email(),
-                $person->status()->value,
-                $this->membershipsFor($id),
-                $this->assignmentsFor($id),
-                $this->attendanceFor($id),
-                $person->birthDate()?->iso(),
-                $this->identityFor($id, $actorUserId),
-                $this->guardianNotes($id)
-            );
-
-            if ($actorUserId >= 1) {
-                $this->audit->record('person', $id, 'export_personal_data', $actorUserId);
-            }
+        if (! $person instanceof Person || $id === null) {
+            return new PersonalDataReport([]);
         }
 
-        return new PersonalDataReport($people);
-    }
+        $exported = new ExportedPerson(
+            $id,
+            $person->firstName(),
+            $person->lastName(),
+            $person->email(),
+            $person->status()->value,
+            $this->membershipsFor($id),
+            $this->assignmentsFor($id),
+            $this->attendanceFor($id),
+            $person->birthDate()?->iso(),
+            $this->identityFor($id, $actorUserId),
+            $this->guardianNotes($id)
+        );
 
-    /**
-     * @return list<Person>
-     */
-    private function matches(string $email, ?int $linkedUserId): array
-    {
-        $needle = trim($email);
-        $userId = $linkedUserId !== null && $linkedUserId >= 1 ? $linkedUserId : null;
-        $found = [];
-
-        foreach ($this->people->all() as $person) {
-            $id = $person->id();
-
-            if ($id === null || isset($found[$id])) {
-                continue;
-            }
-
-            $byEmail = $needle !== '' && strcasecmp($person->email(), $needle) === 0;
-            $byUser = $userId !== null && $person->wordpressUserId() === $userId;
-
-            if ($byEmail || $byUser) {
-                $found[$id] = $person;
-            }
+        if ($actorUserId >= 1) {
+            $this->audit->record('person', $id, 'export_personal_data', $actorUserId);
         }
 
-        return array_values($found);
+        return new PersonalDataReport([$exported]);
     }
 
     /**

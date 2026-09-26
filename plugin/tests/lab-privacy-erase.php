@@ -26,8 +26,9 @@ $minutes = $wpdb->prefix . 'assoc_minutes';
 $revisions = $wpdb->prefix . 'assoc_minutes_revision';
 $copies = $wpdb->prefix . 'assoc_signed_copy';
 $audit = $wpdb->prefix . 'assoc_audit_event';
-$emails = ['ada-erase@example.test', 'grace-erase@example.test'];
-$numbers = ['LAB-ERASE-A', 'LAB-ERASE-G'];
+$familyEmail = 'familjen-erase@example.test';
+$emails = ['ada-erase@example.test', 'grace-erase@example.test', $familyEmail];
+$numbers = ['LAB-ERASE-A', 'LAB-ERASE-G', 'LAB-ERASE-F1', 'LAB-ERASE-F2'];
 $pdf = "%PDF-1.4\n1 0 obj\nendobj\n%%EOF";
 
 $cleanup = static function () use ($wpdb, $people, $memberships, $assignments, $roles, $participants, $meetings, $agenda, $decisions, $minutes, $revisions, $copies, $audit, $emails, $numbers): void {
@@ -70,9 +71,10 @@ $cleanup = static function () use ($wpdb, $people, $memberships, $assignments, $
     $personIds = [];
 
     foreach ($emails as $email) {
-        $personId = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$people} WHERE email = %s", $email));
+        // A shared address can sit on several rows, so every match goes.
+        $matches = $wpdb->get_col($wpdb->prepare("SELECT id FROM {$people} WHERE email = %s", $email));
 
-        if ($personId) {
+        foreach (is_array($matches) ? $matches : [] as $personId) {
             $personIds[] = (int) $personId;
         }
     }
@@ -162,6 +164,12 @@ $skipped = WordpressPrivacy::erase('ada-erase@example.test', 2);
 $registered = apply_filters('wp_privacy_personal_data_erasers', []);
 $result = WordpressPrivacy::erase('ada-erase@example.test', 1);
 $messages = implode("\n", $result['messages']);
+// Two people behind one address. The request names nobody in particular.
+$annaFamily = WordpressPeople::service()->register('Anna', 'Familj', $familyEmail, 'LAB-ERASE-F1', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
+$lisaFamily = WordpressPeople::service()->register('Lisa', 'Familj', $familyEmail, 'LAB-ERASE-F2', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
+$family = WordpressPrivacy::erase($familyEmail, 1);
+$savedAnnaFamily = $wpdb->get_row($wpdb->prepare("SELECT first_name, email FROM {$people} WHERE id = %d", $annaFamily), ARRAY_A);
+$savedLisaFamily = $wpdb->get_row($wpdb->prepare("SELECT first_name, email FROM {$people} WHERE id = %d", $lisaFamily), ARRAY_A);
 $saved = $wpdb->get_row($wpdb->prepare("SELECT first_name, last_name, email, status, wp_user_id FROM {$people} WHERE id = %d", $ada), ARRAY_A);
 $period = lab_period_for_person((int) $ada);
 $assignment = $wpdb->get_row($wpdb->prepare("SELECT started_on, public_contact, term_label FROM {$assignments} WHERE person_id = %d", $ada), ARRAY_A);
@@ -216,6 +224,14 @@ if (
     || count($events) !== 1
     || (string) $events[0]['action'] !== 'anonymize_person'
     || str_contains((string) $events[0]['action'], 'ada-erase@example.test')
+    || $family['items_removed'] !== false
+    || $family['items_retained'] !== false
+    || ! is_array($savedAnnaFamily)
+    || $savedAnnaFamily['first_name'] !== 'Anna'
+    || $savedAnnaFamily['email'] !== $familyEmail
+    || ! is_array($savedLisaFamily)
+    || $savedLisaFamily['first_name'] !== 'Lisa'
+    || $savedLisaFamily['email'] !== $familyEmail
 ) {
     $fail('The privacy eraser rewrote a kept record or left a contact detail.');
 }

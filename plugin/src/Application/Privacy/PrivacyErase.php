@@ -48,13 +48,13 @@ final class PrivacyErase
             throw new NotAllowed(Capabilities::ERASE_MEMBER_DATA);
         }
 
-        $outcomes = [];
+        $person = PrivacySubject::resolve($this->people, $email, $linkedUserId);
 
-        foreach ($this->matches($email, $linkedUserId) as $person) {
-            $outcomes[] = $this->erasePerson($person, $actorUserId);
+        if (! $person instanceof Person || $person->id() === null) {
+            return [];
         }
 
-        return $outcomes;
+        return [$this->erasePerson($person, $actorUserId)];
     }
 
     private function erasePerson(Person $person, int $actorUserId): EraseOutcome
@@ -151,33 +151,6 @@ final class PrivacyErase
         }
 
         return [$minutesNameRetained, $signedCopyRetained];
-    }
-
-    /**
-     * @return list<Person>
-     */
-    private function matches(string $email, ?int $linkedUserId): array
-    {
-        $needle = trim($email);
-        $userId = $linkedUserId !== null && $linkedUserId >= 1 ? $linkedUserId : null;
-        $found = [];
-
-        foreach ($this->people->all() as $person) {
-            $id = $person->id();
-
-            if ($id === null || isset($found[$id])) {
-                continue;
-            }
-
-            $byEmail = $needle !== '' && strcasecmp($person->email(), $needle) === 0;
-            $byUser = $userId !== null && $person->wordpressUserId() === $userId;
-
-            if ($byEmail || $byUser) {
-                $found[$id] = $person;
-            }
-        }
-
-        return array_values($found);
     }
 
     /**

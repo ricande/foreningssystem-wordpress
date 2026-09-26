@@ -24,13 +24,15 @@ $decisions = $wpdb->prefix . 'assoc_decision';
 $minutes = $wpdb->prefix . 'assoc_minutes';
 $revisions = $wpdb->prefix . 'assoc_minutes_revision';
 $audit = $wpdb->prefix . 'assoc_audit_event';
-$emails = ['ada-privacy@example.test', 'grace-privacy@example.test'];
+$familyEmail = 'familjen-privacy@example.test';
+$emails = ['ada-privacy@example.test', 'grace-privacy@example.test', $familyEmail];
 
 $cleanup = static function () use ($wpdb, $people, $memberships, $assignments, $roles, $participants, $meetings, $agenda, $decisions, $minutes, $revisions, $audit, $emails): void {
     foreach ($emails as $email) {
-        $personId = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$people} WHERE email = %s", $email));
+        // A shared address can sit on several rows, so every match goes.
+        $personIds = $wpdb->get_col($wpdb->prepare("SELECT id FROM {$people} WHERE email = %s", $email));
 
-        if ($personId) {
+        foreach (is_array($personIds) ? $personIds : [] as $personId) {
             $wpdb->delete($audit, ['object_type' => 'person', 'object_id' => (int) $personId], ['%s', '%d']);
             $wpdb->delete($participants, ['person_id' => (int) $personId], ['%d']);
             $wpdb->delete($assignments, ['person_id' => (int) $personId], ['%d']);
@@ -98,6 +100,10 @@ WordpressMeetings::record()->addDecision($meetingId, $itemId, 'HEMLIGT-PROTOKOLL
 $meetingService->markHeld($meetingId);
 WordpressMeetings::minutes()->create($meetingId);
 
+// Two people behind one address. The request names nobody in particular.
+$peopleService->register('Anna', 'Familj', $familyEmail, 'LAB-PRIVACY-F1', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
+$peopleService->register('Lisa', 'Familj', $familyEmail, 'LAB-PRIVACY-F2', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
+$shared = WordpressPrivacy::export($familyEmail, 1);
 $registered = apply_filters('wp_privacy_personal_data_exporters', []);
 $export = WordpressPrivacy::export('ada-privacy@example.test', 1);
 $values = [];
@@ -133,6 +139,8 @@ if (
     || count($events) !== 1
     || (string) $events[0]['action'] !== 'export_personal_data'
     || $empty['data'] !== []
+    || $shared['data'] !== []
+    || $shared['done'] !== true
 ) {
     $fail('The privacy export included another person or the minutes text.');
 }

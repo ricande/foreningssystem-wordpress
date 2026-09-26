@@ -42,6 +42,8 @@ A personal identity number lives in `assoc_personal_identity`, not on the person
 
 Register exporter and eraser callbacks when a Person is linked to the requesting `wp_user`, or when the request email matches the Person email.
 
+A request resolves to one Person. A verified `wp_user` link is the strong identity and decides on its own. An email address is weaker: a family often shares one. When an address belongs to several Person records the request names nobody in particular, so the export returns nothing and the eraser anonymizes nobody. The association handles such a request by hand rather than letting one member's request reach another member's record.
+
 Export:
 
 - person contact fields
