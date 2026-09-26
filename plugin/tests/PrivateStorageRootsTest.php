@@ -152,6 +152,35 @@ final class PrivateStorageRootsTest extends TestCase
         self::assertSame([$gone], PrivateStorageRoots::settle($first, $first, $settled->earlier(), $fallback)->earlier());
     }
 
+    public function test_a_write_that_fails_leaves_no_partial_file_behind(): void
+    {
+        $root = $this->tree();
+        $fallback = $root . '/uploads/assoc-private';
+        $name = $this->documentName('Kan inte skrivas');
+        $state = PrivateStorageRoots::settle($fallback, '', [], $fallback);
+
+        chmod($fallback, 0o555);
+
+        if (is_writable($fallback)) {
+            chmod($fallback, 0o755);
+            self::markTestSkipped('The test process ignores directory permissions.');
+        }
+
+        self::assertFalse($state->write($name, 'Kan inte skrivas'));
+
+        chmod($fallback, 0o755);
+
+        self::assertSame([], glob($fallback . '/*') ?: []);
+        self::assertNull($state->locate($name));
+
+        // The bytes are stored under a working name and moved into place. When that move
+        // cannot happen, the working file is cleaned up instead of being left in the root.
+        self::assertTrue(mkdir($fallback . '/' . $name, 0o755));
+        self::assertFalse($state->write($name, 'Kan inte skrivas'));
+        self::assertSame([], glob($fallback . '/*.part-*') ?: []);
+        self::assertNull($state->locate($name));
+    }
+
     public function test_only_private_file_names_are_moved_read_or_written(): void
     {
         $root = $this->tree();

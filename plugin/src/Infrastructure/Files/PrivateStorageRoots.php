@@ -103,8 +103,11 @@ final class PrivateStorageRoots
     }
 
     /**
-     * Write a file into the active root. A write that did not store every byte leaves no
-     * new file behind, so a caller can rely on a true answer meaning the file is complete.
+     * Write a file into the active root.
+     *
+     * The bytes go to a working name first and are moved into place only when all of them
+     * were stored, so the file never exists half written under the name a reader uses, and a
+     * failed write leaves whatever was there before.
      */
     public function write(string $name, string $bytes): bool
     {
@@ -113,17 +116,15 @@ final class PrivateStorageRoots
         }
 
         $path = $this->active . '/' . $name;
-        $existed = is_file($path);
+        $working = self::workingName($path);
         // A directory that cannot be written to is an answer, not a warning to print.
-        $written = @file_put_contents($path, $bytes);
+        $written = @file_put_contents($working, $bytes);
 
-        if ($written === strlen($bytes)) {
+        if ($written === strlen($bytes) && @rename($working, $path)) {
             return true;
         }
 
-        if (! $existed) {
-            @unlink($path);
-        }
+        @unlink($working);
 
         return false;
     }
@@ -183,18 +184,29 @@ final class PrivateStorageRoots
                 continue;
             }
 
-            if (! @copy($source, $target)) {
+            // The copy is verified under a working name, so a reader never sees a half
+            // copied file under the name the database points at.
+            $working = self::workingName($target);
+
+            if (! @copy($source, $working)) {
+                @unlink($working);
+
                 continue;
             }
 
-            if (self::sameFile($source, $target)) {
-                @unlink($source);
+            if (! self::sameFile($source, $working) || ! @rename($working, $target)) {
+                @unlink($working);
 
                 continue;
             }
 
-            @unlink($target);
+            @unlink($source);
         }
+    }
+
+    private static function workingName(string $path): string
+    {
+        return $path . '.part-' . bin2hex(random_bytes(6));
     }
 
     private static function holdsPrivateFiles(string $directory): bool
