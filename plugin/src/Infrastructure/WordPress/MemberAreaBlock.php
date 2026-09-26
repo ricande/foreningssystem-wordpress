@@ -48,7 +48,7 @@ final class MemberAreaBlock
     public static function render(array $attributes = [], string $content = ''): string
     {
         unset($attributes, $content);
-        self::doNotCache();
+        PersonalizedOutput::doNotCache();
         $userId = function_exists('get_current_user_id') ? (int) get_current_user_id() : 0;
         $snapshot = WordpressMemberArea::open($userId);
         $documents = null;
@@ -119,20 +119,6 @@ final class MemberAreaBlock
         $html .= '</div>';
 
         return $html;
-    }
-
-    /**
-     * Personalized member output must not be stored as one public page cache entry.
-     */
-    private static function doNotCache(): void
-    {
-        if (! defined('DONOTCACHEPAGE')) {
-            define('DONOTCACHEPAGE', true);
-        }
-
-        if (function_exists('nocache_headers')) {
-            nocache_headers();
-        }
     }
 
     private static function currentUrl(): string

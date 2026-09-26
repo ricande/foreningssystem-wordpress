@@ -127,6 +127,8 @@ clean_user_cache($userId);
 wp_set_current_user($userId);
 $memberBytes = $archive->read($memberDocument);
 $memberHtml = MemberDocumentsBlock::render();
+// The block is personalized, so the page it renders on must not be cached for everyone.
+$memberDocumentsUncacheable = defined('DONOTCACHEPAGE') && DONOTCACHEPAGE === true;
 $membershipId = lab_period_id_for_number('LAB-MEMBER-1');
 wp_set_current_user(1);
 clean_user_cache(1);
@@ -195,6 +197,7 @@ if (
     || $code !== 403
     || str_contains($body, '%PDF')
     || str_contains($body, 'assoc-private')
+    || $memberDocumentsUncacheable !== true
 ) {
     $fail('A member document was shown without an active membership or exposed its file.');
 }

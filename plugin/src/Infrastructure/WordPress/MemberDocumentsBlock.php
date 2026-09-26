@@ -23,11 +23,15 @@ final class MemberDocumentsBlock
     }
 
     /**
+     * The list depends on the logged-in visitor's membership, so the page it renders on is
+     * personalized even when the member area block is not on it.
+     *
      * @param array<string, mixed> $attributes
      */
     public static function render(array $attributes = [], string $content = ''): string
     {
         unset($attributes, $content);
+        PersonalizedOutput::doNotCache();
         $documents = WordpressDocuments::archive()->memberList();
 
         if ($documents === null) {
