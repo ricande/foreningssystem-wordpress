@@ -2,6 +2,8 @@
 
 Detta paket är projektets startpunkt och källa till produktkontext för Cursor.
 
+[![Tests](https://img.shields.io/github/actions/workflow/status/ricande/foreningssystem-wordpress/tests.yml?branch=main&label=Tests&labelColor=d4af37)](https://github.com/ricande/foreningssystem-wordpress/actions/workflows/tests.yml) [![PHP](https://img.shields.io/badge/PHP-8.3%2B-d4af37?labelColor=d4af37)](https://www.php.net/) [![WordPress](https://img.shields.io/badge/WordPress-7.1%2B-d4af37?labelColor=d4af37)](https://wordpress.org/) [![License](https://img.shields.io/badge/License-GPL--2.0--or--later-d4af37?labelColor=d4af37)](LICENSE)
+
 ## Projektets idé
 
 Vi bygger ett modernt, självhostat open source-system för små och medelstora ideella föreningar i WordPress.
