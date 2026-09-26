@@ -33,8 +33,8 @@ final class PrivateStorageLocation
 
     public static function placementOf(string $directory, string $webRoot): string
     {
-        $directory = self::normalize($directory);
-        $webRoot = self::normalize($webRoot);
+        $directory = self::canonical($directory);
+        $webRoot = self::canonical($webRoot);
 
         if ($webRoot !== '' && ($directory === $webRoot || str_starts_with($directory, $webRoot . '/'))) {
             return self::INSIDE_WEB_ROOT;
@@ -52,15 +52,19 @@ final class PrivateStorageLocation
         $fallback = self::normalize($fallback);
         $configured = self::normalize($configured ?? '');
 
-        if ($configured !== '' && $configured !== $fallback && $usable($configured)) {
-            return new self($configured, self::placementOf($configured, $webRoot));
+        if (
+            $configured !== ''
+            && self::canonical($configured) !== self::canonical($fallback)
+            && $usable($configured)
+        ) {
+            return new self(self::canonical($configured), self::placementOf($configured, $webRoot));
         }
 
         if (! $usable($fallback)) {
             throw new \RuntimeException('The private file directory could not be created.');
         }
 
-        return new self($fallback, self::placementOf($fallback, $webRoot));
+        return new self(self::canonical($fallback), self::placementOf($fallback, $webRoot));
     }
 
     public static function isDocumentName(string $name): bool
@@ -85,6 +89,49 @@ final class PrivateStorageLocation
             && ! str_contains($name, '\\')
             && ! str_contains($name, '..')
             && basename($name) === $name;
+    }
+
+    /**
+     * The path the filesystem really means: the resolved path of the deepest part that
+     * exists, with the part that does not exist yet appended.
+     *
+     * Comparing spelled-out paths is not enough to tell whether a directory sits under the
+     * web root. A symlink, or a `..` segment in a path whose parent is a symlink, can spell
+     * a directory that looks external while the bytes land inside the web root. A path that
+     * does not exist at all keeps its normalized spelling, so the fallback and the warning
+     * still work on a host where nothing has been created yet.
+     */
+    public static function canonical(string $path): string
+    {
+        $spelled = str_replace('\\', '/', trim($path));
+
+        if ($spelled === '') {
+            return '';
+        }
+
+        $missing = [];
+        $candidate = $spelled;
+
+        while (true) {
+            // realpath resolves `..` against the directory a symlink points at, which is
+            // what the filesystem does. Collapsing the path as text first would not.
+            $real = realpath($candidate);
+
+            if (is_string($real) && $real !== '') {
+                $resolved = self::normalize($real);
+
+                return $missing === [] ? $resolved : self::normalize($resolved . '/' . implode('/', array_reverse($missing)));
+            }
+
+            $parent = dirname($candidate);
+
+            if ($parent === $candidate || $parent === '' || $parent === '.') {
+                return self::normalize($spelled);
+            }
+
+            $missing[] = basename($candidate);
+            $candidate = $parent;
+        }
     }
 
     public static function normalize(string $path): string

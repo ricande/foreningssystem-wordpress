@@ -12,6 +12,8 @@ define('FORENINGSPLUGIN_PRIVATE_DIR', '/var/assoc-private');
 
 The PHP user must be able to create that directory. It must not sit under the directory WordPress is served from. A filter named `foreningsplugin_private_directory` can supply the same path from code.
 
+The plugin judges "under the web root" by the path the filesystem really means, not by how the path is spelled. Once the directory exists, its resolved path decides, so a symlink or a `..` segment that leads back under the web root is treated as being inside it and the warning stays. A path that does not exist yet is judged by its spelling until it is created.
+
 If neither is set, or the directory cannot be created, the plugin uses `wp-content/uploads/assoc-private`. That directory is inside the public web root. Download links still require authorization, but that does not stop a web server from reading a file when the URL is known.
 
 The plugin writes an Apache `.htaccess` deny rule and an `index.php` into the directory. Those files do nothing on Nginx, and they do nothing on Apache when `AllowOverride` is off. The association screen and Site Health warn until an administrator confirms that the web server blocks the directory, or until the files are moved outside the web root.
