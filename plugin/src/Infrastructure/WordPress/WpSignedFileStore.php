@@ -12,9 +12,8 @@ final class WpSignedFileStore implements SignedFileStore
     public function put(string $name, string $bytes): void
     {
         $this->assertName($name);
-        $path = PrivateUploadDirectory::path() . '/' . $name;
 
-        if (file_put_contents($path, $bytes) === false) {
+        if (! PrivateUploadDirectory::roots()->write($name, $bytes)) {
             throw new \RuntimeException('The signed copy could not be saved.');
         }
     }
@@ -22,8 +21,8 @@ final class WpSignedFileStore implements SignedFileStore
     public function read(string $name): string
     {
         $this->assertName($name);
-        $path = PrivateUploadDirectory::path() . '/' . $name;
-        $bytes = is_file($path) ? file_get_contents($path) : false;
+        $path = PrivateUploadDirectory::roots()->locate($name);
+        $bytes = $path === null ? false : file_get_contents($path);
 
         if (! is_string($bytes) || $bytes === '') {
             throw new \RuntimeException('The signed copy was not found.');
@@ -35,11 +34,7 @@ final class WpSignedFileStore implements SignedFileStore
     public function discard(string $name): void
     {
         $this->assertName($name);
-        $path = PrivateUploadDirectory::path() . '/' . $name;
-
-        if (is_file($path)) {
-            unlink($path);
-        }
+        PrivateUploadDirectory::roots()->delete($name);
     }
 
     private function assertName(string $name): void

@@ -5,18 +5,53 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Infrastructure\Files\PrivateStorageLocation;
+use Foreningssystem\Infrastructure\Files\PrivateStorageRoots;
 
 final class PrivateUploadDirectory
 {
     public const ACK_OPTION = 'assoc_private_web_root_ack';
 
+    /** The storage root this installation last wrote to. */
+    public const ROOT_OPTION = 'assoc_private_storage_root';
+
+    /** Roots the installation used before and that may still hold files. */
+    public const EARLIER_ROOTS_OPTION = 'assoc_private_storage_earlier_roots';
+
     public static function path(): string
     {
-        $location = self::location();
-        self::moveExisting(self::fallback(), $location->directory());
-        self::writeGuards($location->directory());
+        return self::roots()->active();
+    }
 
-        return $location->directory();
+    /**
+     * The storage root that receives new files, together with every earlier root a file can
+     * still be read from. Changing the configured directory moves the files it can move and
+     * records the rest, so no stored file becomes unreachable.
+     */
+    public static function roots(): PrivateStorageRoots
+    {
+        $active = self::location()->directory();
+        self::writeGuards($active);
+        $recorded = get_option(self::ROOT_OPTION, '');
+        $recorded = is_string($recorded) ? $recorded : '';
+        $earlier = self::earlier();
+
+        if ($recorded === $active && $earlier === []) {
+            return new PrivateStorageRoots($active);
+        }
+
+        $roots = PrivateStorageRoots::settle($active, $recorded, $earlier, self::fallback());
+
+        // The earlier roots are recorded first. A run that stops between the two writes
+        // repeats the same move on the next request instead of forgetting a root.
+        if ($roots->earlier() !== $earlier) {
+            update_option(self::EARLIER_ROOTS_OPTION, $roots->earlier(), false);
+        }
+
+        if ($recorded !== $active) {
+            update_option(self::ROOT_OPTION, $active, false);
+        }
+
+        return $roots;
     }
 
     public static function isInsideWebRoot(): bool
@@ -27,11 +62,33 @@ final class PrivateUploadDirectory
     public static function location(): PrivateStorageLocation
     {
         return PrivateStorageLocation::choose(
-            ABSPATH,
+            self::webRoot(),
             self::configured(),
             self::fallback(),
             static fn (string $directory): bool => self::ensure($directory)
         );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function earlier(): array
+    {
+        $stored = get_option(self::EARLIER_ROOTS_OPTION, []);
+        $roots = [];
+
+        foreach (is_array($stored) ? $stored : [] as $root) {
+            if (is_string($root) && trim($root) !== '') {
+                $roots[] = PrivateStorageLocation::canonical($root);
+            }
+        }
+
+        return array_values(array_unique($roots));
+    }
+
+    private static function webRoot(): string
+    {
+        return defined('ABSPATH') && is_string(ABSPATH) ? ABSPATH : '';
     }
 
     private static function configured(): ?string
@@ -61,46 +118,6 @@ final class PrivateUploadDirectory
     private static function ensure(string $directory): bool
     {
         return $directory !== '' && (is_dir($directory) || wp_mkdir_p($directory));
-    }
-
-    private static function moveExisting(string $from, string $to): void
-    {
-        $from = PrivateStorageLocation::normalize($from);
-        $to = PrivateStorageLocation::normalize($to);
-
-        if ($from === $to || ! is_dir($from)) {
-            return;
-        }
-
-        $names = scandir($from);
-
-        if (! is_array($names)) {
-            return;
-        }
-
-        foreach ($names as $name) {
-            if (
-                ! is_string($name)
-                || (
-                    ! PrivateStorageLocation::isDocumentName($name)
-                    && ! PrivateStorageLocation::isSignedName($name)
-                    && ! preg_match('/^revision-\d+-[a-f0-9]{64}\.pdf$/', $name)
-                )
-            ) {
-                continue;
-            }
-
-            $source = $from . '/' . $name;
-            $target = $to . '/' . $name;
-
-            if (! is_file($source) || is_file($target)) {
-                continue;
-            }
-
-            if (! rename($source, $target) && copy($source, $target)) {
-                unlink($source);
-            }
-        }
     }
 
     private static function writeGuards(string $directory): void

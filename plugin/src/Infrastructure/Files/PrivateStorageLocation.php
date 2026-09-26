@@ -77,9 +77,19 @@ final class PrivateStorageLocation
         return self::isFlatName($name) && preg_match('/^signed-\d+-[a-f0-9]{64}\.(pdf|jpg|png)$/', $name) === 1;
     }
 
-    public static function isRevisionPdfName(string $name, int $revisionId): bool
+    public static function isRevisionPdfName(string $name, ?int $revisionId = null): bool
     {
-        return self::isFlatName($name) && preg_match('/^revision-' . $revisionId . '-[a-f0-9]{64}\.pdf$/', $name) === 1;
+        $revision = $revisionId === null ? '\d+' : (string) $revisionId;
+
+        return self::isFlatName($name) && preg_match('/^revision-' . $revision . '-[a-f0-9]{64}\.pdf$/', $name) === 1;
+    }
+
+    /**
+     * A file name the plugin itself writes into a private storage root.
+     */
+    public static function isPrivateName(string $name): bool
+    {
+        return self::isDocumentName($name) || self::isSignedName($name) || self::isRevisionPdfName($name);
     }
 
     private static function isFlatName(string $name): bool

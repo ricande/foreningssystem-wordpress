@@ -18,7 +18,13 @@ If neither is set, or the directory cannot be created, the plugin uses `wp-conte
 
 The plugin writes an Apache `.htaccess` deny rule and an `index.php` into the directory. Those files do nothing on Nginx, and they do nothing on Apache when `AllowOverride` is off. The association screen and Site Health warn until an administrator confirms that the web server blocks the directory, or until the files are moved outside the web root.
 
-Moving an existing install to `FORENINGSPLUGIN_PRIVATE_DIR` copies the stored document, signed-copy, and minutes PDF files into the new directory.
+## Changing the directory later
+
+The database stores file names, never a directory, so the plugin records which directories it uses in two options: `assoc_private_storage_root` for the directory new files are written to, and `assoc_private_storage_earlier_roots` for directories that may still hold files.
+
+Changing the directory, in either direction and however many times, moves the stored document, signed-copy, and minutes PDF files into the new directory. A file is moved only when the copy in the new directory is byte for byte the same, and a name that already exists there with different content is never overwritten. Anything that could not be moved keeps its old directory in the recorded state, and the plugin keeps reading it from there, so a download never fails for a file that is still on disk. A directory that is temporarily unavailable, such as an unmounted volume, stays recorded instead of being treated as empty.
+
+Do not delete an old private directory before the association screen and downloads show the files in the new one. See `adr/0025-private-storage-roots.md`.
 
 ## Apache
 

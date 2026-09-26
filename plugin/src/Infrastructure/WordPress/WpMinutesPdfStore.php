@@ -46,11 +46,7 @@ final class WpMinutesPdfStore implements MinutesPdfStore
             $stored = $this->stored($revisionId);
 
             if ($stored === null || $stored['name'] !== $name) {
-                $path = $this->directory() . '/' . $name;
-
-                if (is_file($path) && PrivateStorageLocation::isRevisionPdfName($name, $revisionId)) {
-                    unlink($path);
-                }
+                PrivateUploadDirectory::roots()->delete($name);
             }
 
             throw new \RuntimeException('The PDF reference could not be saved.');
@@ -66,8 +62,8 @@ final class WpMinutesPdfStore implements MinutesPdfStore
         }
 
         $this->assertName($stored['name'], $revisionId);
-        $path = $this->directory() . '/' . $stored['name'];
-        $bytes = is_file($path) ? file_get_contents($path) : false;
+        $path = PrivateUploadDirectory::roots()->locate($stored['name']);
+        $bytes = $path === null ? false : file_get_contents($path);
 
         if (! is_string($bytes) || $bytes === '') {
             throw new \RuntimeException('The PDF file was not found.');
@@ -79,10 +75,8 @@ final class WpMinutesPdfStore implements MinutesPdfStore
     private function write(int $revisionId, string $name, string $bytes): void
     {
         $this->assertName($name, $revisionId);
-        $directory = $this->directory();
-        $path = $directory . '/' . $name;
 
-        if (file_put_contents($path, $bytes) === false) {
+        if (! PrivateUploadDirectory::roots()->write($name, $bytes)) {
             throw new \RuntimeException('The PDF file could not be saved.');
         }
     }
@@ -99,11 +93,6 @@ final class WpMinutesPdfStore implements MinutesPdfStore
         if (! preg_match('/^[a-f0-9]{64}$/', $hash)) {
             throw new \RuntimeException('The PDF source hash is not valid.');
         }
-    }
-
-    private function directory(): string
-    {
-        return PrivateUploadDirectory::path();
     }
 
     private function table(): string
