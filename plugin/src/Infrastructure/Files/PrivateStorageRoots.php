@@ -114,7 +114,8 @@ final class PrivateStorageRoots
 
         $path = $this->active . '/' . $name;
         $existed = is_file($path);
-        $written = file_put_contents($path, $bytes);
+        // A directory that cannot be written to is an answer, not a warning to print.
+        $written = @file_put_contents($path, $bytes);
 
         if ($written === strlen($bytes)) {
             return true;

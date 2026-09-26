@@ -34,6 +34,9 @@ final class WpMinutesPdfStore implements MinutesPdfStore
 
         $this->assertHash($hash);
         $name = 'revision-' . $revisionId . '-' . $hash . '.pdf';
+        // The file the row points at before this write. It stays untouched until the row
+        // points at the new file, so a regeneration that fails leaves a working PDF.
+        $replaced = $this->stored($revisionId);
         $this->write($revisionId, $name, $bytes);
         $updated = $wpdb->query($wpdb->prepare(
             'UPDATE ' . $this->table() . ' SET pdf_storage_name = %s, pdf_source_hash = %s WHERE id = %d',
@@ -43,13 +46,29 @@ final class WpMinutesPdfStore implements MinutesPdfStore
         ));
 
         if ($updated === false) {
-            $stored = $this->stored($revisionId);
-
-            if ($stored === null || $stored['name'] !== $name) {
+            // The row still points where it did, so the file just written is not the one
+            // being served and can go. Anything else stays.
+            if ($replaced === null || $replaced['name'] !== $name) {
                 PrivateUploadDirectory::roots()->delete($name);
             }
 
             throw new \RuntimeException('The PDF reference could not be saved.');
+        }
+
+        $stored = $this->stored($revisionId);
+
+        if ($stored === null || $stored['name'] !== $name) {
+            // The row cannot be confirmed. Deleting either file could remove the one that
+            // is being served, so both stay and the caller hears about it.
+            throw new \RuntimeException('The PDF reference could not be confirmed.');
+        }
+
+        if (
+            $replaced !== null
+            && $replaced['name'] !== $name
+            && PrivateStorageLocation::isRevisionPdfName($replaced['name'], $revisionId)
+        ) {
+            PrivateUploadDirectory::roots()->delete($replaced['name']);
         }
     }
 

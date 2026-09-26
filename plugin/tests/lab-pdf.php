@@ -3,6 +3,7 @@
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
 use Foreningssystem\Domain\Meeting\RevisionState;
+use Foreningssystem\Infrastructure\WordPress\PrivateUploadDirectory;
 use Foreningssystem\Infrastructure\WordPress\WordpressMeetings;
 
 global $wpdb;
@@ -83,6 +84,74 @@ if ($afterEdit !== $first || str_contains($afterEdit, 'modell Y')) {
 $draftMeetingId = $meetingService->schedule($typeId, 'LAB-PDF utkast', MeetingMoment::fromLocal('2024-06-02 18:00'), '');
 $meetingService->markHeld($draftMeetingId);
 $openDraftId = $drafts->create($draftMeetingId);
+
+// A draft that is exported, edited and exported again gets a new file name. The file it
+// replaces must go, and only after the row points at the new one.
+$storedName = static function (int $revisionId) use ($wpdb, $revisions): string {
+    return (string) $wpdb->get_var($wpdb->prepare("SELECT pdf_storage_name FROM {$revisions} WHERE id = %d", $revisionId));
+};
+$directory = PrivateUploadDirectory::path();
+$exportedFiles = static function (int $revisionId) use ($directory): array {
+    $found = glob($directory . '/revision-' . $revisionId . '-*.pdf');
+
+    return is_array($found) ? $found : [];
+};
+
+$pdf->bytes($openDraftId);
+$firstDraftName = $storedName($openDraftId);
+
+if ($firstDraftName === '' || $exportedFiles($openDraftId) !== [$directory . '/' . $firstDraftName]) {
+    \WP_CLI::error('The draft PDF was not stored under the recorded name.');
+}
+
+$drafts->replaceBody($openDraftId, "Reviderat utkast\nJusterare: Ada");
+$revisedBytes = $pdf->bytes($openDraftId);
+$secondDraftName = $storedName($openDraftId);
+
+if (
+    $secondDraftName === ''
+    || $secondDraftName === $firstDraftName
+    || $exportedFiles($openDraftId) !== [$directory . '/' . $secondDraftName]
+    || ! str_contains($revisedBytes, (string) iconv('UTF-8', 'Windows-1252', 'Reviderat utkast'))
+    || $pdf->bytes($openDraftId) !== $revisedBytes
+) {
+    \WP_CLI::error('Regenerating the draft PDF left the replaced file behind or lost the new one.');
+}
+
+// A regeneration that cannot write must leave the working PDF and its row alone.
+$drafts->replaceBody($openDraftId, "Tredje utkastet\nJusterare: Ada");
+chmod($directory, 0o555);
+$writeFailed = false;
+
+try {
+    $pdf->bytes($openDraftId);
+} catch (\RuntimeException) {
+    $writeFailed = true;
+} finally {
+    chmod($directory, 0o755);
+}
+
+if (
+    ! $writeFailed
+    || $storedName($openDraftId) !== $secondDraftName
+    || $exportedFiles($openDraftId) !== [$directory . '/' . $secondDraftName]
+    || file_get_contents($directory . '/' . $secondDraftName) !== $revisedBytes
+) {
+    \WP_CLI::error('A failed regeneration removed or rewrote the working draft PDF.');
+}
+
+$thirdBytes = $pdf->bytes($openDraftId);
+
+if (
+    ! str_contains($thirdBytes, (string) iconv('UTF-8', 'Windows-1252', 'Tredje utkastet'))
+    || $exportedFiles($openDraftId) !== [$directory . '/' . $storedName($openDraftId)]
+) {
+    \WP_CLI::error('The draft PDF could not be regenerated after the failed write.');
+}
+
+foreach ($exportedFiles($openDraftId) as $leftover) {
+    unlink($leftover);
+}
 
 clean_user_cache($boardMember->ID);
 wp_set_current_user($boardMember->ID);
