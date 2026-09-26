@@ -15,7 +15,7 @@ if [ "$header" != "$expected" ] || [ "$constant" != "$expected" ]; then
   exit 1
 fi
 
-for required in plugin/foreningsplugin.php plugin/autoload.php plugin/src plugin/assets plugin/languages plugin/assets/profile.js plugin/assets/admin.css plugin/languages/foreningsplugin-sv_SE.mo plugin/languages/foreningsplugin-sv_SE.po; do
+for required in plugin/foreningsplugin.php plugin/autoload.php plugin/readme.txt plugin/src plugin/assets plugin/languages plugin/assets/profile.js plugin/assets/admin.css plugin/languages/foreningsplugin-sv_SE.mo plugin/languages/foreningsplugin-sv_SE.po; do
   if [ ! -e "$required" ]; then
     echo "Missing runtime file: $required" >&2
     exit 1
@@ -31,7 +31,7 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p "$stage/foreningsplugin"
-cp plugin/foreningsplugin.php plugin/autoload.php "$stage/foreningsplugin/"
+cp plugin/foreningsplugin.php plugin/autoload.php plugin/readme.txt "$stage/foreningsplugin/"
 cp -R plugin/src plugin/assets plugin/languages "$stage/foreningsplugin/"
 find "$stage" -name '.DS_Store' -delete
 find "$stage" -exec touch -t 202001010000 {} +
@@ -92,6 +92,7 @@ require_prefix() {
 
 require_entry "foreningsplugin/foreningsplugin.php"
 require_entry "foreningsplugin/autoload.php"
+require_entry "foreningsplugin/readme.txt"
 require_entry "foreningsplugin/assets/profile.js"
 require_entry "foreningsplugin/assets/admin.css"
 require_entry "foreningsplugin/languages/foreningsplugin-sv_SE.mo"
@@ -141,6 +142,19 @@ if [ "$packaged_header" != "$expected" ] || [ "$packaged_constant" != "$expected
   exit 1
 fi
 
+# The readme is what someone installing the ZIP reads, so it must name this version and
+# still carry the development warning.
+packaged_readme="$(unzip -p "$zip_path" foreningsplugin/readme.txt)"
+packaged_readme_version="$(printf '%s\n' "$packaged_readme" | sed -n 's/^Version:[[:space:]]*//p' | head -n 1 | tr -d '\r')"
+if [ "$packaged_readme_version" != "$expected" ]; then
+  echo "Packaged readme.txt names version '${packaged_readme_version}', expected '${expected}'." >&2
+  exit 1
+fi
+if ! printf '%s\n' "$packaged_readme" | grep -qF 'is an early development build. It is NOT ready for production use or live association data'; then
+  echo "Packaged readme.txt has lost the early-development warning." >&2
+  exit 1
+fi
+
 unzip -q "$zip_path" -d "$extract"
 lint_log="$extract/php-lint.txt"
 if ! docker run --rm -v "$extract:/pkg" -w /pkg php:8.3-cli \
@@ -172,4 +186,5 @@ echo "Entries ${#entries[@]}"
 echo "SHA-256 ${hash}"
 echo "Top-level foreningsplugin/"
 echo "Version ${expected}"
+echo "Readme foreningsplugin/readme.txt (version ${packaged_readme_version}, development warning present)"
 echo "Packaged PHP syntax OK (${php_count} files)"

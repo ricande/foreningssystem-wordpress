@@ -56,11 +56,14 @@ The archive contains one top-level directory, `foreningsplugin/`, which is the W
 Included, because the plugin loads them at runtime:
 
 - `foreningsplugin.php` and `autoload.php`
+- `readme.txt`, the user-oriented readme that travels with the archive
 - `src/`, the application code
 - `assets/profile.js`, enqueued by the association profile screen
 - `languages/`, including `foreningsplugin-sv_SE.mo`, which WordPress loads for Swedish, and the matching `.po`
 
 No other runtime file sits at the plugin root. `tests/` is development-only and is excluded.
+
+`readme.txt` follows the same section order and tone as the GitHub README: what Föreningsplugin is, status, the development warning, features, installation, privacy and access, documentation, development, license. The build reads it back out of the finished ZIP and fails if it names another version than the plugin, or if it has lost the warning that 0.1.0 is not for production or live association data. `plugin/tests/DistributedReadmeTest.php` holds both readmes to that order and warning without building an archive.
 
 Also excluded: Git metadata, `.github/`, `.cursor/`, docs, ADRs, scripts, snapshots, `dist/`, Composer and npm files, PHPUnit and Make files, Docker and `.env` files, and repository notes such as `AGENTS.md`.
 
