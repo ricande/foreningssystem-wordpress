@@ -15,7 +15,8 @@ final class DocumentsPage
         self::guard('assoc_add_document');
 
         try {
-            WordpressDocuments::archive()->add(self::text('title'), self::uploadedBytes('document_file'), self::visibility('visibility'));
+            $bytes = self::uploadedBytes('document_file');
+            WordpressDocuments::archive()->add(self::text('title'), $bytes, self::visibility('visibility'));
             self::redirect('document_added');
         } catch (NotAllowed) {
             wp_die(esc_html__('You do not have permission to add documents.', 'foreningsplugin'), '', ['response' => 403]);
@@ -134,25 +135,7 @@ final class DocumentsPage
 
     private static function uploadedBytes(string $key): string
     {
-        $file = $_FILES[$key] ?? null;
-
-        if (! is_array($file) || ! isset($file['tmp_name'], $file['error']) || (int) $file['error'] !== UPLOAD_ERR_OK) {
-            throw new \InvalidArgumentException('The document was not uploaded.');
-        }
-
-        $tmp = (string) $file['tmp_name'];
-
-        if (! is_uploaded_file($tmp)) {
-            throw new \InvalidArgumentException('The document was not uploaded.');
-        }
-
-        $bytes = file_get_contents($tmp);
-
-        if (! is_string($bytes)) {
-            throw new \InvalidArgumentException('The document was not uploaded.');
-        }
-
-        return $bytes;
+        return UploadedFile::bytes($key, 'The document was not uploaded.');
     }
 
     private static function text(string $key): string

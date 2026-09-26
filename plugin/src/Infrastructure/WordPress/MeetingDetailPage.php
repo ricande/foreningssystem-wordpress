@@ -451,9 +451,10 @@ final class MeetingDetailPage
         $meetingId = self::integer('meeting_id');
 
         try {
+            $bytes = self::uploadedBytes('signed_copy');
             $result = WordpressMeetings::signedCopies()->attach(
                 self::integer('revision_id'),
-                self::uploadedBytes('signed_copy'),
+                $bytes,
                 get_current_user_id(),
                 $meetingId
             );
@@ -694,5 +695,54 @@ final class MeetingDetailPage
         }
 
         check_admin_referer($nonce);
+    }
+
+    /**
+     * Meeting details, participants, and the agenda. The same pair of capabilities the
+     * meeting workspace accepts.
+     */
+    private static function guard(string $nonce): void
+    {
+        if (! current_user_can(Capabilities::MANAGE_MEETINGS) && ! current_user_can(Capabilities::RECORD_MEETING)) {
+            wp_die(esc_html__('You do not have permission to change the meeting.', 'foreningsplugin'), '', ['response' => 403]);
+        }
+
+        check_admin_referer($nonce);
+    }
+
+    private static function guardFinalize(string $nonce): void
+    {
+        if (! current_user_can(Capabilities::FINALIZE_MINUTES)) {
+            wp_die(esc_html__('You do not have permission to lock the minutes.', 'foreningsplugin'), '', ['response' => 403]);
+        }
+
+        check_admin_referer($nonce);
+    }
+
+    private static function guardPublish(string $nonce): void
+    {
+        if (! current_user_can(Capabilities::PUBLISH_MINUTES)) {
+            wp_die(esc_html__('You do not have permission to publish the minutes.', 'foreningsplugin'), '', ['response' => 403]);
+        }
+
+        check_admin_referer($nonce);
+    }
+
+    /**
+     * A signed copy is both a locked-minutes change and a private file, so it takes both
+     * rights. The application service requires the same pair.
+     */
+    private static function guardSignedUpload(string $nonce): void
+    {
+        if (! current_user_can(Capabilities::FINALIZE_MINUTES) || ! current_user_can(Capabilities::MANAGE_DOCUMENTS)) {
+            wp_die(esc_html__('You do not have permission to upload the signed copy.', 'foreningsplugin'), '', ['response' => 403]);
+        }
+
+        check_admin_referer($nonce);
+    }
+
+    private static function uploadedBytes(string $key): string
+    {
+        return UploadedFile::bytes($key, 'The signed copy was not uploaded.');
     }
 }
