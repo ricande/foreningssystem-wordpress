@@ -1,9 +1,11 @@
 <?php
 
+use Foreningssystem\Application\Meeting\SignedCopyBusy;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
 use Foreningssystem\Domain\Meeting\MeetingRuleException;
 use Foreningssystem\Infrastructure\WordPress\WordpressMeetings;
+use Foreningssystem\Infrastructure\WordPress\WordpressSignedCopyLock;
 
 global $wpdb;
 
@@ -130,6 +132,60 @@ $kept = (int) $wpdb->get_var($wpdb->prepare(
 if ($replaced !== 1 || $kept !== 1) {
     \WP_CLI::error('Replacing the signed copy did not keep an audit event for the revision.');
 }
+
+$current = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM {$copies} WHERE revision_id = %d AND replaced_by IS NULL",
+    $draftId
+));
+
+if ($current !== 1) {
+    \WP_CLI::error('The revision has more than one current signed copy.');
+}
+
+// A second database connection stands in for a second officer's request. While it holds
+// the revision, this request must not replace the current signed copy.
+$lockName = WordpressSignedCopyLock::lockName($draftId);
+$other = new wpdb(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
+$other->suppress_errors(true);
+$holds = $other->get_var($other->prepare('SELECT GET_LOCK(%s, %d)', $lockName, 5));
+
+if ((string) $holds !== '1') {
+    \WP_CLI::error('The lab could not hold the revision from a second connection.');
+}
+
+$busy = false;
+
+try {
+    $signed->attach($draftId, $pdf, (int) $chair->ID);
+} catch (SignedCopyBusy) {
+    $busy = true;
+}
+
+$other->get_var($other->prepare('SELECT RELEASE_LOCK(%s)', $lockName));
+$other->close();
+
+if (! $busy) {
+    \WP_CLI::error('A held revision still accepted a second signed copy.');
+}
+
+$afterBusy = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM {$copies} WHERE revision_id = %d AND replaced_by IS NULL",
+    $draftId
+));
+
+if ($afterBusy !== 1 || $signed->read($draftId) !== $jpeg) {
+    \WP_CLI::error('A refused upload changed the current signed copy.');
+}
+
+// The lock is released again, so the ordinary replacement still works. The scan is put
+// back afterwards, because the rest of the lab reads the same current copy.
+$signed->attach($draftId, $pdf, (int) $chair->ID);
+
+if ($signed->read($draftId) !== $pdf) {
+    \WP_CLI::error('The signed copy could not be replaced after the revision was released.');
+}
+
+$signed->attach($draftId, $jpeg, (int) $chair->ID);
 
 clean_user_cache($boardMember->ID);
 wp_set_current_user($boardMember->ID);

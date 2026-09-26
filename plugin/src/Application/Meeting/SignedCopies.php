@@ -27,6 +27,7 @@ final class SignedCopies
         private readonly AuditLog $audit,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
+        private readonly SignedCopyLock $lock,
     ) {
     }
 
@@ -44,38 +45,41 @@ final class SignedCopies
             throw new MeetingRuleException('The record does not belong to this meeting.');
         }
         $mediaType = SignedCopyType::fromBytes($bytes);
-        $name = 'signed-' . $revision->id() . '-' . hash('sha256', $bytes) . '.' . SignedCopyType::extension($mediaType);
-        $this->files->put($name, $bytes);
+        $id = (int) $revision->id();
+        $name = 'signed-' . $id . '-' . hash('sha256', $bytes) . '.' . SignedCopyType::extension($mediaType);
+        $this->lock->acquire($id);
 
         try {
-            return $this->transaction->run(function () use ($revision, $mediaType, $name, $actorUserId): string {
-            $current = $this->copies->currentForRevision((int) $revision->id());
-            $saved = $this->copies->add((int) $revision->id(), $mediaType, $name);
-            $savedId = $saved->id();
+            $this->files->put($name, $bytes);
 
-            if ($savedId === null) {
-                throw new \RuntimeException('The signed copy was not saved.');
-            }
+            return $this->transaction->run(function () use ($id, $mediaType, $name, $actorUserId): string {
+                $saved = $this->copies->add($id, $mediaType, $name);
+                $savedId = $saved->id();
 
-            if ($current instanceof SignedCopy && $current->id() !== null) {
-                $this->copies->markReplaced((int) $current->id(), $savedId);
-                $this->audit->record('minutes_revision', (int) $revision->id(), 'replace_signed_copy', $actorUserId);
+                if ($savedId === null) {
+                    throw new \RuntimeException('The signed copy was not saved.');
+                }
 
-                return 'replaced';
-            }
+                if ($this->copies->replaceCurrent($id, $savedId) > 0) {
+                    $this->audit->record('minutes_revision', $id, 'replace_signed_copy', $actorUserId);
 
-            $this->audit->record('minutes_revision', (int) $revision->id(), 'attach_signed_copy', $actorUserId);
+                    return 'replaced';
+                }
 
-            return 'attached';
+                $this->audit->record('minutes_revision', $id, 'attach_signed_copy', $actorUserId);
+
+                return 'attached';
             });
         } catch (\Throwable $error) {
-            $current = $this->copies->currentForRevision((int) $revision->id());
+            $current = $this->copies->currentForRevision($id);
 
             if (! $current instanceof SignedCopy || $current->storageName() !== $name) {
                 $this->files->discard($name);
             }
 
             throw $error;
+        } finally {
+            $this->lock->release($id);
         }
     }
 

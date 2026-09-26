@@ -26,15 +26,22 @@ final class WpSignedCopyRepository implements SignedCopyRepository
         return new SignedCopy((int) $wpdb->insert_id, $revisionId, $mediaType, $storageName, null);
     }
 
-    public function markReplaced(int $id, int $replacedBy): void
+    public function replaceCurrent(int $revisionId, int $replacedBy): int
     {
         global $wpdb;
 
-        $updated = $wpdb->update($this->table(), ['replaced_by' => $replacedBy], ['id' => $id], ['%d'], ['%d']);
+        $updated = $wpdb->query($wpdb->prepare(
+            'UPDATE ' . $this->table() . ' SET replaced_by = %d WHERE revision_id = %d AND replaced_by IS NULL AND id <> %d',
+            $replacedBy,
+            $revisionId,
+            $replacedBy
+        ));
 
         if ($updated === false) {
             throw new \RuntimeException('The signed copy could not be replaced.');
         }
+
+        return (int) $updated;
     }
 
     public function currentForRevision(int $revisionId): ?SignedCopy

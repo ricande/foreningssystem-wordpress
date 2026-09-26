@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Foreningssystem\Tests;
 
 use Foreningssystem\Application\Meeting\SignedCopies;
+use Foreningssystem\Application\Meeting\SignedCopyBusy;
+use Foreningssystem\Application\Meeting\SignedCopyLock;
 use Foreningssystem\Application\Meeting\SignedFileStore;
 use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\NotAllowed;
@@ -79,6 +81,98 @@ final class SignedCopyTest extends TestCase
         self::assertStringNotContainsString('Föreningen', $replacement->action());
     }
 
+    public function test_a_second_upload_during_the_first_cannot_make_two_copies_current(): void
+    {
+        $minutes = new MemoryMinutesRepository();
+        $revisionId = $this->finalizedRevision($minutes);
+        $files = new MemorySignedFileStore();
+        $copies = new MemorySignedCopyRepository();
+        $lock = new MemorySignedCopyLock();
+        $signed = $this->service($minutes, $copies, $files, new MemoryAuditLog(), [
+            Capabilities::MANAGE_DOCUMENTS,
+            Capabilities::FINALIZE_MINUTES,
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+        ], $lock);
+        $first = "%PDF-1.4\n1 0 obj\nendobj\n%%EOF";
+        $second = "\xFF\xD8\xFF\xE0" . str_repeat("\x00", 12);
+        $refused = null;
+
+        // The second officer uploads while the first upload sits between reading the
+        // current copy and saving its own row. That interleaving used to leave both rows
+        // current, because each upload only replaced the copy it had read before.
+        $copies->beforeAdd = static function () use ($signed, $revisionId, $second, &$refused): void {
+            try {
+                $signed->attach($revisionId, $second, 8);
+            } catch (\Throwable $error) {
+                $refused = $error;
+            }
+        };
+
+        self::assertSame('attached', $signed->attach($revisionId, $first, 7));
+        self::assertInstanceOf(SignedCopyBusy::class, $refused);
+        self::assertSame(1, $copies->currentCount($revisionId));
+        self::assertSame($first, $signed->read($revisionId));
+        self::assertSame(1, $files->writes);
+        self::assertSame(1, $lock->maxHeld);
+        self::assertSame(0, $lock->held($revisionId));
+    }
+
+    public function test_an_upload_takes_over_from_every_copy_that_is_still_current(): void
+    {
+        $minutes = new MemoryMinutesRepository();
+        $revisionId = $this->finalizedRevision($minutes);
+        $files = new MemorySignedFileStore();
+        $copies = new MemorySignedCopyRepository();
+        $stale = $copies->add($revisionId, SignedCopyType::PDF, 'signed-' . $revisionId . '-' . str_repeat('a', 64) . '.pdf');
+        $alsoStale = $copies->add($revisionId, SignedCopyType::PDF, 'signed-' . $revisionId . '-' . str_repeat('b', 64) . '.pdf');
+        $signed = $this->service($minutes, $copies, $files, new MemoryAuditLog(), [
+            Capabilities::MANAGE_DOCUMENTS,
+            Capabilities::FINALIZE_MINUTES,
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+        ]);
+
+        self::assertSame(2, $copies->currentCount($revisionId));
+        self::assertSame('replaced', $signed->attach($revisionId, "%PDF-1.4\n1 0 obj\nendobj\n%%EOF", 7));
+
+        $current = $signed->current($revisionId);
+        self::assertNotNull($current);
+        self::assertSame(1, $copies->currentCount($revisionId));
+        self::assertSame($current->id(), $copies->find((int) $stale->id())?->replacedBy());
+        self::assertSame($current->id(), $copies->find((int) $alsoStale->id())?->replacedBy());
+    }
+
+    public function test_a_failed_upload_releases_the_revision_and_leaves_no_file(): void
+    {
+        $minutes = new MemoryMinutesRepository();
+        $revisionId = $this->finalizedRevision($minutes);
+        $files = new MemorySignedFileStore();
+        $copies = new MemorySignedCopyRepository();
+        $lock = new MemorySignedCopyLock();
+        $signed = $this->service($minutes, $copies, $files, new MemoryAuditLog(), [
+            Capabilities::MANAGE_DOCUMENTS,
+            Capabilities::FINALIZE_MINUTES,
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+        ], $lock);
+        $copies->beforeAdd = static function (): void {
+            throw new \RuntimeException('The signed copy could not be saved.');
+        };
+
+        try {
+            $signed->attach($revisionId, "%PDF-1.4\n1 0 obj\nendobj\n%%EOF", 7);
+            self::fail('A repository failure should stop the upload.');
+        } catch (\RuntimeException $error) {
+            self::assertNotInstanceOf(SignedCopyBusy::class, $error);
+        }
+
+        self::assertSame(0, $lock->held($revisionId));
+        self::assertSame(0, $copies->currentCount($revisionId));
+        self::assertSame(1, $files->writes);
+        self::assertSame([], $files->names());
+
+        self::assertSame('attached', $signed->attach($revisionId, "%PDF-1.4\n1 0 obj\nendobj\n%%EOF", 7));
+        self::assertSame(2, $lock->acquired);
+    }
+
     public function test_a_draft_cannot_receive_a_signed_copy(): void
     {
         $minutes = new MemoryMinutesRepository();
@@ -150,6 +244,22 @@ final class SignedCopyTest extends TestCase
         self::assertStringNotContainsString('wp_users', $sql);
     }
 
+    private function finalizedRevision(MemoryMinutesRepository $minutes): int
+    {
+        $minutes->addDocument(4);
+
+        return (int) $minutes->addRevision(new MinutesRevision(
+            null,
+            1,
+            4,
+            1,
+            RevisionState::Finalized,
+            'Föreningen köper modell X.',
+            '{"decision":"modell X"}',
+            false
+        ))->id();
+    }
+
     /**
      * @param list<string> $capabilities
      */
@@ -159,6 +269,7 @@ final class SignedCopyTest extends TestCase
         SignedFileStore $files,
         AuditLog $audit,
         array $capabilities,
+        ?SignedCopyLock $lock = null,
     ): SignedCopies {
         return new SignedCopies(
             $minutes,
@@ -181,13 +292,17 @@ final class SignedCopyTest extends TestCase
                 {
                     return $callback();
                 }
-            }
+            },
+            $lock ?? new MemorySignedCopyLock()
         );
     }
 }
 
 final class MemorySignedCopyRepository implements SignedCopyRepository
 {
+    /** Runs once inside the next add(), so a test can interleave a second upload. */
+    public ?\Closure $beforeAdd = null;
+
     /** @var array<int, SignedCopy> */
     private array $copies = [];
 
@@ -195,6 +310,13 @@ final class MemorySignedCopyRepository implements SignedCopyRepository
 
     public function add(int $revisionId, string $mediaType, string $storageName): SignedCopy
     {
+        $interleave = $this->beforeAdd;
+        $this->beforeAdd = null;
+
+        if ($interleave instanceof \Closure) {
+            $interleave();
+        }
+
         $saved = (new SignedCopy(null, $revisionId, $mediaType, $storageName, null))->withId($this->nextId);
         $this->copies[$this->nextId] = $saved;
         $this->nextId++;
@@ -202,15 +324,33 @@ final class MemorySignedCopyRepository implements SignedCopyRepository
         return $saved;
     }
 
-    public function markReplaced(int $id, int $replacedBy): void
+    public function replaceCurrent(int $revisionId, int $replacedBy): int
     {
-        $copy = $this->copies[$id] ?? null;
+        $replaced = 0;
 
-        if (! $copy instanceof SignedCopy) {
-            throw new \RuntimeException('Signed copy was not found.');
+        foreach ($this->copies as $id => $copy) {
+            if ($copy->revisionId() !== $revisionId || $copy->replacedBy() !== null || $id === $replacedBy) {
+                continue;
+            }
+
+            $this->copies[$id] = $copy->replacedByCopy($replacedBy);
+            $replaced++;
         }
 
-        $this->copies[$id] = $copy->replacedByCopy($replacedBy);
+        return $replaced;
+    }
+
+    public function currentCount(int $revisionId): int
+    {
+        $current = 0;
+
+        foreach ($this->copies as $copy) {
+            if ($copy->revisionId() === $revisionId && $copy->replacedBy() === null) {
+                $current++;
+            }
+        }
+
+        return $current;
     }
 
     public function currentForRevision(int $revisionId): ?SignedCopy
@@ -257,6 +397,43 @@ final class MemorySignedFileStore implements SignedFileStore
     public function discard(string $name): void
     {
         unset($this->files[$name]);
+    }
+
+    /** @return list<string> */
+    public function names(): array
+    {
+        return array_keys($this->files);
+    }
+}
+
+final class MemorySignedCopyLock implements SignedCopyLock
+{
+    public int $acquired = 0;
+
+    public int $maxHeld = 0;
+
+    /** @var array<int, int> */
+    private array $holders = [];
+
+    public function acquire(int $revisionId): void
+    {
+        if (($this->holders[$revisionId] ?? 0) > 0) {
+            throw new SignedCopyBusy('Another signed copy upload holds this revision.');
+        }
+
+        $this->holders[$revisionId] = 1;
+        $this->acquired++;
+        $this->maxHeld = max($this->maxHeld, array_sum($this->holders));
+    }
+
+    public function release(int $revisionId): void
+    {
+        $this->holders[$revisionId] = 0;
+    }
+
+    public function held(int $revisionId): int
+    {
+        return $this->holders[$revisionId] ?? 0;
     }
 }
 

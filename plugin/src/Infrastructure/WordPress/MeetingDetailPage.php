@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Meeting\SignedCopyBusy;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Meeting\ActionStatus;
@@ -463,6 +464,8 @@ final class MeetingDetailPage
             wp_die(esc_html__('You do not have permission to upload the signed copy.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (MeetingRuleException) {
             self::redirect($meetingId, 'signed_blocked');
+        } catch (SignedCopyBusy) {
+            self::redirect($meetingId, 'signed_busy');
         } catch (\InvalidArgumentException | \RuntimeException) {
             self::redirect($meetingId, 'signed_type');
         }
@@ -603,6 +606,7 @@ final class MeetingDetailPage
             'signed_replaced' => __('The signed copy is replaced. The minutes text is unchanged.', 'foreningsplugin'),
             'signed_blocked' => __('A signed copy can be attached only to a locked revision.', 'foreningsplugin'),
             'signed_type' => __('The signed copy must be a PDF, JPEG, or PNG.', 'foreningsplugin'),
+            'signed_busy' => __('Another signed copy for this revision is being saved right now. Try again in a moment.', 'foreningsplugin'),
             'wrong_item' => __('The item does not belong to this meeting.', 'foreningsplugin'),
             'header_saved' => __('The meeting details are saved.', 'foreningsplugin'),
             'deceased' => __('A deceased person cannot be added to a meeting.', 'foreningsplugin'),

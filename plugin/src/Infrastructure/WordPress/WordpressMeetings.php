@@ -294,7 +294,8 @@ final class WordpressMeetings
                         throw $error;
                     }
                 }
-            }
+            },
+            new WordpressSignedCopyLock()
         );
     }
 

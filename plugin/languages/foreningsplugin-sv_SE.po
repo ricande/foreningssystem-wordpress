@@ -267,6 +267,9 @@ msgstr "Ett ordinarie medlemskap eller ungdomsmedlemskap har en medlem."
 msgid "Annual meeting"
 msgstr "Årsmöte"
 
+msgid "Another signed copy for this revision is being saved right now. Try again in a moment."
+msgstr "En annan signerad kopia för den här revisionen sparas just nu. Försök igen om en stund."
+
 msgid "Apply now"
 msgstr "Tillämpa nu"
 
