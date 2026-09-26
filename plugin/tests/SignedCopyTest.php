@@ -173,6 +173,40 @@ final class SignedCopyTest extends TestCase
         self::assertSame(2, $lock->acquired);
     }
 
+    public function test_a_failed_upload_keeps_the_file_an_earlier_copy_points_at(): void
+    {
+        $minutes = new MemoryMinutesRepository();
+        $revisionId = $this->finalizedRevision($minutes);
+        $files = new MemorySignedFileStore();
+        $copies = new MemorySignedCopyRepository();
+        $signed = $this->service($minutes, $copies, $files, new MemoryAuditLog(), [
+            Capabilities::MANAGE_DOCUMENTS,
+            Capabilities::FINALIZE_MINUTES,
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+        ]);
+        $scan = "%PDF-1.4\n1 0 obj\nendobj\n%%EOF";
+        $replacement = "\xFF\xD8\xFF\xE0" . str_repeat("\x00", 12);
+
+        $signed->attach($revisionId, $scan, 7);
+        $firstName = (string) $signed->current($revisionId)?->storageName();
+        $signed->attach($revisionId, $replacement, 7);
+
+        // The same scan is uploaded again and the save fails. The file the replaced copy
+        // points at is not the upload's to remove.
+        $copies->beforeAdd = static function (): void {
+            throw new \RuntimeException('The signed copy could not be saved.');
+        };
+
+        try {
+            $signed->attach($revisionId, $scan, 7);
+            self::fail('A repository failure should stop the upload.');
+        } catch (\RuntimeException) {
+        }
+
+        self::assertSame($scan, $files->read($firstName));
+        self::assertSame($replacement, $signed->read($revisionId));
+    }
+
     public function test_a_draft_cannot_receive_a_signed_copy(): void
     {
         $minutes = new MemoryMinutesRepository();
@@ -338,6 +372,17 @@ final class MemorySignedCopyRepository implements SignedCopyRepository
         }
 
         return $replaced;
+    }
+
+    public function hasStorageName(int $revisionId, string $storageName): bool
+    {
+        foreach ($this->copies as $copy) {
+            if ($copy->revisionId() === $revisionId && $copy->storageName() === $storageName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function currentCount(int $revisionId): int

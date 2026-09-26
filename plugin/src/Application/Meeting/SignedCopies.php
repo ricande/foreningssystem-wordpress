@@ -71,9 +71,10 @@ final class SignedCopies
                 return 'attached';
             });
         } catch (\Throwable $error) {
-            $current = $this->copies->currentForRevision($id);
-
-            if (! $current instanceof SignedCopy || $current->storageName() !== $name) {
+            // The upload is undone, but the same bytes can belong to a copy that was
+            // attached earlier, current or already replaced. That file is a record of its
+            // own and stays.
+            if (! $this->copies->hasStorageName($id, $name)) {
                 $this->files->discard($name);
             }
 

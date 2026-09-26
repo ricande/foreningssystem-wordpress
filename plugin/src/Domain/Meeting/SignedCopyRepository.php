@@ -18,5 +18,10 @@ interface SignedCopyRepository
 
     public function currentForRevision(int $revisionId): ?SignedCopy;
 
+    /**
+     * Whether any copy of the revision, current or replaced, points at the stored file.
+     */
+    public function hasStorageName(int $revisionId, string $storageName): bool;
+
     public function find(int $id): ?SignedCopy;
 }

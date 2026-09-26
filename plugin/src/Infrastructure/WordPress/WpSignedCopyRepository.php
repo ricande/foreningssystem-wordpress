@@ -56,6 +56,19 @@ final class WpSignedCopyRepository implements SignedCopyRepository
         return is_array($row) ? $this->map($row) : null;
     }
 
+    public function hasStorageName(int $revisionId, string $storageName): bool
+    {
+        global $wpdb;
+
+        $found = $wpdb->get_var($wpdb->prepare(
+            'SELECT COUNT(*) FROM ' . $this->table() . ' WHERE revision_id = %d AND storage_name = %s',
+            $revisionId,
+            $storageName
+        ));
+
+        return is_numeric($found) && (int) $found > 0;
+    }
+
     public function find(int $id): ?SignedCopy
     {
         global $wpdb;
