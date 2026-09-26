@@ -26,6 +26,8 @@ Changing the directory, in either direction and however many times, moves the st
 
 Do not delete an old private directory before the association screen and downloads show the files in the new one. See `adr/0025-private-storage-roots.md`.
 
+If the configured directory cannot be used at all, for example because a volume is not mounted, the plugin falls back to `wp-content/uploads/assoc-private` as it always has, records the configured directory as an earlier root, and moves in the files it can reach. That puts protected files inside the web root, so the association notice and Site Health warning come back. Fix the directory rather than acknowledging the warning.
+
 ## Apache
 
 Use this when `.htaccess` is ignored. Replace the path with the real directory:

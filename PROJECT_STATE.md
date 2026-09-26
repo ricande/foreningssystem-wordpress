@@ -87,6 +87,17 @@ Wizard markup uses one pattern on every step: a single primary form plus sibling
 
 Help & Guides, contextual help, and optional registered-install communications remain proposal-only in `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` and `OPEN_QUESTIONS.md` (Q40–Q45). They are not implemented and not LOCKED.
 
+## Update after hardening batch 2 — 2026-09-26
+
+Four storage and concurrency findings are fixed. Plugin version stays 0.1.0 and schema stays 16.
+
+- **Signed copies.** Uploading a signed scan holds the revision through a MySQL advisory lock, and the replacement marks every copy that is still current as replaced in one statement. A revision keeps at most one current signed copy even if two officers upload at the same time, and a revision that already carried two current copies collapses to one on the next upload. A held revision answers with `SignedCopyBusy` and the meeting screen reports it as a temporary state.
+- **Private storage path.** Whether the private directory sits under the web root is decided by the resolved path once the directory exists, so a symlink or a `..` segment cannot present a directory inside the web root as one outside it. A path that does not exist yet keeps its spelled-out placement, and the fallback and warning model are unchanged.
+- **Storage root state.** `assoc_private_storage_root` records the active root and `assoc_private_storage_earlier_roots` records the roots that may still hold files (ADR-0025). Changing the private directory, in either direction, moves the files it can move, never overwrites a name that exists with different bytes, and keeps a root that still holds files or is unreachable in the recorded state. Reads and deletes follow the recorded roots; writes only go to the active root.
+- **Minutes PDFs.** A regenerated minutes PDF removes the file it replaced only after the revision row has been read back pointing at the new file. A failed write, a failed row update, or a row that cannot be read back leaves the working PDF in place. Private files are written under a working name and moved into place with one rename.
+
+Not part of this batch: retention and guardian policy, personal-identity-number encryption.
+
 ## Lab stacks (in-repo)
 
 Three Docker labs are documented in-repo:
