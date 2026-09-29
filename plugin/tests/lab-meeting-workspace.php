@@ -123,6 +123,17 @@ $_GET['assoc_meeting_tab'] = 'participants';
 ob_start();
 MeetingsPage::render();
 $peopleTab = (string) ob_get_clean();
+$_GET['meeting'] = (string) $meetingId;
+$_GET['agenda'] = (string) $itemIds['Closing'];
+unset($_GET['assoc_meeting_tab']);
+ob_start();
+MeetingsPage::render();
+$lastItem = (string) ob_get_clean();
+$_GET['assoc_end_meeting'] = '1';
+unset($_GET['agenda']);
+ob_start();
+MeetingsPage::render();
+$ending = (string) ob_get_clean();
 $_GET = [];
 $record->addNote($meetingId, $itemIds['Equipment purchase'], 'Three offers were reviewed.', false);
 $record->addDecision(
@@ -198,12 +209,29 @@ if (
     || ! str_contains($during, 'id="agenda-' . $itemIds['Equipment purchase'] . '"')
     || ! str_contains($during, 'Equipment purchase')
     || ! str_contains($during, 'assoc_add_note')
+    || ! str_contains($during, 'assoc-setup-progress-status')
+    || ! (str_contains($during, 'Item ') || str_contains($during, 'Punkt '))
+    || str_contains($during, 'All meetings')
+    || str_contains($during, 'Alla möten')
+    || str_contains($during, 'assoc_mark_meeting_held')
+    || str_contains($during, 'Mark meeting as held')
+    || str_contains($during, 'Markera mötet som håll')
     || str_contains($during, 'assoc_add_participant')
     || ! str_contains($during, 'nav-tab')
     || ! str_contains($peopleTab, 'assoc_add_participant')
     || str_contains($peopleTab, 'assoc_add_note')
     || str_contains($during, 'value="' . $nils . '"')
     || str_contains($peopleTab, 'value="' . $nils . '"')
+    || ! str_contains($lastItem, 'name="end_meeting"')
+    || ! (str_contains($lastItem, 'Continue') || str_contains($lastItem, 'Fortsätt'))
+    || ! str_contains($ending, 'assoc_mark_meeting_held')
+    || ! (str_contains($ending, 'End meeting') || str_contains($ending, 'Avsluta möte'))
+    || ! (str_contains($ending, 'Are you sure?') || str_contains($ending, 'Är du säker?'))
+    || ! (str_contains($ending, '>Yes<') || str_contains($ending, '>Ja<'))
+    || ! (str_contains($ending, '>No<') || str_contains($ending, '>Nej<'))
+    || str_contains($ending, 'type="checkbox"')
+    || str_contains($ending, 'All meetings')
+    || str_contains($ending, 'Alla möten')
     || $held !== MeetingStatus::Held
     || $beforeDraft !== null
     || $draft === null

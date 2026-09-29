@@ -26,12 +26,15 @@ final class MeetingWorkspaceScreen
     {
         $meeting = self::meeting($meetingId);
 
-        echo '<div class="wrap">';
+        echo '<div class="wrap' . ($meeting instanceof Meeting && $meeting->status() === MeetingStatus::InProgress ? ' assoc-setup' : '') . '">';
         echo '<h1>' . esc_html($meeting instanceof Meeting ? $meeting->title() : __('Meeting', 'foreningsplugin')) . '</h1>';
-        echo '<p><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-meetings')) . '">' . esc_html__('All meetings', 'foreningsplugin') . '</a></p>';
-        MeetingDetailPage::notice();
+
+        if (! $meeting instanceof Meeting || $meeting->status() !== MeetingStatus::InProgress) {
+            echo '<p><a href="' . esc_url(admin_url('admin.php?page=foreningsplugin-meetings')) . '">' . esc_html__('All meetings', 'foreningsplugin') . '</a></p>';
+        }
 
         if (! $meeting instanceof Meeting) {
+            MeetingDetailPage::notice();
             echo '<p>' . esc_html__('The meeting does not exist.', 'foreningsplugin') . '</p></div>';
 
             return;
@@ -59,21 +62,35 @@ final class MeetingWorkspaceScreen
         $people = self::livingPeople();
         $draft = $meeting->status() === MeetingStatus::Held ? WordpressMeetings::minutes()->current($meetingId) : null;
         $focus = isset($_GET['agenda']) ? absint($_GET['agenda']) : 0;
+        $ending = isset($_GET['assoc_end_meeting']) && (string) $_GET['assoc_end_meeting'] === '1';
+        $tab = isset($_GET['assoc_meeting_tab']) && sanitize_key((string) $_GET['assoc_meeting_tab']) === 'participants'
+            ? 'participants'
+            : 'agenda';
 
-        if ($focus < 1 && $meeting->status() === MeetingStatus::InProgress && $agenda !== []) {
+        if ($focus < 1 && $meeting->status() === MeetingStatus::InProgress && $agenda !== [] && ! $ending) {
             $focus = (int) $agenda[0]->id();
         }
 
+        if (
+            $meeting->status() === MeetingStatus::InProgress
+            && $tab === 'agenda'
+            && ! $ending
+            && $agenda !== []
+        ) {
+            self::agendaProgress((int) $meeting->id(), $agenda, $focus);
+        }
+
+        MeetingDetailPage::notice();
         self::header($meeting, $type instanceof MeetingType ? $type : null, $canEdit, $canRecord, $draft, $types);
 
         if ($meeting->status() === MeetingStatus::InProgress) {
-            $tab = isset($_GET['assoc_meeting_tab']) && sanitize_key((string) $_GET['assoc_meeting_tab']) === 'participants'
-                ? 'participants'
-                : 'agenda';
             echo '<div class="assoc-meeting-focus"' . ($focus > 0 ? ' id="agenda-' . esc_attr((string) $focus) . '"' : '') . '>';
             self::meetingTabs($meetingId, $focus, $tab);
 
-            if ($tab === 'participants') {
+            if ($ending && $tab === 'agenda') {
+                $lastAgendaId = $agenda !== [] ? (int) $agenda[array_key_last($agenda)]->id() : 0;
+                self::endMeeting($meetingId, $canEdit, $lastAgendaId);
+            } elseif ($tab === 'participants') {
                 self::participants($meetingId, $attendance, $canEdit, $meeting->startsAt()->date());
             } elseif ($agenda !== []) {
                 self::conduct($meeting, $agenda, $notes, $decisionRows, $actionRows, $people, $canEdit, $canRecord, $focus);
@@ -116,9 +133,12 @@ final class MeetingWorkspaceScreen
 
         echo ' · <strong>' . esc_html(MeetingLabels::status($meeting->status())) . '</strong>';
         echo '</p>';
-        echo '<p id="assoc-meeting-next">';
-        self::primaryAction($meeting, $canEdit, $canRecord, $draft);
-        echo '</p>';
+
+        if ($meeting->status() !== MeetingStatus::InProgress) {
+            echo '<p id="assoc-meeting-next">';
+            self::primaryAction($meeting, $canEdit, $canRecord, $draft);
+            echo '</p>';
+        }
 
         if (! $canEdit) {
             return;
@@ -156,13 +176,6 @@ final class MeetingWorkspaceScreen
             return;
         }
 
-        if ($meeting->status() === MeetingStatus::InProgress && $canEdit) {
-            echo '<p>' . esc_html__('Mark this meeting as held? Notes, decisions and tasks remain available for minutes preparation.', 'foreningsplugin') . '</p>';
-            self::lifecycleForm($meetingId, 'assoc_mark_meeting_held', __('Mark meeting as held', 'foreningsplugin'), 'primary', __('Mark this meeting as held', 'foreningsplugin'));
-
-            return;
-        }
-
         if ($meeting->status() !== MeetingStatus::Held) {
             return;
         }
@@ -195,6 +208,36 @@ final class MeetingWorkspaceScreen
 
         submit_button($label, $style, 'submit', false);
         echo '</form>';
+    }
+
+    private static function endMeeting(int $meetingId, bool $canEdit, int $lastAgendaId): void
+    {
+        echo '<h2>' . esc_html__('End meeting', 'foreningsplugin') . '</h2>';
+        echo '<p>' . esc_html__('Are you sure?', 'foreningsplugin') . '</p>';
+
+        if ($canEdit) {
+            echo '<div class="assoc-setup-actions">';
+            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+            echo '<input type="hidden" name="action" value="assoc_mark_meeting_held">';
+            echo '<input type="hidden" name="meeting_id" value="' . esc_attr((string) $meetingId) . '">';
+            echo '<input type="hidden" name="return_meeting" value="' . esc_attr((string) $meetingId) . '">';
+            echo '<input type="hidden" name="confirm" value="1">';
+            wp_nonce_field('assoc_mark_meeting_held');
+            echo '<button type="submit" class="button button-primary">' . esc_html__('Yes', 'foreningsplugin') . '</button>';
+            echo '</form>';
+
+            $backUrl = add_query_arg([
+                'page' => 'foreningsplugin-meetings',
+                'meeting' => $meetingId,
+            ], admin_url('admin.php'));
+
+            if ($lastAgendaId > 0) {
+                $backUrl = add_query_arg('agenda', $lastAgendaId, $backUrl);
+            }
+
+            echo '<a class="button" href="' . esc_url($backUrl) . '">' . esc_html__('No', 'foreningsplugin') . '</a>';
+            echo '</div>';
+        }
     }
 
     private static function meetingTabs(int $meetingId, int $focus, string $current): void
@@ -322,30 +365,6 @@ final class MeetingWorkspaceScreen
         $next = $agenda[$index + 1] ?? null;
         $meetingId = (int) $meeting->id();
         $itemId = (int) $current->id();
-        echo '<div class="assoc-setup">';
-        echo '<nav class="assoc-setup-progress" aria-label="' . esc_attr__('Agenda', 'foreningsplugin') . '">';
-        echo '<p class="assoc-setup-progress-status">' . esc_html(sprintf(
-            /* translators: 1: current agenda item, 2: number of agenda items */
-            __('Step %1$d of %2$d', 'foreningsplugin'),
-            $index + 1,
-            count($agenda)
-        )) . '</p>';
-        echo '<ol class="assoc-meeting-steps">';
-
-        foreach ($agenda as $item) {
-            $linkId = (int) $item->id();
-            $url = add_query_arg([
-                'page' => 'foreningsplugin-meetings',
-                'meeting' => $meetingId,
-                'agenda' => $linkId,
-            ], admin_url('admin.php'));
-            $here = $linkId === $itemId;
-            echo '<li' . ($here ? ' class="is-current" aria-current="step"' : '') . '>';
-            echo '<a href="' . esc_url($url) . '">' . esc_html($item->displayNumber() . '. ' . $item->title()) . '</a>';
-            echo '</li>';
-        }
-
-        echo '</ol></nav>';
         echo '<h2>' . esc_html($current->displayNumber() . '. ' . $current->title()) . '</h2>';
         echo '<p>' . esc_html__('Write for this item, then continue to the next one.', 'foreningsplugin') . '</p>';
         self::capture($meetingId, $itemId, $notes, $decisionRows, $actionRows, $people, $canRecord, 'records');
@@ -360,6 +379,8 @@ final class MeetingWorkspaceScreen
 
             if ($next instanceof AgendaItem && $next->id() !== null) {
                 echo '<input type="hidden" name="next_agenda" value="' . esc_attr((string) $next->id()) . '">';
+            } else {
+                echo '<input type="hidden" name="end_meeting" value="1">';
             }
 
             echo '<p><label>' . esc_html__('Text', 'foreningsplugin') . '<br><textarea class="large-text" name="body" rows="8"></textarea></label></p>';
@@ -371,7 +392,7 @@ final class MeetingWorkspaceScreen
             }
 
             echo '<button type="submit" class="button button-primary" name="direction" value="next">';
-            echo esc_html($next instanceof AgendaItem ? __('Next item', 'foreningsplugin') : __('Add note', 'foreningsplugin'));
+            echo esc_html($next instanceof AgendaItem ? __('Next item', 'foreningsplugin') : __('Continue', 'foreningsplugin'));
             echo '</button></p></form>';
             self::capture($meetingId, $itemId, $notes, $decisionRows, $actionRows, $people, true, 'extra');
         }
@@ -392,8 +413,44 @@ final class MeetingWorkspaceScreen
             ], __('Move down', 'foreningsplugin'));
             echo '</details>';
         }
+    }
 
-        echo '</div>';
+    /**
+     * @param list<AgendaItem> $agenda
+     */
+    private static function agendaProgress(int $meetingId, array $agenda, int $focus): void
+    {
+        $index = 0;
+
+        foreach ($agenda as $position => $item) {
+            if ((int) $item->id() === $focus) {
+                $index = $position;
+            }
+        }
+
+        echo '<nav class="assoc-setup-progress" aria-label="' . esc_attr__('Agenda', 'foreningsplugin') . '">';
+        echo '<p class="assoc-setup-progress-status">' . esc_html(sprintf(
+            /* translators: 1: current agenda item number, 2: number of agenda items */
+            __('Item %1$d of %2$d', 'foreningsplugin'),
+            $index + 1,
+            count($agenda)
+        )) . '</p>';
+        echo '<ol class="assoc-meeting-steps">';
+
+        foreach ($agenda as $item) {
+            $linkId = (int) $item->id();
+            $url = add_query_arg([
+                'page' => 'foreningsplugin-meetings',
+                'meeting' => $meetingId,
+                'agenda' => $linkId,
+            ], admin_url('admin.php'));
+            $here = $linkId === $focus;
+            echo '<li' . ($here ? ' class="is-current" aria-current="step"' : '') . '>';
+            echo '<a href="' . esc_url($url) . '">' . esc_html($item->displayNumber() . '. ' . $item->title()) . '</a>';
+            echo '</li>';
+        }
+
+        echo '</ol></nav>';
     }
 
     /**

@@ -3131,3 +3131,14 @@ msgstr "Ändra dagordningen"
 
 msgid "Other people"
 msgstr "Övriga personer"
+
+#: 
+# translators: 1: current agenda item number, 2: number of agenda items
+msgid "Item %1$d of %2$d"
+msgstr "Punkt %1$d av %2$d"
+
+msgid "End meeting"
+msgstr "Avsluta möte"
+
+msgid "Are you sure?"
+msgstr "Är du säker?"

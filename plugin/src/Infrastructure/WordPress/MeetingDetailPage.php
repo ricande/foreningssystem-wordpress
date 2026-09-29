@@ -106,7 +106,13 @@ final class MeetingDetailPage
         $body = trim(self::textarea('body'));
         $current = self::optionalInteger('agenda_item_id');
         $previous = self::text('direction') === 'back' ? self::optionalInteger('previous_agenda') : null;
-        $next = $previous === null ? self::optionalInteger('next_agenda') : null;
+        $next = $previous === null && self::text('direction') === 'next'
+            ? self::optionalInteger('next_agenda')
+            : null;
+        $endMeeting = $previous === null
+            && self::text('direction') === 'next'
+            && $next === null
+            && self::text('end_meeting') === '1';
         $target = $previous ?? $next;
 
         try {
@@ -117,7 +123,16 @@ final class MeetingDetailPage
                     $body,
                     self::checked('include_in_minutes')
                 );
+
+                if ($endMeeting) {
+                    self::redirectEnd($meetingId, 'note_added');
+                }
+
                 self::redirect($meetingId, 'note_added', $target ?? $current);
+            }
+
+            if ($endMeeting) {
+                self::redirectEnd($meetingId, 'continued');
             }
 
             if ($target !== null) {
@@ -569,6 +584,17 @@ final class MeetingDetailPage
         }
 
         wp_safe_redirect($url);
+        exit;
+    }
+
+    private static function redirectEnd(int $meetingId, string $notice): void
+    {
+        wp_safe_redirect(add_query_arg([
+            'page' => 'foreningsplugin-meetings',
+            'meeting' => $meetingId,
+            'assoc_end_meeting' => '1',
+            'assoc_notice' => $notice,
+        ], admin_url('admin.php')));
         exit;
     }
 

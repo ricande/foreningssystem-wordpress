@@ -1948,3 +1948,14 @@ msgstr ""
 
 msgid "Setup progress"
 msgstr ""
+
+#: 
+# translators: 1: current agenda item number, 2: number of agenda items
+msgid "Item %1$d of %2$d"
+msgstr ""
+
+msgid "End meeting"
+msgstr ""
+
+msgid "Are you sure?"
+msgstr ""
