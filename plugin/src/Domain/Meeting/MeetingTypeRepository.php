@@ -10,6 +10,8 @@ interface MeetingTypeRepository
 
     public function save(MeetingType $type): void;
 
+    public function remove(int $id): void;
+
     public function find(int $id): ?MeetingType;
 
     public function findBySlug(string $slug): ?MeetingType;

@@ -71,6 +71,17 @@ final class WpdbBoardRoleRepository implements BoardRoleRepository
         }
     }
 
+    public function remove(int $id): void
+    {
+        global $wpdb;
+
+        $deleted = $wpdb->delete($this->table(), ['id' => $id], ['%d']);
+
+        if ($deleted === false) {
+            throw new \RuntimeException('The board role could not be saved.');
+        }
+    }
+
     public function find(int $id): ?BoardRole
     {
         global $wpdb;

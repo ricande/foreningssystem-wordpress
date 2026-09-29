@@ -17,7 +17,8 @@ final class WordpressAssociationSettings
             new WpdbBoardRoleRepository(),
             new WpdbBoardAssignmentRepository(),
             self::authorizer(),
-            self::transaction()
+            self::transaction(),
+            new WordpressMinutesRoleReference()
         );
     }
 

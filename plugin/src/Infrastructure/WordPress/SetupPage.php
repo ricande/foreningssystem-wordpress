@@ -10,7 +10,6 @@ use Foreningssystem\Application\Settings\StructureRuleException;
 use Foreningssystem\Application\Setup\SetupStep;
 use Foreningssystem\Application\Setup\SetupWizard;
 use Foreningssystem\Domain\Access\Capabilities;
-use Foreningssystem\Domain\Access\RoleBundles;
 use Foreningssystem\Domain\Association\AssociationProfile;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Privacy\RetentionPeriod;
@@ -127,6 +126,38 @@ final class SetupPage
             self::denied();
         } catch (StructureRuleException | RuntimeException) {
             self::redirect(SetupStep::MEETINGS, 'type_failed');
+        }
+    }
+
+    public static function removeBoardRole(): void
+    {
+        self::guard('assoc_setup_remove_board_role');
+
+        try {
+            WordpressAssociationSettings::boardRoles()->remove(self::integer('role_id'));
+            self::redirect(SetupStep::BOARD, 'role_removed');
+        } catch (NotAllowed) {
+            self::denied();
+        } catch (StructureRuleException $error) {
+            self::redirect(SetupStep::BOARD, self::removeNotice($error, 'role'));
+        } catch (RuntimeException) {
+            self::redirect(SetupStep::BOARD, 'role_remove_failed');
+        }
+    }
+
+    public static function removeMeetingType(): void
+    {
+        self::guard('assoc_setup_remove_meeting_type');
+
+        try {
+            WordpressAssociationSettings::meetingTypes()->remove(self::integer('type_id'));
+            self::redirect(SetupStep::MEETINGS, 'type_removed');
+        } catch (NotAllowed) {
+            self::denied();
+        } catch (StructureRuleException $error) {
+            self::redirect(SetupStep::MEETINGS, self::removeNotice($error, 'type'));
+        } catch (RuntimeException) {
+            self::redirect(SetupStep::MEETINGS, 'type_remove_failed');
         }
     }
 
@@ -247,10 +278,14 @@ final class SetupPage
     {
         echo '<h2>' . esc_html__('Board', 'foreningsplugin') . '</h2>';
         echo '<p>' . esc_html__('Board roles describe the structure. You do not assign people here. Built-in roles keep their meaning. You may add a custom role.', 'foreningsplugin') . '</p>';
-        echo '<table class="widefat striped"><thead><tr><th>' . esc_html__('Role', 'foreningsplugin') . '</th><th>' . esc_html__('Holders', 'foreningsplugin') . '</th></tr></thead><tbody>';
-        foreach (WordpressAssociationSettings::boardRoles()->catalog() as $role) {
+        echo '<p>' . esc_html__('Built-in roles cannot be removed. A custom role can be removed until a board assignment or a minutes permission uses it.', 'foreningsplugin') . '</p>';
+        $roles = WordpressAssociationSettings::boardRoles();
+        echo '<table class="widefat striped"><thead><tr><th>' . esc_html__('Role', 'foreningsplugin') . '</th><th>' . esc_html__('Holders', 'foreningsplugin') . '</th><th></th></tr></thead><tbody>';
+        foreach ($roles->catalog() as $role) {
             $label = BoardScreen::roleLabel($role->slug(), $role->name());
-            echo '<tr><td>' . esc_html($label) . '</td><td>' . esc_html($role->allowsMultiple() ? __('Multiple holders', 'foreningsplugin') : __('One holder', 'foreningsplugin')) . '</td></tr>';
+            echo '<tr><td>' . esc_html($label) . '</td><td>' . esc_html($role->allowsMultiple() ? __('Multiple holders', 'foreningsplugin') : __('One holder', 'foreningsplugin')) . '</td><td>';
+            self::removalCell($roles->removalBlock($role), 'assoc_setup_remove_board_role', 'role_id', (int) $role->id(), $label, true);
+            echo '</td></tr>';
         }
         echo '</tbody></table>';
         echo '<h3>' . esc_html__('Add board role', 'foreningsplugin') . '</h3>';
@@ -270,9 +305,14 @@ final class SetupPage
     {
         echo '<h2>' . esc_html__('Meetings', 'foreningsplugin') . '</h2>';
         echo '<p>' . esc_html__('Meeting types describe how the association meets. You do not create meetings here. Built-in types keep their meaning. You may add a custom type.', 'foreningsplugin') . '</p>';
-        echo '<table class="widefat striped"><thead><tr><th>' . esc_html__('Meeting type', 'foreningsplugin') . '</th></tr></thead><tbody>';
-        foreach (WordpressAssociationSettings::meetingTypes()->catalog() as $type) {
-            echo '<tr><td>' . esc_html(MeetingLabels::type($type)) . '</td></tr>';
+        echo '<p>' . esc_html__('Built-in meeting types cannot be removed. A custom meeting type can be removed until a meeting or a meeting template uses it.', 'foreningsplugin') . '</p>';
+        $types = WordpressAssociationSettings::meetingTypes();
+        echo '<table class="widefat striped"><thead><tr><th>' . esc_html__('Meeting type', 'foreningsplugin') . '</th><th></th></tr></thead><tbody>';
+        foreach ($types->catalog() as $type) {
+            $label = MeetingLabels::type($type);
+            echo '<tr><td>' . esc_html($label) . '</td><td>';
+            self::removalCell($types->removalBlock($type), 'assoc_setup_remove_meeting_type', 'type_id', (int) $type->id(), $label, false);
+            echo '</td></tr>';
         }
         echo '</tbody></table>';
         echo '<h3>' . esc_html__('Add meeting type', 'foreningsplugin') . '</h3>';
@@ -291,6 +331,8 @@ final class SetupPage
         $setting = WordpressAccess::load();
         echo '<h2>' . esc_html__('Minutes and documents', 'foreningsplugin') . '</h2>';
         echo '<p>' . esc_html__('Choose which association roles may finalize minutes and which may publish them. Document files stay private; downloads check authorization.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('A custom board role can be chosen in the same way.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('This permission is not the same as being chosen to adjust a particular meeting.', 'foreningsplugin') . '</p>';
         if (PrivateStorageWarning::needsAttention()) {
             echo '<div class="notice notice-warning inline"><p>' . esc_html__(
                 'Protected association files are inside the public web root. Downloads check authorization, but a visitor who can guess the file address can read the file directly unless the web server blocks the directory.',
@@ -496,12 +538,57 @@ final class SetupPage
      */
     private static function roleLabels(): array
     {
-        return [
-            RoleBundles::SECRETARY => __('Secretary', 'foreningsplugin'),
-            RoleBundles::CHAIR => __('Chair', 'foreningsplugin'),
-            RoleBundles::TREASURER => __('Treasurer', 'foreningsplugin'),
-            RoleBundles::BOARD_MEMBER => __('Board member', 'foreningsplugin'),
-        ];
+        return MinutesRoleChoices::labels(WordpressAssociationSettings::boardRoles()->catalog());
+    }
+
+    private static function removalCell(?string $block, string $action, string $idField, int $id, string $label, bool $role): void
+    {
+        if ($block === null) {
+            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+            echo '<input type="hidden" name="action" value="' . esc_attr($action) . '">';
+            echo '<input type="hidden" name="' . esc_attr($idField) . '" value="' . esc_attr((string) $id) . '">';
+            wp_nonce_field($action);
+            echo '<button type="submit" class="button-link-delete">' . esc_html(sprintf(
+                /* translators: %s: board role or meeting type name */
+                __('Remove %s', 'foreningsplugin'),
+                $label
+            )) . '</button></form>';
+
+            return;
+        }
+
+        $message = self::removalMessage($block, $role);
+
+        if ($message !== '') {
+            echo '<p class="description">' . esc_html($message) . '</p>';
+        }
+    }
+
+    private static function removalMessage(?string $block, bool $role): string
+    {
+        if ($role && $block === StructureRuleException::USED) {
+            return __('This role is used by a board assignment and cannot be removed.', 'foreningsplugin');
+        }
+
+        if ($role && $block === StructureRuleException::POLICY) {
+            return __('This role is selected for finalizing or publishing minutes. Change that permission before removing the role.', 'foreningsplugin');
+        }
+
+        if (! $role && $block === StructureRuleException::USED) {
+            return __('This meeting type is used by a meeting or a meeting template and cannot be removed.', 'foreningsplugin');
+        }
+
+        return '';
+    }
+
+    private static function removeNotice(StructureRuleException $error, string $prefix): string
+    {
+        return match ($error->rule()) {
+            StructureRuleException::BUILTIN => $prefix . '_remove_builtin',
+            StructureRuleException::USED => $prefix . '_remove_used',
+            StructureRuleException::POLICY => $prefix . '_remove_policy',
+            default => $prefix . '_remove_failed',
+        };
     }
 
     /**
@@ -683,9 +770,18 @@ final class SetupPage
         $messages = [
             'association_invalid' => __('The association profile could not be saved. Check the fields and enter a name.', 'foreningsplugin'),
             'role_added' => __('The board role was added.', 'foreningsplugin'),
+            'role_removed' => __('The board role was removed.', 'foreningsplugin'),
             'role_failed' => __('The board role could not be saved.', 'foreningsplugin'),
+            'role_remove_builtin' => __('A built-in board role cannot be removed.', 'foreningsplugin'),
+            'role_remove_used' => __('This role is used by a board assignment and cannot be removed.', 'foreningsplugin'),
+            'role_remove_policy' => __('This role is selected for finalizing or publishing minutes. Change that permission before removing the role.', 'foreningsplugin'),
+            'role_remove_failed' => __('The board role could not be removed.', 'foreningsplugin'),
             'type_added' => __('The meeting type was added.', 'foreningsplugin'),
+            'type_removed' => __('The meeting type was removed.', 'foreningsplugin'),
             'type_failed' => __('The meeting type could not be saved.', 'foreningsplugin'),
+            'type_remove_builtin' => __('A built-in meeting type cannot be removed.', 'foreningsplugin'),
+            'type_remove_used' => __('This meeting type is used by a meeting or a meeting template and cannot be removed.', 'foreningsplugin'),
+            'type_remove_failed' => __('The meeting type could not be removed.', 'foreningsplugin'),
             'minutes_invalid' => __('The minutes permissions could not be saved.', 'foreningsplugin'),
             'privacy_invalid' => __('Retention must be between 1 and 100 years.', 'foreningsplugin'),
             'finish_name_required' => __('Enter the association name before finishing setup.', 'foreningsplugin'),
@@ -695,13 +791,22 @@ final class SetupPage
             return;
         }
 
-        $error = str_contains($notice, 'invalid') || str_contains($notice, 'failed') || str_contains($notice, 'required');
+        $error = str_contains($notice, 'invalid') || str_contains($notice, 'failed') || str_contains($notice, 'required') || str_contains($notice, 'remove_');
         echo '<div class="notice notice-' . ($error ? 'error' : 'success') . '"><p>' . esc_html($messages[$notice]) . '</p></div>';
     }
 
     private static function text(string $key): string
     {
         return isset($_POST[$key]) ? sanitize_text_field(wp_unslash((string) $_POST[$key])) : '';
+    }
+
+    private static function integer(string $key): int
+    {
+        if (! isset($_POST[$key]) || is_array($_POST[$key])) {
+            return 0;
+        }
+
+        return absint(wp_unslash((string) $_POST[$key]));
     }
 
 }

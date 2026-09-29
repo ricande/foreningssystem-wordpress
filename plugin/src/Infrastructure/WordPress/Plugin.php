@@ -54,7 +54,9 @@ final class Plugin
         add_action('admin_post_assoc_setup_skip', [SetupPage::class, 'skip']);
         add_action('admin_post_assoc_setup_save_association', [SetupPage::class, 'saveAssociation']);
         add_action('admin_post_assoc_setup_add_board_role', [SetupPage::class, 'addBoardRole']);
+        add_action('admin_post_assoc_setup_remove_board_role', [SetupPage::class, 'removeBoardRole']);
         add_action('admin_post_assoc_setup_add_meeting_type', [SetupPage::class, 'addMeetingType']);
+        add_action('admin_post_assoc_setup_remove_meeting_type', [SetupPage::class, 'removeMeetingType']);
         add_action('admin_post_assoc_setup_save_minutes', [SetupPage::class, 'saveMinutes']);
         add_action('admin_post_assoc_setup_save_privacy', [SetupPage::class, 'savePrivacy']);
         add_action('admin_post_assoc_setup_finish', [SetupPage::class, 'finish']);
@@ -134,7 +136,9 @@ final class Plugin
         add_action('admin_post_assoc_add_board_role', [AssociationSettingsPage::class, 'addBoardRole']);
         add_action('admin_post_assoc_update_board_role', [AssociationSettingsPage::class, 'updateBoardRole']);
         add_action('admin_post_assoc_move_board_role', [AssociationSettingsPage::class, 'moveBoardRole']);
+        add_action('admin_post_assoc_remove_board_role', [AssociationSettingsPage::class, 'removeBoardRole']);
         add_action('admin_post_assoc_add_meeting_type', [AssociationSettingsPage::class, 'addMeetingType']);
+        add_action('admin_post_assoc_remove_meeting_type', [AssociationSettingsPage::class, 'removeMeetingType']);
         add_action('admin_post_assoc_rename_meeting_type', [AssociationSettingsPage::class, 'renameMeetingType']);
         add_action('admin_post_assoc_move_meeting_type', [AssociationSettingsPage::class, 'moveMeetingType']);
 

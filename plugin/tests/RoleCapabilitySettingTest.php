@@ -99,6 +99,45 @@ final class RoleCapabilitySettingTest extends TestCase
             $store->capabilities[RoleBundles::SECRETARY]
         );
     }
+
+    public function test_a_custom_board_role_keeps_only_minutes_permissions(): void
+    {
+        $setting = RoleCapabilitySetting::fromArray([
+            'custom_material_manager' => [
+                Capabilities::FINALIZE_MINUTES,
+                Capabilities::MANAGE_ASSOCIATION,
+                'install_plugins',
+            ],
+        ]);
+
+        self::assertSame(
+            [Capabilities::FINALIZE_MINUTES, Capabilities::ACCESS_ASSOCIATION],
+            $setting->capabilitiesFor('custom_material_manager')
+        );
+        self::assertTrue($setting->grantsMinutes('custom_material_manager'));
+    }
+
+    public function test_a_custom_board_role_cannot_be_granted_other_capabilities(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        RoleCapabilitySetting::defaults()->grant('custom_material_manager', Capabilities::MANAGE_BOARD);
+    }
+
+    public function test_retiring_a_custom_board_role_clears_its_synced_capabilities(): void
+    {
+        $store = new RecordingRoleStore();
+        $setting = RoleCapabilitySetting::defaults()->grant('custom_material_manager', Capabilities::PUBLISH_MINUTES);
+        $synchronizer = new RoleSynchronizer($store);
+        $synchronizer->sync($setting, ['custom_material_manager' => 'Material manager']);
+
+        self::assertContains(Capabilities::PUBLISH_MINUTES, $store->capabilities['custom_material_manager']);
+
+        $synchronizer->sync(RoleCapabilitySetting::defaults(), [], ['custom_material_manager']);
+
+        self::assertSame([], $store->capabilities['custom_material_manager']);
+        self::assertContains(Capabilities::FINALIZE_MINUTES, $store->capabilities[RoleBundles::CHAIR]);
+    }
 }
 
 final class RecordingRoleStore implements AssociationRoleStore

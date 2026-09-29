@@ -19,6 +19,7 @@ final class BoardRoleDefinitions
         private readonly BoardAssignmentRepository $assignments,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
+        private readonly ?MinutesRoleReference $minutes = null,
     ) {
     }
 
@@ -75,6 +76,21 @@ final class BoardRoleDefinitions
         });
     }
 
+    public function remove(int $id): void
+    {
+        $this->guard();
+        $this->transaction->run(function () use ($id): void {
+            $role = $this->require($id);
+            $block = $this->removalBlock($role);
+
+            if ($block !== null) {
+                throw new StructureRuleException($block);
+            }
+
+            $this->roles->remove((int) $role->id());
+        });
+    }
+
     public function move(int $id, string $direction): void
     {
         $this->guard();
@@ -128,6 +144,28 @@ final class BoardRoleDefinitions
         }
 
         return false;
+    }
+
+    /**
+     * Why a role cannot be removed, or null when removal keeps history and permissions intact.
+     */
+    public function removalBlock(BoardRole $role): ?string
+    {
+        if ($this->builtIn($role)) {
+            return StructureRuleException::BUILTIN;
+        }
+
+        $id = $role->id();
+
+        if ($id !== null && $this->used($id)) {
+            return StructureRuleException::USED;
+        }
+
+        if ($this->minutes !== null && $this->minutes->references($role->slug())) {
+            return StructureRuleException::POLICY;
+        }
+
+        return null;
     }
 
     private function guard(): void

@@ -10,6 +10,8 @@ interface BoardRoleRepository
 
     public function save(BoardRole $role): void;
 
+    public function remove(int $id): void;
+
     public function find(int $id): ?BoardRole;
 
     public function findBySlug(string $slug): ?BoardRole;

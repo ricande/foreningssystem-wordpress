@@ -13,15 +13,28 @@ final class MinutesLockSetting
 {
     /**
      * @param list<string> $roles
+     * @param array<string, int> $extraRoles custom board-role slug => that role's id, used as the audit subject
      */
-    public function change(RoleCapabilitySetting $current, array $roles, string $capability = Capabilities::FINALIZE_MINUTES): MinutesLockChange
-    {
+    public function change(
+        RoleCapabilitySetting $current,
+        array $roles,
+        string $capability = Capabilities::FINALIZE_MINUTES,
+        array $extraRoles = [],
+    ): MinutesLockChange {
         if (! in_array($capability, [Capabilities::FINALIZE_MINUTES, Capabilities::PUBLISH_MINUTES], true)) {
             throw new InvalidArgumentException('This setting only covers locking and publishing minutes.');
         }
 
+        foreach ($extraRoles as $slug => $auditId) {
+            if (! is_string($slug) || ! RoleCapabilitySetting::isCustomBoardSlug($slug) || ! is_int($auditId) || $auditId < 1) {
+                throw new InvalidArgumentException('Unknown association role.');
+            }
+        }
+
+        $allowed = array_merge(RoleBundles::roles(), array_keys($extraRoles));
+
         foreach ($roles as $role) {
-            if (! in_array($role, RoleBundles::roles(), true)) {
+            if (! in_array($role, $allowed, true)) {
                 throw new InvalidArgumentException('Unknown association role.');
             }
         }
@@ -31,7 +44,7 @@ final class MinutesLockSetting
         $next = $current;
         $events = [];
 
-        foreach (RoleBundles::roles() as $role) {
+        foreach ($allowed as $role) {
             $shouldHave = in_array($role, $roles, true);
             $hasNow = in_array($capability, $next->capabilitiesFor($role), true);
 
@@ -43,9 +56,15 @@ final class MinutesLockSetting
                 ? $next->grant($role, $capability)
                 : $next->revoke($role, $capability);
             $events[] = new MinutesLockEvent(
-                RoleBundles::auditId($role),
+                in_array($role, RoleBundles::roles(), true) ? RoleBundles::auditId($role) : $extraRoles[$role],
                 $shouldHave ? $grantAction : $revokeAction
             );
+        }
+
+        foreach ($next->extraSlugs() as $slug) {
+            if (! isset($extraRoles[$slug])) {
+                $next = $next->withoutExtra($slug);
+            }
         }
 
         return new MinutesLockChange($next, $events);

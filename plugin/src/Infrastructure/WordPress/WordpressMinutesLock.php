@@ -19,9 +19,15 @@ final class WordpressMinutesLock
             throw new NotAllowed(Capabilities::MANAGE_ASSOCIATION);
         }
 
-        $change = (new MinutesLockSetting())->change(WordpressAccess::load(), $roles);
+        $before = WordpressAccess::load();
+        $change = (new MinutesLockSetting())->change(
+            $before,
+            $roles,
+            Capabilities::FINALIZE_MINUTES,
+            MinutesRoleChoices::extraRoles((new WpdbBoardRoleRepository())->all())
+        );
         WordpressAccess::save($change->setting());
-        WordpressAccess::sync();
+        WordpressAccess::sync(array_values(array_diff($before->extraSlugs(), $change->setting()->extraSlugs())));
         $actor = get_current_user_id();
 
         if ($actor < 1) {

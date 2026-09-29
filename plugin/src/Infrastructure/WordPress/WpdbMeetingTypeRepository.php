@@ -69,6 +69,17 @@ final class WpdbMeetingTypeRepository implements MeetingTypeRepository
         }
     }
 
+    public function remove(int $id): void
+    {
+        global $wpdb;
+
+        $deleted = $wpdb->delete($this->table(), ['id' => $id], ['%d']);
+
+        if ($deleted === false) {
+            throw new \RuntimeException('The meeting type could not be saved.');
+        }
+    }
+
     public function find(int $id): ?MeetingType
     {
         global $wpdb;

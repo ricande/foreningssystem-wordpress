@@ -191,6 +191,15 @@ final class MemoryMeetingTypeRepository implements MeetingTypeRepository
         $this->types[$id] = $type;
     }
 
+    public function remove(int $id): void
+    {
+        if (! isset($this->types[$id])) {
+            throw new \RuntimeException('The meeting type could not be saved.');
+        }
+
+        unset($this->types[$id]);
+    }
+
     private function guardWrite(): void
     {
         if (! $this->failNextWrite) {

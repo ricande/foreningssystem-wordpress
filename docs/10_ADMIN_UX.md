@@ -38,8 +38,8 @@ The Association menu itself uses `access_association`. That capability only show
 Settings is a hub, not one long page. The landing screen links to focused sub-screens via `admin.php?page=foreningsplugin-settings&section=…`:
 
 - Association profile (`section=profile`)
-- Board roles (`section=board-roles`) — list, reorder, add, and edit unused custom roles
-- Meeting types (`section=meeting-types`) — list, reorder, add, and rename unused custom types
+- Board roles (`section=board-roles`) — list, reorder, add, edit unused custom roles, and remove a custom role that nothing uses
+- Meeting types (`section=meeting-types`) — list, reorder, add, rename unused custom types, and remove a custom type that nothing uses
 - Lock minutes (`section=minutes-lock`)
 - Publish minutes (`section=minutes-publish`)
 - Retention (`section=retention`)
@@ -47,7 +47,7 @@ Settings is a hub, not one long page. The landing screen links to focused sub-sc
 
 Profile, retention, minutes locking, and minutes publication no longer appear as their own Association submenu items. Old bookmarks such as `page=foreningsplugin-profile` redirect into the matching Settings section. Each focused screen links back to the Settings hub.
 
-Board roles and meeting types can be reordered. The seeded built-in slugs stay fixed, and their labels stay plugin translations. An association can add its own roles and meeting types. The internal slug is created once and is not edited. A custom role name and holder rule become fixed once any board assignment uses the role. A custom meeting-type name becomes fixed once any meeting or meeting template uses it. Order can still change. Nothing in this screen deletes a role or a meeting type. Schema 16 is unchanged.
+Board roles and meeting types can be reordered. The seeded built-in slugs stay fixed, and their labels stay plugin translations. An association can add its own roles and meeting types. The internal slug is created once and is not edited. A custom role name and holder rule become fixed once any board assignment uses the role. A custom meeting-type name becomes fixed once any meeting or meeting template uses it. Order can still change. A built-in role or meeting type cannot be removed. A custom role can be removed while no board assignment uses it and it is not selected to finalize or publish minutes. A custom meeting type can be removed while no meeting and no meeting template uses it. Removal is refused, with a stated reason, when that history or permission still points at the row. Schema 16 is unchanged.
 
 Decisions, activities, fees, and mailings are not part of this screen.
 
@@ -57,7 +57,7 @@ Fresh installs keep `assoc_setup_version` incomplete until Wizard v1 is finished
 
 **Markup rule (all steps):** nested HTML `<form>` elements break **Save and continue**. HTML5 closes the outer form at the first nested `</form>`, so the primary submit can end up outside any form and do nothing. Minutes and Privacy hit this when Back/Skip were nested inside the save form (Skip could still work via surviving aux association). Every wizard step now uses one pattern: open one primary form (fields + primary submit); Back/Skip are `<button form="…">` controls that target hidden sibling forms emitted **after** the primary form closes — never nest Back/Skip forms inside the save form. Welcome has no Back; Association also omits Back (its only predecessor is Welcome). Later steps keep Back. Membership, Board, and Meetings are informational or optional-add steps: Back and Continue only, because Continue and Skip would do the same thing. Minutes and Privacy keep Skip, which advances without writing. A step that writes uses **Save and continue**. The Association step does not edit the logo; saving it reloads the canonical profile and keeps `logoAttachmentId`. The Complete step is a read-only summary (association name, organization number when set, language, membership-year start, membership kinds, board-role and meeting-type names, who may finalize and publish minutes, retention years). Finish still only writes setup completion state.
 
-Completing the wizard sets setup version `1`, restores the full Association menu, and shows a success notice on Overview. Next-step links for members, board, and the first meeting appear only when the current user has the matching action capability (`edit_members`, `manage_board`, `manage_meetings`). `manage_association` alone still shows the success message without an empty link list. Help & Guides is not part of this flow.
+On the board and meeting steps, an unused custom role or meeting type can be removed at once. Built-in rows stay. A custom role that a board assignment uses, or that is selected to finalize or publish minutes, stays until that reference is gone. A custom meeting type that a meeting or template uses stays. The minutes step lists the four association roles and any custom board role, for both permissions. That choice grants the system permission. It does not appoint who adjusts one meeting. Completing the wizard sets setup version `1`, restores the full Association menu, and shows a success notice on Overview. Next-step links for members, board, and the first meeting appear only when the current user has the matching action capability (`edit_members`, `manage_board`, `manage_meetings`). `manage_association` alone still shows the success message without an empty link list. Help & Guides is not part of this flow.
 
 ## Overview
 

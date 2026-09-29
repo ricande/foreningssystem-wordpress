@@ -14,6 +14,8 @@ final class StructureRuleException extends RuntimeException
 
     public const USED = 'used';
 
+    public const POLICY = 'policy';
+
     public const MISSING = 'missing';
 
     public const INVALID = 'invalid';

@@ -76,6 +76,22 @@ final class AssociationSettingsPage
         }
     }
 
+    public static function removeBoardRole(): void
+    {
+        self::guard('assoc_remove_board_role');
+
+        try {
+            WordpressAssociationSettings::boardRoles()->remove(self::integer('role_id'));
+            self::redirect('role_removed');
+        } catch (NotAllowed) {
+            self::denied();
+        } catch (StructureRuleException $error) {
+            self::redirect(self::removeNotice($error, 'role'));
+        } catch (RuntimeException) {
+            self::redirect('role_remove_failed');
+        }
+    }
+
     public static function moveBoardRole(): void
     {
         self::guard('assoc_move_board_role');
@@ -89,6 +105,22 @@ final class AssociationSettingsPage
             self::redirect(self::ruleNotice($error, 'role'));
         } catch (RuntimeException) {
             self::redirect('role_failed');
+        }
+    }
+
+    public static function removeMeetingType(): void
+    {
+        self::guard('assoc_remove_meeting_type');
+
+        try {
+            WordpressAssociationSettings::meetingTypes()->remove(self::integer('type_id'));
+            self::redirect('type_removed', self::SECTION_MEETING_TYPES);
+        } catch (NotAllowed) {
+            self::denied();
+        } catch (StructureRuleException $error) {
+            self::redirect(self::removeNotice($error, 'type'), self::SECTION_MEETING_TYPES);
+        } catch (RuntimeException) {
+            self::redirect('type_remove_failed', self::SECTION_MEETING_TYPES);
         }
     }
 
@@ -281,6 +313,7 @@ final class AssociationSettingsPage
         echo '<h1>' . esc_html__('Board roles', 'foreningsplugin') . '</h1>';
         self::backToHub();
         echo '<p>' . esc_html__('Board roles describe the structure. You do not assign people here. Built-in roles keep their meaning. You may add a custom role.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('Built-in roles cannot be removed. A custom role can be removed until a board assignment or a minutes permission uses it.', 'foreningsplugin') . '</p>';
         self::notice();
 
         echo '<table class="widefat striped"><thead><tr>';
@@ -294,10 +327,14 @@ final class AssociationSettingsPage
             $label = BoardScreen::roleLabel($role->slug(), $role->name());
             $builtIn = $roles->builtIn($role);
             $used = $roles->used($id);
+            $block = $roles->removalBlock($role);
             echo '<tr>';
             echo '<td>' . esc_html($label);
             if (! $builtIn && $used) {
-                echo '<p class="description">' . esc_html__('This role has been used in a board assignment. Its name, and whether one or several people may hold it, stay unchanged so earlier assignments remain clear. You can still change the display order.', 'foreningsplugin') . '</p>';
+                echo '<p class="description">' . esc_html__('This role has been used in a board assignment. Its name, and whether one or several people may hold it, stay unchanged so earlier assignments remain clear. You can still change the display order.', 'foreningsplugin') . ' ' . esc_html__('It cannot be removed.', 'foreningsplugin') . '</p>';
+            }
+            if ($block === StructureRuleException::POLICY) {
+                echo '<p class="description">' . esc_html__('This role is selected for finalizing or publishing minutes. Change that permission before removing the role.', 'foreningsplugin') . '</p>';
             }
             echo '</td>';
             echo '<td>' . esc_html($role->allowsMultiple() ? __('Multiple holders', 'foreningsplugin') : __('One holder', 'foreningsplugin')) . '</td>';
@@ -308,6 +345,9 @@ final class AssociationSettingsPage
                     __('Edit %s', 'foreningsplugin'),
                     $label
                 )) . '</a> ';
+            }
+            if ($block === null) {
+                self::removeButton('assoc_remove_board_role', 'role_id', $id, $label);
             }
             self::moveButtons('assoc_move_board_role', 'role_id', $id, $label);
             echo '</td></tr>';
@@ -328,6 +368,7 @@ final class AssociationSettingsPage
         echo '<h1>' . esc_html__('Meeting types', 'foreningsplugin') . '</h1>';
         self::backToHub();
         echo '<p>' . esc_html__('Meeting types describe how the association meets. You do not create meetings here. Built-in types keep their meaning. You may add a custom type.', 'foreningsplugin') . '</p>';
+        echo '<p>' . esc_html__('Built-in meeting types cannot be removed. A custom meeting type can be removed until a meeting or a meeting template uses it.', 'foreningsplugin') . '</p>';
         self::notice();
 
         echo '<table class="widefat striped"><thead><tr>';
@@ -340,9 +381,10 @@ final class AssociationSettingsPage
             $label = MeetingLabels::type($type);
             $builtIn = $types->builtIn($type);
             $used = $types->used($id);
+            $block = $types->removalBlock($type);
             echo '<tr><td>' . esc_html($label);
             if (! $builtIn && $used) {
-                echo '<p class="description">' . esc_html__('This meeting type has been used by a meeting or template. Its name is now preserved for history. You can still change its display order.', 'foreningsplugin') . '</p>';
+                echo '<p class="description">' . esc_html__('This meeting type has been used by a meeting or template. Its name is now preserved for history. You can still change its display order.', 'foreningsplugin') . ' ' . esc_html__('It cannot be removed.', 'foreningsplugin') . '</p>';
             }
             echo '</td><td>';
             if (! $builtIn && ! $used) {
@@ -351,6 +393,9 @@ final class AssociationSettingsPage
                     __('Edit %s', 'foreningsplugin'),
                     $label
                 )) . '</a> ';
+            }
+            if ($block === null) {
+                self::removeButton('assoc_remove_meeting_type', 'type_id', $id, $label);
             }
             self::moveButtons('assoc_move_meeting_type', 'type_id', $id, $label);
             echo '</td></tr>';
@@ -463,6 +508,19 @@ final class AssociationSettingsPage
         echo '</form>';
     }
 
+    private static function removeButton(string $action, string $idField, int $id, string $label): void
+    {
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline">';
+        echo '<input type="hidden" name="action" value="' . esc_attr($action) . '">';
+        echo '<input type="hidden" name="' . esc_attr($idField) . '" value="' . esc_attr((string) $id) . '">';
+        wp_nonce_field($action);
+        echo '<button type="submit" class="button-link-delete">' . esc_html(sprintf(
+            /* translators: %s: board role or meeting type name */
+            __('Remove %s', 'foreningsplugin'),
+            $label
+        )) . '</button></form> ';
+    }
+
     private static function moveButtons(string $action, string $idField, int $id, string $label): void
     {
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline">';
@@ -521,6 +579,16 @@ final class AssociationSettingsPage
         };
     }
 
+    private static function removeNotice(StructureRuleException $error, string $prefix): string
+    {
+        return match ($error->rule()) {
+            StructureRuleException::BUILTIN => $prefix . '_remove_builtin',
+            StructureRuleException::USED => $prefix . '_remove_used',
+            StructureRuleException::POLICY => $prefix . '_remove_policy',
+            default => $prefix . '_remove_failed',
+        };
+    }
+
     private static function notice(): void
     {
         $notice = isset($_GET['assoc_notice']) ? sanitize_key((string) $_GET['assoc_notice']) : '';
@@ -532,6 +600,11 @@ final class AssociationSettingsPage
             'role_builtin' => __('A built-in board role keeps its name and whether one or several people may hold it.', 'foreningsplugin'),
             'role_used' => __('This role has been used in a board assignment. Its name, and whether one or several people may hold it, stay unchanged so earlier assignments remain clear. You can still change the display order.', 'foreningsplugin'),
             'role_invalid' => __('Enter a board role name.', 'foreningsplugin'),
+            'role_removed' => __('The board role was removed.', 'foreningsplugin'),
+            'role_remove_builtin' => __('A built-in board role cannot be removed.', 'foreningsplugin'),
+            'role_remove_used' => __('This role is used by a board assignment and cannot be removed.', 'foreningsplugin'),
+            'role_remove_policy' => __('This role is selected for finalizing or publishing minutes. Change that permission before removing the role.', 'foreningsplugin'),
+            'role_remove_failed' => __('The board role could not be removed.', 'foreningsplugin'),
             'role_failed' => __('The board role could not be saved.', 'foreningsplugin'),
             'type_added' => __('The meeting type was added.', 'foreningsplugin'),
             'type_renamed' => __('The meeting type was saved.', 'foreningsplugin'),
@@ -540,6 +613,10 @@ final class AssociationSettingsPage
             'type_builtin' => __('A built-in meeting type keeps its name.', 'foreningsplugin'),
             'type_used' => __('This meeting type has been used by a meeting or template. Its name is now preserved for history. You can still change its display order.', 'foreningsplugin'),
             'type_invalid' => __('Enter a meeting type name.', 'foreningsplugin'),
+            'type_removed' => __('The meeting type was removed.', 'foreningsplugin'),
+            'type_remove_builtin' => __('A built-in meeting type cannot be removed.', 'foreningsplugin'),
+            'type_remove_used' => __('This meeting type is used by a meeting or a meeting template and cannot be removed.', 'foreningsplugin'),
+            'type_remove_failed' => __('The meeting type could not be removed.', 'foreningsplugin'),
             'type_failed' => __('The meeting type could not be saved.', 'foreningsplugin'),
         ];
 
@@ -547,7 +624,7 @@ final class AssociationSettingsPage
             return;
         }
 
-        $error = str_contains($notice, 'duplicate') || str_contains($notice, 'builtin') || str_contains($notice, 'used') || str_contains($notice, 'invalid') || str_contains($notice, 'failed');
+        $error = str_contains($notice, 'duplicate') || str_contains($notice, 'builtin') || str_contains($notice, 'used') || str_contains($notice, 'policy') || str_contains($notice, 'invalid') || str_contains($notice, 'failed') || str_contains($notice, 'remove_');
         echo '<div class="notice notice-' . ($error ? 'error' : 'success') . '"><p>' . esc_html($messages[$notice]) . '</p></div>';
     }
 

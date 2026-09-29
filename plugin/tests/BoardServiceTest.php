@@ -697,6 +697,15 @@ final class MemoryBoardRoleRepository implements BoardRoleRepository
         $this->roles[$id] = $role;
     }
 
+    public function remove(int $id): void
+    {
+        if (! isset($this->roles[$id])) {
+            throw new \RuntimeException('The board role could not be saved.');
+        }
+
+        unset($this->roles[$id]);
+    }
+
     private function guardWrite(): void
     {
         if (! $this->failNextWrite) {

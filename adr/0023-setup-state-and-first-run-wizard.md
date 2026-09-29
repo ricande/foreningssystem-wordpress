@@ -19,7 +19,7 @@ Fresh installs need a first-run setup guide for association structure. Existing 
   - Failed migration does not set redirect pending.
 - Capability gate is `manage_association` only. Unauthorized users do not consume the pending redirect.
 - While incomplete, Association navigation is limited to Get started. Capabilities and application services remain; direct URLs keep their page caps. This is onboarding restriction, not a new auth model.
-- The wizard reuses canonical services: association profile, board role definitions, meeting type definitions, minutes lock/publish, retention, and private-storage warning status. No parallel settings store.
+- The wizard reuses canonical services: association profile, board role definitions, meeting type definitions, minutes lock/publish, retention, and private-storage warning status. No parallel settings store. Removing an unused custom role or meeting type, and offering a custom board role for minutes permissions, follows ADR-0027 and those same services.
 - Reopening the guide from Settings after completion does not mark setup incomplete or reset domain data. Finish keeps setup version `1`.
 
 ## Consequences

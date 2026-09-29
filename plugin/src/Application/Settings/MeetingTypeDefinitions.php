@@ -55,6 +55,21 @@ final class MeetingTypeDefinitions
         });
     }
 
+    public function remove(int $id): void
+    {
+        $this->guard();
+        $this->transaction->run(function () use ($id): void {
+            $type = $this->require($id);
+            $block = $this->removalBlock($type);
+
+            if ($block !== null) {
+                throw new StructureRuleException($block);
+            }
+
+            $this->types->remove((int) $type->id());
+        });
+    }
+
     public function move(int $id, string $direction): void
     {
         $this->guard();
@@ -114,6 +129,24 @@ final class MeetingTypeDefinitions
         }
 
         return false;
+    }
+
+    /**
+     * Why a meeting type cannot be removed, or null when nothing historical points at it.
+     */
+    public function removalBlock(MeetingType $type): ?string
+    {
+        if ($this->builtIn($type)) {
+            return StructureRuleException::BUILTIN;
+        }
+
+        $id = $type->id();
+
+        if ($id !== null && $this->used($id)) {
+            return StructureRuleException::USED;
+        }
+
+        return null;
     }
 
     private function guard(): void

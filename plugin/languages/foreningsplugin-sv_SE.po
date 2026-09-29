@@ -2936,3 +2936,48 @@ msgstr "Importera medlemmar från ett register"
 
 msgid "Import the plugin's own member file"
 msgstr "Importera pluginets egen medlemsfil"
+
+msgid "Built-in roles cannot be removed. A custom role can be removed until a board assignment or a minutes permission uses it."
+msgstr "Inbyggda roller kan inte tas bort. En egen roll kan tas bort tills ett styrelseuppdrag eller en protokollbehörighet använder den."
+
+msgid "Built-in meeting types cannot be removed. A custom meeting type can be removed until a meeting or a meeting template uses it."
+msgstr "Inbyggda mötestyper kan inte tas bort. En egen mötestyp kan tas bort tills ett möte eller en mötesmall använder den."
+
+msgid "Remove %s"
+msgstr "Ta bort %s"
+
+msgid "This role is used by a board assignment and cannot be removed."
+msgstr "Rollen används av ett styrelseuppdrag och kan inte tas bort."
+
+msgid "This role is selected for finalizing or publishing minutes. Change that permission before removing the role."
+msgstr "Rollen är vald för att justera eller publicera protokoll. Ändra den behörigheten innan rollen tas bort."
+
+msgid "This meeting type is used by a meeting or a meeting template and cannot be removed."
+msgstr "Mötestypen används av ett möte eller en mötesmall och kan inte tas bort."
+
+msgid "The board role was removed."
+msgstr "Styrelserollen togs bort."
+
+msgid "A built-in board role cannot be removed."
+msgstr "En inbyggd styrelseroll kan inte tas bort."
+
+msgid "The board role could not be removed."
+msgstr "Styrelserollen kunde inte tas bort."
+
+msgid "The meeting type was removed."
+msgstr "Mötestypen togs bort."
+
+msgid "A built-in meeting type cannot be removed."
+msgstr "En inbyggd mötestyp kan inte tas bort."
+
+msgid "The meeting type could not be removed."
+msgstr "Mötestypen kunde inte tas bort."
+
+msgid "A custom board role can be chosen in the same way."
+msgstr "En egen styrelseroll kan väljas på samma sätt."
+
+msgid "This permission is not the same as being chosen to adjust a particular meeting."
+msgstr "Den här behörigheten är inte detsamma som att vara utsedd att justera ett visst möte."
+
+msgid "It cannot be removed."
+msgstr "Den kan inte tas bort."

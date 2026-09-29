@@ -13,6 +13,7 @@ use Foreningssystem\Application\People\Transaction;
 use Foreningssystem\Application\Settings\BoardRoleDefinitions;
 use Foreningssystem\Application\Settings\CustomSlug;
 use Foreningssystem\Application\Settings\MeetingTypeDefinitions;
+use Foreningssystem\Application\Settings\MinutesRoleReference;
 use Foreningssystem\Application\Settings\StructureRuleException;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Board\BoardAssignment;
@@ -639,6 +640,173 @@ final class AssociationSettingsTest extends TestCase
         self::assertSame('Budget meeting', $types->find((int) $type->id())?->name());
     }
 
+    public function test_a_built_in_board_role_cannot_be_removed(): void
+    {
+        $roles = new MemoryBoardRoleRepository();
+        $chair = $roles->add(new BoardRole(null, 'chair', 'Ordförande', false, 10));
+        $service = $this->roles($roles, new MemoryBoardAssignmentRepository(), true);
+
+        try {
+            $service->remove((int) $chair->id());
+            self::fail('A built-in board role was removed.');
+        } catch (StructureRuleException $error) {
+            self::assertSame(StructureRuleException::BUILTIN, $error->rule());
+        }
+
+        self::assertSame('chair', $roles->find((int) $chair->id())?->slug());
+    }
+
+    public function test_an_unused_custom_board_role_can_be_removed(): void
+    {
+        $roles = new MemoryBoardRoleRepository();
+        $service = $this->roles($roles, new MemoryBoardAssignmentRepository(), true);
+        $role = $service->create('Material manager', false);
+
+        self::assertNull($service->removalBlock($role));
+        $service->remove((int) $role->id());
+
+        self::assertNull($roles->find((int) $role->id()));
+    }
+
+    public function test_a_custom_board_role_used_by_an_assignment_cannot_be_removed(): void
+    {
+        [$roles, , $service, $role] = $this->usedRole();
+
+        try {
+            $service->remove((int) $role->id());
+            self::fail('A used custom board role was removed.');
+        } catch (StructureRuleException $error) {
+            self::assertSame(StructureRuleException::USED, $error->rule());
+        }
+
+        self::assertSame('custom_material_manager', $roles->find((int) $role->id())?->slug());
+    }
+
+    public function test_a_custom_board_role_selected_for_minutes_cannot_be_removed(): void
+    {
+        $roles = new MemoryBoardRoleRepository();
+        $service = $this->roles(
+            $roles,
+            new MemoryBoardAssignmentRepository(),
+            true,
+            null,
+            new class implements MinutesRoleReference {
+                public function references(string $slug): bool
+                {
+                    return $slug === 'custom_material_manager';
+                }
+            }
+        );
+        $role = $service->create('Material manager', false);
+
+        self::assertSame(StructureRuleException::POLICY, $service->removalBlock($role));
+
+        try {
+            $service->remove((int) $role->id());
+            self::fail('A role selected for minutes was removed.');
+        } catch (StructureRuleException $error) {
+            self::assertSame(StructureRuleException::POLICY, $error->rule());
+        }
+
+        self::assertNotNull($roles->find((int) $role->id()));
+    }
+
+    public function test_removing_a_board_role_requires_manage_association(): void
+    {
+        $roles = new MemoryBoardRoleRepository();
+        $service = $this->roles($roles, new MemoryBoardAssignmentRepository(), false);
+        $stored = $roles->add(new BoardRole(null, 'custom_material_manager', 'Material manager', false, 10));
+
+        try {
+            $service->remove((int) $stored->id());
+            self::fail('A board role was removed without manage_association.');
+        } catch (NotAllowed $error) {
+            self::assertSame(Capabilities::MANAGE_ASSOCIATION, $error->getMessage());
+        }
+
+        self::assertNotNull($roles->find((int) $stored->id()));
+    }
+
+    public function test_a_built_in_meeting_type_cannot_be_removed(): void
+    {
+        $types = new MemoryMeetingTypeRepository();
+        $annual = $types->add(new MeetingType(null, 'annual_meeting', 'Årsmöte', 10));
+        $service = $this->types($types, new MemoryMeetingRepository(), new MemoryMeetingTemplateRepository(), true);
+
+        try {
+            $service->remove((int) $annual->id());
+            self::fail('A built-in meeting type was removed.');
+        } catch (StructureRuleException $error) {
+            self::assertSame(StructureRuleException::BUILTIN, $error->rule());
+        }
+
+        self::assertSame('annual_meeting', $types->find((int) $annual->id())?->slug());
+    }
+
+    public function test_an_unused_custom_meeting_type_can_be_removed(): void
+    {
+        $types = new MemoryMeetingTypeRepository();
+        $service = $this->types($types, new MemoryMeetingRepository(), new MemoryMeetingTemplateRepository(), true);
+        $type = $service->create('Budget meeting');
+
+        self::assertNull($service->removalBlock($type));
+        $service->remove((int) $type->id());
+
+        self::assertNull($types->find((int) $type->id()));
+    }
+
+    public function test_a_custom_meeting_type_used_by_a_meeting_or_template_cannot_be_removed(): void
+    {
+        $types = new MemoryMeetingTypeRepository();
+        $meetings = new MemoryMeetingRepository();
+        $templates = new MemoryMeetingTemplateRepository();
+        $service = $this->types($types, $meetings, $templates, true);
+        $scheduled = $service->create('Budget meeting');
+        $templated = $service->create('Planning meeting');
+        $meetings->add(new Meeting(
+            null,
+            (int) $scheduled->id(),
+            'Budget',
+            MeetingMoment::fromLocal('2026-10-01 18:00:00'),
+            'Hall',
+            MeetingStatus::Planned
+        ));
+        $templates->add(new MeetingTemplate(null, (int) $templated->id(), 'Planning'));
+
+        try {
+            $service->remove((int) $scheduled->id());
+            self::fail('A meeting type used by a meeting was removed.');
+        } catch (StructureRuleException $error) {
+            self::assertSame(StructureRuleException::USED, $error->rule());
+        }
+
+        try {
+            $service->remove((int) $templated->id());
+            self::fail('A meeting type used by a template was removed.');
+        } catch (StructureRuleException $error) {
+            self::assertSame(StructureRuleException::USED, $error->rule());
+        }
+
+        self::assertNotNull($types->find((int) $scheduled->id()));
+        self::assertNotNull($types->find((int) $templated->id()));
+    }
+
+    public function test_removing_a_meeting_type_requires_manage_association(): void
+    {
+        $types = new MemoryMeetingTypeRepository();
+        $service = $this->types($types, new MemoryMeetingRepository(), new MemoryMeetingTemplateRepository(), false);
+        $stored = $types->add(new MeetingType(null, 'custom_budget_meeting', 'Budget meeting', 10));
+
+        try {
+            $service->remove((int) $stored->id());
+            self::fail('A meeting type was removed without manage_association.');
+        } catch (NotAllowed $error) {
+            self::assertSame(Capabilities::MANAGE_ASSOCIATION, $error->getMessage());
+        }
+
+        self::assertNotNull($types->find((int) $stored->id()));
+    }
+
     /**
      * @return array{0: MemoryBoardRoleRepository, 1: MemoryBoardAssignmentRepository, 2: BoardRoleDefinitions, 3: BoardRole}
      */
@@ -669,12 +837,14 @@ final class AssociationSettingsTest extends TestCase
         MemoryBoardAssignmentRepository $assignments,
         bool $allowed,
         ?array $allowedCapabilities = null,
+        ?MinutesRoleReference $minutes = null,
     ): BoardRoleDefinitions {
         return new BoardRoleDefinitions(
             $roles,
             $assignments,
             $this->authorizer($allowed ? ($allowedCapabilities ?? [Capabilities::MANAGE_ASSOCIATION]) : []),
-            $this->transaction()
+            $this->transaction(),
+            $minutes
         );
     }
 
