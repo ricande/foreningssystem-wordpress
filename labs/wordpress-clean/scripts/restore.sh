@@ -62,4 +62,4 @@ compose exec -T db mariadb -u root -p"${MYSQL_ROOT_PASSWORD}" "${MYSQL_DATABASE}
 
 compose up -d wordpress mailpit
 
-echo "==> Restored. Site: ${WP_URL:-http://localhost:8088}  Mailpit: http://localhost:${MAILPIT_UI_PORT:-8025}"
+echo "==> Restored. Site: ${WP_URL:-http://localhost:8089}  Mailpit: http://localhost:${MAILPIT_UI_PORT:-8027}"

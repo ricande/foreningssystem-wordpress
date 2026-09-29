@@ -19,9 +19,9 @@ help:
 		'make clean-lab-install' \
 		'make clean-lab-snap' \
 		'make clean-lab-restore' \
-		'Mailpit: http://localhost:8025' \
-		'Release scratch site: http://localhost:8090' \
-		'Clean baseline: labs/wordpress-clean (ports in its .env; default 8088/8025)'
+		'Dev / working copy: http://localhost:8088 (Mailpit :8025)' \
+		'Clean / testserver: http://localhost:8089 (Mailpit :8027)' \
+		'Release scratch site: http://localhost:8090 (Mailpit :8026)'
 
 up:
 	docker compose up -d --wait

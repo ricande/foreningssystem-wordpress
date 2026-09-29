@@ -12,10 +12,10 @@ Canonical location is now this directory. An older copy may still exist at `/hom
 | Compose project | `foreningsplugin` | `wordpress-clean` | `foreningsplugin-release-test` |
 | Plugin | bind-mounted `./plugin` | none | ZIP via `wp plugin install` |
 | Purpose | day-to-day source development | empty WP + snap/restore before plugin work | prove packaged ZIP installs |
-| Default site | http://localhost:8088 | http://localhost:8088 | http://localhost:8090 |
-| Mailpit | http://localhost:8025 | http://localhost:8025 | http://localhost:8026 |
+| Default site | http://localhost:8088 | http://localhost:**8089** | http://localhost:8090 |
+| Mailpit | http://localhost:8025 | http://localhost:**8027** | http://localhost:8026 |
 
-Default ports for this stack are **8088** and **8025**, matching Richard’s existing outside-repo clean stack. Those ports clash with the bind-mount development lab if both try to publish them. Stop one stack, or change `WP_PORT` / `MAILPIT_UI_PORT` in `.env` (for example `8091` / `8027`).
+Default ports for this stack are **8089** (WP) and **8027** (Mailpit UI), so the bind-mount development lab can keep **8088** / **8025**. An older outside-repo copy under `~/projects/wordpress-clean` may still have 8088 in `.env` — update it to match, or prefer this in-repo stack.
 
 ## Quick start (Make from repo root)
 

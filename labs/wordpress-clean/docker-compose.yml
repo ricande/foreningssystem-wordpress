@@ -24,7 +24,7 @@ services:
     image: wordpress:php8.3-apache
     restart: unless-stopped
     ports:
-      - "${WP_PORT:-8088}:80"
+      - "${WP_PORT:-8089}:80"
     environment:
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_USER: ${MYSQL_USER:-wordpress}
@@ -45,7 +45,7 @@ services:
     image: axllent/mailpit
     restart: unless-stopped
     ports:
-      - "${MAILPIT_UI_PORT:-8025}:8025"
+      - "${MAILPIT_UI_PORT:-8027}:8025"
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1

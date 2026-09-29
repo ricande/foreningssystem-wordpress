@@ -151,7 +151,7 @@ make test
 
 Webbplatsen körs på `http://localhost:8088` när containrarna är igång. Mailpit tar emot all utgående post på `http://localhost:8025`. Lokala lösenord ligger i `.env`, som inte ska committas.
 
-**Clean WordPress baseline** (no plugin bind-mount; snap/restore before plugin work) lives in-repo at `labs/wordpress-clean/`:
+**Clean WordPress baseline / testserver** (no plugin bind-mount; snap/restore before plugin work) lives in-repo at `labs/wordpress-clean/`:
 
 ```text
 make clean-lab-up
@@ -160,7 +160,7 @@ make clean-lab-snap
 make clean-lab-restore
 ```
 
-Default ports are also 8088 / 8025 — stop the bind-mount lab first, or change ports in `labs/wordpress-clean/.env`. See `labs/wordpress-clean/README.md`.
+Default ports are **8089** (site) and **8027** (Mailpit), so the bind-mount working copy can keep **8088** / **8025**. See `labs/wordpress-clean/README.md`.
 
 ### Tester
 
