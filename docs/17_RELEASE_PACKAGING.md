@@ -82,7 +82,7 @@ The script builds the ZIP, removes any previous `foreningsplugin-release-test` v
 - `wordpress:cli-php8.3`
 - an isolated Mailpit, used only so a provisioned member account can send its notification
 
-WordPress is installed empty. The site language is `sv_SE` and the timezone is `Europe/Stockholm`. The test checks that `foreningsplugin` is absent, installs the ZIP, and activates it. Schema must move from no `assoc_schema_version` option to `16` during that activation. The smoke test then checks tables derived from the installed migrations, built-in board roles and meeting types, administrator capabilities, empty admin screens, and a small synthetic association flow including minutes PDF output.
+WordPress is installed empty. The site language is `sv_SE` and the timezone is `Europe/Stockholm`. The test checks that `foreningsplugin` is absent, installs the ZIP, and activates it. Schema must move from no `assoc_schema_version` option to `17` during that activation. The smoke test then checks tables derived from the installed migrations, built-in board roles and meeting types, administrator capabilities, empty admin screens, and a small synthetic association flow including minutes PDF output.
 
 On success the stack stays up at http://localhost:8090 so it can be inspected. Mailpit for this stack is http://localhost:8026.
 

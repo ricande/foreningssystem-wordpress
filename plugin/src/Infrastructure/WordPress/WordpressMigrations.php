@@ -7,6 +7,7 @@ namespace Foreningssystem\Infrastructure\WordPress;
 use Foreningssystem\Infrastructure\Persistence\ActionItemSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\BaselineMigration;
 use Foreningssystem\Infrastructure\Persistence\DocumentSchemaMigration;
+use Foreningssystem\Infrastructure\Persistence\BoardMemberRoleSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\BoardSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MeetingRecordSchemaMigration;
 use Foreningssystem\Infrastructure\Persistence\MinutesPdfSchemaMigration;
@@ -48,6 +49,7 @@ final class WordpressMigrations
                 new MinutesRevisionNumberSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
                 new MembershipAggregateSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
                 new ParticipantIntervalSchemaMigration($wpdb->prefix, $wpdb->get_charset_collate()),
+                new BoardMemberRoleSchemaMigration($wpdb->prefix),
             ]
         );
     }

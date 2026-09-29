@@ -24,6 +24,7 @@ Fresh installs need a first-run setup guide for association structure. Existing 
 
 ## Consequences
 
+- Schema 17, recorded later in ADR-0028, inserts the built-in board-member role. Setup version stays independent of that schema version.
 - Fresh ZIP installs stay incomplete until an officer finishes the wizard (or an explicit test completes it).
 - Existing development labs that already have schema `> 0` adopt setup `1` on activation or via `adoptPreWizardIfNeeded()` when the setup option was never written.
 - Help & Guides and registered-install bulletins remain out of scope; this ADR covers setup state and first-run wizard semantics only.

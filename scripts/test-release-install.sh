@@ -111,11 +111,11 @@ echo "activation successful"
 echo "plugin active"
 
 schema="$(compose run --rm -T wpcli option get assoc_schema_version | tr -d '[:space:]')"
-if [ "$schema" != "16" ]; then
-  echo "assoc_schema_version after = '${schema}', expected 16." >&2
+if [ "$schema" != "17" ]; then
+  echo "assoc_schema_version after = '${schema}', expected 17." >&2
   exit 1
 fi
-echo "assoc_schema_version after = 16"
+echo "assoc_schema_version after = 17"
 
 setup="$(compose run --rm -T wpcli option get assoc_setup_version | tr -d '[:space:]')"
 if [ "$setup" != "0" ]; then
@@ -157,17 +157,17 @@ echo "installed tree matches the package"
 echo "Running scratch smoke."
 compose run --rm -T -e RELEASE_PHASE=install wpcli eval-file /release-smoke.php
 
-echo "Deactivating and reactivating at schema 16."
+echo "Deactivating and reactivating at schema 17."
 compose run --rm -T wpcli plugin deactivate foreningsplugin
 compose run --rm -T wpcli plugin activate foreningsplugin
 schema="$(compose run --rm -T wpcli option get assoc_schema_version | tr -d '[:space:]')"
-if [ "$schema" != "16" ]; then
-  echo "assoc_schema_version after reactivation = '${schema}', expected 16." >&2
+if [ "$schema" != "17" ]; then
+  echo "assoc_schema_version after reactivation = '${schema}', expected 17." >&2
   exit 1
 fi
 compose run --rm -T wpcli plugin is-active foreningsplugin
 compose run --rm -T -e RELEASE_PHASE=reactivate wpcli eval-file /release-smoke.php
-echo "reactivation kept schema 16 and the scratch data"
+echo "reactivation kept schema 17 and the scratch data"
 
 debug="$(compose exec -T wordpress cat /var/www/html/wp-content/debug.log 2>/dev/null || true)"
 plugin_bad="$(printf '%s\n' "$debug" | grep -E 'foreningsplugin' | grep -E 'PHP Fatal|PHP Warning|PHP Deprecated|PHP Notice|Uncaught|WordPress database error' || true)"

@@ -49,12 +49,22 @@ CREATE TABLE {$assignment} (
     {
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($this->statements());
+        $this->ensureSuggestedRoles();
+    }
+
+    /**
+     * Inserts any suggested role whose slug is missing. Safe to run again.
+     */
+    public function ensureSuggestedRoles(): void
+    {
         $this->seedSuggestedRoles();
     }
 
     /**
-     * Suggested offices. An association can add its own later. Auditor and election
-     * committee are board roles and follow the same membership rule.
+     * Suggested offices. An association can add its own later. Ordinary board
+     * members, alternates, the auditor, and the election committee may each be
+     * held by several people. Auditor and election committee follow the same
+     * membership rule as the other board roles.
      *
      * @return list<array{slug: string, name: string, allows_multiple: int, sort_order: int}>
      */
@@ -64,6 +74,7 @@ CREATE TABLE {$assignment} (
             ['slug' => 'chair', 'name' => 'Ordförande', 'allows_multiple' => 0, 'sort_order' => 10],
             ['slug' => 'treasurer', 'name' => 'Kassör', 'allows_multiple' => 0, 'sort_order' => 20],
             ['slug' => 'secretary', 'name' => 'Sekreterare', 'allows_multiple' => 0, 'sort_order' => 30],
+            ['slug' => 'board_member', 'name' => 'Styrelseledamot', 'allows_multiple' => 1, 'sort_order' => 35],
             ['slug' => 'alternate', 'name' => 'Suppleant', 'allows_multiple' => 1, 'sort_order' => 40],
             ['slug' => 'auditor', 'name' => 'Revisor', 'allows_multiple' => 1, 'sort_order' => 50],
             ['slug' => 'election_committee', 'name' => 'Valberedning', 'allows_multiple' => 1, 'sort_order' => 60],

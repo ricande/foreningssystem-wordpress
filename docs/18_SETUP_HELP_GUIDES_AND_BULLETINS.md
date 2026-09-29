@@ -34,7 +34,7 @@ Approved and implemented. Details in ADR-0023 and `docs/10_ADMIN_UX.md`.
 **Hard constraints (shipped):**
 
 - Reuses Association Profile, Settings (board roles / meeting types), minutes lock/publish, retention, and private-storage warning status. No second settings system. Unused custom roles and meeting types can be removed through those services. Built-in rows cannot. A custom role selected to finalize or publish minutes stays until that permission is changed (ADR-0027).
-- Local options only: `assoc_setup_version` (`0`/absent incomplete, `1` = Wizard v1 done), `assoc_setup_step`, `assoc_setup_redirect_pending`. Not tied to schema (still 16).
+- Local options only: `assoc_setup_version` (`0`/absent incomplete, `1` = Wizard v1 done), `assoc_setup_step`, `assoc_setup_redirect_pending`. Not tied to schema.
 - Fresh install (schema absent/`0` before activation migration): setup stays incomplete; first-run redirect pending for `manage_association`.
 - Existing pre-wizard (schema `> 0`, setup option never written): adopt setup `1`, do not force wizard.
 - While incomplete: Association → Get started / Förening → Kom igång. Direct URLs keep page caps. Application services are not blocked.

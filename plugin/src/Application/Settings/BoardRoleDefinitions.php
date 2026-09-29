@@ -202,7 +202,7 @@ final class BoardRoleDefinitions
     private function assertUniqueName(string $name, ?int $exceptId): void
     {
         $normalized = VisibleName::normalize($name);
-        $present = [];
+        $present = BuiltinStructure::boardSlugs();
 
         foreach ($this->roles->all() as $role) {
             $present[] = $role->slug();

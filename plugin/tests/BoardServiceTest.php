@@ -163,8 +163,10 @@ final class BoardServiceTest extends TestCase
         self::assertStringContainsString('CREATE TABLE wp_assoc_board_assignment', $sql);
         self::assertStringNotContainsString('wp_users', $sql);
         self::assertSame(0, $multiple['chair']);
+        self::assertSame(1, $multiple['board_member']);
         self::assertSame(1, $multiple['auditor']);
         self::assertSame(1, $multiple['election_committee']);
+        self::assertSame(17, (new \Foreningssystem\Infrastructure\Persistence\BoardMemberRoleSchemaMigration('wp_'))->version());
     }
 
     public function test_board_assignment_must_fall_inside_the_participation_interval(): void

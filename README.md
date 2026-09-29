@@ -23,9 +23,9 @@ Några grundprinciper som styr bygget:
 
 ## Status
 
-Aktuell version är **0.1.0** och aktuellt databasschema är **16**. Implementationen pågår.
+Aktuell version är **0.1.0** och aktuellt databasschema är **17**. Implementationen pågår.
 
-Flera tidiga designfrågor är fortfarande öppna, bland annat migrationspolicyn och kryptering av personnummer. Schema 16 är det schema som koden använder nu. Det betyder inte att varje tidigare förslag är låst. Öppna frågor finns i `OPEN_QUESTIONS.md`.
+Flera tidiga designfrågor är fortfarande öppna, bland annat migrationspolicyn och kryptering av personnummer. Schema 17 är det schema som koden använder nu. Det betyder inte att varje tidigare förslag är låst. Öppna frågor finns i `OPEN_QUESTIONS.md`.
 
 ## Viktig utvecklingsvarning
 
@@ -53,7 +53,7 @@ Det som finns i pluginet nu:
 - publika Gutenberg-block för styrelse, senaste möte, senaste protokoll, medlemsantal och dokument
 - Mina sidor: en inloggad medlems egna uppgifter, medlemskap och medlemsdokument
 - integritetsexport, radering och kvarhållning
-- migreringar till schema 16
+- migreringar till schema 17
 - första-gången-guide för uppstart och en guidad styrelseadministration
 
 Help & Guides, kontextuell hjälp och registrerade installationer är förslag i `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`. De är inte implementerade.
@@ -70,7 +70,7 @@ Bygg ett installerbart arkiv från källkoden:
 make package
 ```
 
-Det skriver `dist/foreningsplugin-0.1.0.zip`. Installera arkivet i en **testinstallation** av WordPress via Tillägg → Lägg till nytt → Ladda upp tillägg, och aktivera det. Aktiveringen kör pluginets migreringar upp till schema 16 och lägger till föreningens behörigheter på administratörsrollen.
+Det skriver `dist/foreningsplugin-0.1.0.zip`. Installera arkivet i en **testinstallation** av WordPress via Tillägg → Lägg till nytt → Ladda upp tillägg, och aktivera det. Aktiveringen kör pluginets migreringar upp till schema 17 och lägger till föreningens behörigheter på administratörsrollen.
 
 Det finns ingen publicerad release och inget releasearkiv att hämta. Se varningen ovan innan du installerar någonstans.
 

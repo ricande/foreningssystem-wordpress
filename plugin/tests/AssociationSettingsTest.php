@@ -122,6 +122,49 @@ final class AssociationSettingsTest extends TestCase
         self::assertCount(2, $roles->all());
     }
 
+    public function test_a_built_in_board_member_name_cannot_be_added_again(): void
+    {
+        $roles = new MemoryBoardRoleRepository();
+        $service = $this->roles($roles, new MemoryBoardAssignmentRepository(), true);
+
+        foreach (['Styrelseledamot', 'Board member', 'styrelseledamot', 'Ordförande', 'Chair'] as $name) {
+            try {
+                $service->create($name, true);
+                self::fail('A built-in board role name was saved: ' . $name);
+            } catch (StructureRuleException $error) {
+                self::assertSame(StructureRuleException::DUPLICATE, $error->rule());
+            }
+        }
+
+        $seat = $roles->add(new BoardRole(null, 'board_member', 'Styrelseledamot', true, 35));
+
+        try {
+            $service->rename((int) $seat->id(), 'Ledamot');
+            self::fail('The built-in board member role was renamed.');
+        } catch (StructureRuleException $error) {
+            self::assertSame(StructureRuleException::BUILTIN, $error->rule());
+        }
+
+        try {
+            $service->changeHolders((int) $seat->id(), false);
+            self::fail('The built-in board member holder rule was changed.');
+        } catch (StructureRuleException $error) {
+            self::assertSame(StructureRuleException::BUILTIN, $error->rule());
+        }
+
+        try {
+            $service->remove((int) $seat->id());
+            self::fail('The built-in board member role was removed.');
+        } catch (StructureRuleException $error) {
+            self::assertSame(StructureRuleException::BUILTIN, $error->rule());
+        }
+
+        $saved = $roles->find((int) $seat->id());
+        self::assertTrue($saved?->allowsMultiple());
+        self::assertSame('Styrelseledamot', $saved?->name());
+        self::assertCount(1, $roles->all());
+    }
+
     public function test_a_custom_board_role_appears_in_repository_order(): void
     {
         $roles = new MemoryBoardRoleRepository();
@@ -447,6 +490,20 @@ final class AssociationSettingsTest extends TestCase
         }
 
         self::assertCount(2, $types->all());
+    }
+
+    public function test_a_built_in_meeting_type_name_cannot_be_added_again(): void
+    {
+        $service = $this->types(new MemoryMeetingTypeRepository(), new MemoryMeetingRepository(), new MemoryMeetingTemplateRepository(), true);
+
+        foreach (['Årsmöte', 'Annual meeting', 'årsmöte', 'Styrelsemöte', 'Board meeting'] as $name) {
+            try {
+                $service->create($name);
+                self::fail('A built-in meeting type name was saved: ' . $name);
+            } catch (StructureRuleException $error) {
+                self::assertSame(StructureRuleException::DUPLICATE, $error->rule());
+            }
+        }
     }
 
     public function test_an_unused_custom_meeting_type_can_be_renamed_without_changing_its_slug(): void

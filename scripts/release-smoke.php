@@ -72,7 +72,7 @@ function release_schema(): void
 {
     $schema = get_option('assoc_schema_version', null);
 
-    if ((string) $schema !== '16') {
+    if ((string) $schema !== '17') {
         \WP_CLI::error('assoc_schema_version is ' . var_export($schema, true) . '.');
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Tests;
 
+use Foreningssystem\Application\Settings\VisibleName;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Access\RoleBundles;
 use Foreningssystem\Domain\Board\BoardRole;
@@ -107,6 +108,29 @@ final class SetupStructureRemovalTest extends TestCase
             'This permission is not the same as being chosen to adjust a particular meeting.',
             $minutes
         );
+        self::assertStringContainsString("structureNotice(\$error, 'role')", $setup);
+        self::assertStringContainsString("structureNotice(\$error, 'type')", $setup);
+        self::assertStringContainsString("'role_duplicate'", $setup);
+        self::assertStringContainsString("'type_duplicate'", $setup);
+    }
+
+    public function test_board_member_is_one_minutes_choice_even_when_a_custom_role_repeats_the_name(): void
+    {
+        $seat = new BoardRole(7, 'board_member', 'Styrelseledamot', true, 35);
+        $repeat = new BoardRole(8, 'custom_styrelseledamot', 'Styrelseledamot', true, 80);
+        $material = new BoardRole(9, 'custom_material_manager', 'Material manager', false, 90);
+        $labels = MinutesRoleChoices::labels([$seat, $repeat, $material]);
+        $repeated = array_filter(
+            $labels,
+            static fn (string $label): bool => in_array(VisibleName::normalize($label), ['styrelseledamot', 'board member'], true)
+        );
+
+        self::assertArrayHasKey(RoleBundles::BOARD_MEMBER, $labels);
+        self::assertArrayNotHasKey('board_member', $labels);
+        self::assertArrayNotHasKey('custom_styrelseledamot', $labels);
+        self::assertSame('Material manager', $labels['custom_material_manager']);
+        self::assertCount(1, $repeated);
+        self::assertSame(['custom_material_manager' => 9], MinutesRoleChoices::extraRoles([$seat, $repeat, $material]));
     }
 
     private static function extractMethod(string $source, string $name): string

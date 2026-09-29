@@ -11,7 +11,7 @@ final class BuiltinStructure
      */
     public static function boardSlugs(): array
     {
-        return ['chair', 'treasurer', 'secretary', 'alternate', 'auditor', 'election_committee'];
+        return ['chair', 'treasurer', 'secretary', 'board_member', 'alternate', 'auditor', 'election_committee'];
     }
 
     /**
@@ -60,6 +60,7 @@ final class BuiltinStructure
             'chair' => ['Chair', 'Ordförande'],
             'treasurer' => ['Treasurer', 'Kassör'],
             'secretary' => ['Secretary', 'Sekreterare'],
+            'board_member' => ['Board member', 'Styrelseledamot'],
             'alternate' => ['Alternate', 'Suppleant'],
             'auditor' => ['Auditor', 'Revisor'],
             'election_committee' => ['Election committee', 'Valberedning'],
@@ -90,6 +91,7 @@ final class BuiltinStructure
             'chair' => 'Chair',
             'treasurer' => 'Treasurer',
             'secretary' => 'Secretary',
+            'board_member' => 'Board member',
             'alternate' => 'Alternate',
             'auditor' => 'Auditor',
             'election_committee' => 'Election committee',
@@ -117,5 +119,22 @@ final class BuiltinStructure
         }
 
         return array_values(array_unique($names));
+    }
+
+    /**
+     * Names already used by the four association roles in the minutes step.
+     * A custom board role with one of these names would repeat that choice.
+     */
+    public static function matchesAssociationRoleName(string $name): bool
+    {
+        $normalized = VisibleName::normalize($name);
+
+        foreach (['Secretary', 'Sekreterare', 'Chair', 'Ordförande', 'Treasurer', 'Kassör', 'Board member', 'Styrelseledamot'] as $label) {
+            if (VisibleName::normalize($label) === $normalized) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -183,7 +183,7 @@ final class MeetingTypeDefinitions
     private function assertUniqueName(string $name, ?int $exceptId): void
     {
         $normalized = VisibleName::normalize($name);
-        $present = [];
+        $present = BuiltinStructure::meetingSlugs();
 
         foreach ($this->types->all() as $type) {
             $present[] = $type->slug();

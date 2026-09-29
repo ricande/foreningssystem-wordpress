@@ -377,10 +377,16 @@ try {
         \WP_CLI::error('A used board role changed after a rejected edit.');
     }
 
-    WordpressAssociationSettings::boardRoles()->move((int) $role->id(), 'up');
-    $moved = (int) $wpdb->get_var($wpdb->prepare("SELECT sort_order FROM {$roles} WHERE id = %d", (int) $role->id()));
+    $orderedIds = static function () use ($wpdb, $roles): array {
+        $ids = $wpdb->get_col("SELECT id FROM {$roles} ORDER BY sort_order, id");
 
-    if ($moved === (int) $before['sort_order'] || $wpdb->get_var($wpdb->prepare("SELECT name FROM {$roles} WHERE id = %d", (int) $role->id())) !== 'Materialansvarig') {
+        return is_array($ids) ? array_map('intval', $ids) : [];
+    };
+    $beforePosition = array_search((int) $role->id(), $orderedIds(), true);
+    WordpressAssociationSettings::boardRoles()->move((int) $role->id(), 'up');
+    $afterPosition = array_search((int) $role->id(), $orderedIds(), true);
+
+    if ($beforePosition === false || $beforePosition < 1 || $afterPosition !== $beforePosition - 1 || $wpdb->get_var($wpdb->prepare("SELECT name FROM {$roles} WHERE id = %d", (int) $role->id())) !== 'Materialansvarig') {
         \WP_CLI::error('A used board role could not be reordered.');
     }
 

@@ -82,7 +82,7 @@ After the first public release, released migrations are immutable. All changes u
 
 ## Proposed communications / setup-help
 
-**First-run Setup Wizard v1 is accepted** (ADR-0023). Setup state uses local WordPress options, is not tied to schema, and reuses canonical association settings services. Unused custom board roles and meeting types can be removed; built-in rows and rows that history or the minutes permission still use cannot (ADR-0027).
+**First-run Setup Wizard v1 is accepted** (ADR-0023). Setup state uses local WordPress options, is not tied to schema, and reuses canonical association settings services. Unused custom board roles and meeting types can be removed; built-in rows and rows that history or the minutes permission still use cannot (ADR-0027). Board member is a built-in board role that several people may hold. A role or meeting type name that already exists cannot be added again (ADR-0028).
 
 Contextual help, handbook/guides, and optional registered-install bulletin pull remain **proposed** product direction only. See `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` and `OPEN_QUESTIONS.md` Q40–Q45. Do not treat Help/Guides/bulletins as LOCKED. Any future optional registration or poll must still satisfy locked self-hosted / no-mandatory-SaaS / no-secret-telemetry principles.
 

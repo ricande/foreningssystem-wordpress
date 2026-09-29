@@ -50,7 +50,7 @@ The rest of the baseline stands as the accepted working design. At this point in
 
 ## Update after implementation — 2026-09-24
 
-Implementation has started. The current database schema version is 16.
+Implementation has started. The current database schema version is 17.
 
 Implemented areas:
 
@@ -61,7 +61,7 @@ Implemented areas:
 - documents and private storage
 - public blocks
 - privacy export, erase and retention
-- schema migrations through version 16
+- schema migrations through version 17
 - members admin UX v1: list, detail, typed create flows, guardians, protected identity display and membership history
 - board admin UX v1: guided board wizard (overview, one task at a time, confirm, separate history view) over the same BoardService rules for replacement, multi-holder roles, ending, and cancelling scheduled changes without deleting history
 - meetings admin UX v1: operational overview and a single meeting workspace for preparation, capture, and minutes
@@ -75,11 +75,11 @@ Implemented areas:
 - distributed information: the GitHub README and a user-oriented `plugin/readme.txt` tell the same story in the same order — what the plugin is, status, the development warning, features, installation, privacy and access, documentation, development, license. Both state that 0.1.0 is an early development build that is not for production or live association data. The readme travels inside the plugin ZIP, and the packaging contract fails if it is missing, names another version, or has lost the warning
 - fresh ZIP install of 0.1.0 was validated on a separate WordPress, not the development lab. Activation migrated schema 0 to 16, and a small synthetic association flow including minutes PDF worked from the installed archive. That is package and fresh-install validation, not a production-ready claim. The same install showed WordPress 6.7+ warning that association translations were loaded before `init`. The plugin now loads its translations on `init`. Schema 16 is unchanged
 
-Some product decisions remain provisional, including the migration policy and personal-identity encryption. Schema 16 is the current schema, not a claim that every earlier design note is locked.
+Some product decisions remain provisional, including the migration policy and personal-identity encryption. Schema 17 is the current schema, not a claim that every earlier design note is locked. Schema 17 only inserts the built-in board-member role when that slug is missing (ADR-0028).
 
 ## Planned product area — setup, help, guides, bulletins
 
-**First-run Setup Wizard v1 is implemented** (ADR-0023). Local options `assoc_setup_version`, `assoc_setup_step`, and `assoc_setup_redirect_pending` track completion and first-run redirect. Schema remains 16. Plugin version remains 0.1.0.
+**First-run Setup Wizard v1 is implemented** (ADR-0023). Local options `assoc_setup_version`, `assoc_setup_step`, and `assoc_setup_redirect_pending` track completion and first-run redirect. Setup version remains 1. Plugin version remains 0.1.0. The board step includes the built-in board-member role, which several people may hold and which cannot be renamed or removed (ADR-0028).
 
 **Board Admin Wizard v1 is implemented** (ADR-0024). Association → Board is a guided flow (Get started / Change the board) with one task per run and a separate history view. BoardService semantics and schema 16 are unchanged.
 
@@ -118,7 +118,7 @@ Future hardening, recorded in ADR-0027 and not built here: `used()` and `remove(
 
 **FUTURE / NOT IMPLEMENTED / PROPOSAL.** Not part of the implemented list above. No tables, screens, capabilities, or document types exist for this.
 
-Associations may later record optional sections or departments inside the one association, with activity reports, meeting material, an internal budget, and simple economic follow-up. That money tracking is not legal bookkeeping. A person who looks after one section does not thereby administer the association. The proposal is `docs/19_SECTIONS.md`. Open questions are Q46–Q57 in `OPEN_QUESTIONS.md`. Schema 16 and plugin version 0.1.0 are unchanged. Do not start an implementation from this note.
+Associations may later record optional sections or departments inside the one association, with activity reports, meeting material, an internal budget, and simple economic follow-up. That money tracking is not legal bookkeeping. A person who looks after one section does not thereby administer the association. The proposal is `docs/19_SECTIONS.md`. Open questions are Q46–Q57 in `OPEN_QUESTIONS.md`. Plugin version stays 0.1.0. Sections are not part of schema 17. Do not start an implementation from this note.
 
 ## Lab stacks (in-repo)
 

@@ -909,7 +909,7 @@ if ($afterPeople !== $beforePeople || $afterAssignments !== $beforeAssignments |
 
 $schema = get_option('assoc_schema_version');
 
-if ((string) $schema !== '16' || Plugin::VERSION !== '0.1.0') {
+if ((string) $schema !== '17' || Plugin::VERSION !== '0.1.0') {
     $fail('Setup lab changed schema or plugin version.');
 }
 

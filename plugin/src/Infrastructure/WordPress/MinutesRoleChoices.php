@@ -12,8 +12,9 @@ use Foreningssystem\Domain\Board\BoardRole;
 final class MinutesRoleChoices
 {
     /**
-     * Association roles, then custom board roles. Built-in board slugs stay out of this list:
-     * chair, secretary, and treasurer are already represented by the association roles.
+     * Association roles, then custom board roles. Built-in board slugs stay out of this list.
+     * Chair, secretary, treasurer, and board member are already the four association roles.
+     * A custom row whose name repeats one of those labels stays out too.
      *
      * @param list<BoardRole> $boardRoles
      * @return array<string, string>
@@ -64,7 +65,7 @@ final class MinutesRoleChoices
         $custom = [];
 
         foreach ($boardRoles as $role) {
-            if (BuiltinStructure::isBoard($role->slug())) {
+            if (BuiltinStructure::isBoard($role->slug()) || BuiltinStructure::matchesAssociationRoleName($role->name())) {
                 continue;
             }
 

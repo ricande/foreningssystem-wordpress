@@ -7,12 +7,12 @@ docker compose run --rm wpcli assoc migrate >/dev/null
 
 version="$(docker compose run --rm wpcli option get assoc_schema_version | tr -d '[:space:]')"
 
-if [ "$version" != "16" ]; then
-  echo "Expected schema version 16, got '${version}'." >&2
+if [ "$version" != "17" ]; then
+  echo "Expected schema version 17, got '${version}'." >&2
   exit 1
 fi
 
-echo "Lab schema version is 16."
+echo "Lab schema version is 17."
 
 # Operational labs assume setup is complete. Fresh CI activation leaves the
 # wizard incomplete; adopt deliberately here. lab-setup.php tests incomplete

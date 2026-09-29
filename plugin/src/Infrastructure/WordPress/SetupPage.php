@@ -110,7 +110,9 @@ final class SetupPage
             self::redirect(SetupStep::BOARD, 'role_added');
         } catch (NotAllowed) {
             self::denied();
-        } catch (StructureRuleException | RuntimeException) {
+        } catch (StructureRuleException $error) {
+            self::redirect(SetupStep::BOARD, self::structureNotice($error, 'role'));
+        } catch (RuntimeException) {
             self::redirect(SetupStep::BOARD, 'role_failed');
         }
     }
@@ -124,7 +126,9 @@ final class SetupPage
             self::redirect(SetupStep::MEETINGS, 'type_added');
         } catch (NotAllowed) {
             self::denied();
-        } catch (StructureRuleException | RuntimeException) {
+        } catch (StructureRuleException $error) {
+            self::redirect(SetupStep::MEETINGS, self::structureNotice($error, 'type'));
+        } catch (RuntimeException) {
             self::redirect(SetupStep::MEETINGS, 'type_failed');
         }
     }
@@ -564,6 +568,11 @@ final class SetupPage
         }
     }
 
+    private static function structureNotice(StructureRuleException $error, string $prefix): string
+    {
+        return $error->rule() === StructureRuleException::DUPLICATE ? $prefix . '_duplicate' : $prefix . '_failed';
+    }
+
     private static function removalMessage(?string $block, bool $role): string
     {
         if ($role && $block === StructureRuleException::USED) {
@@ -771,6 +780,7 @@ final class SetupPage
             'association_invalid' => __('The association profile could not be saved. Check the fields and enter a name.', 'foreningsplugin'),
             'role_added' => __('The board role was added.', 'foreningsplugin'),
             'role_removed' => __('The board role was removed.', 'foreningsplugin'),
+            'role_duplicate' => __('A board role with that name already exists.', 'foreningsplugin'),
             'role_failed' => __('The board role could not be saved.', 'foreningsplugin'),
             'role_remove_builtin' => __('A built-in board role cannot be removed.', 'foreningsplugin'),
             'role_remove_used' => __('This role is used by a board assignment and cannot be removed.', 'foreningsplugin'),
@@ -778,6 +788,7 @@ final class SetupPage
             'role_remove_failed' => __('The board role could not be removed.', 'foreningsplugin'),
             'type_added' => __('The meeting type was added.', 'foreningsplugin'),
             'type_removed' => __('The meeting type was removed.', 'foreningsplugin'),
+            'type_duplicate' => __('A meeting type with that name already exists.', 'foreningsplugin'),
             'type_failed' => __('The meeting type could not be saved.', 'foreningsplugin'),
             'type_remove_builtin' => __('A built-in meeting type cannot be removed.', 'foreningsplugin'),
             'type_remove_used' => __('This meeting type is used by a meeting or a meeting template and cannot be removed.', 'foreningsplugin'),
@@ -791,7 +802,7 @@ final class SetupPage
             return;
         }
 
-        $error = str_contains($notice, 'invalid') || str_contains($notice, 'failed') || str_contains($notice, 'required') || str_contains($notice, 'remove_');
+        $error = str_contains($notice, 'invalid') || str_contains($notice, 'failed') || str_contains($notice, 'required') || str_contains($notice, 'remove_') || str_contains($notice, 'duplicate');
         echo '<div class="notice notice-' . ($error ? 'error' : 'success') . '"><p>' . esc_html($messages[$notice]) . '</p></div>';
     }
 
