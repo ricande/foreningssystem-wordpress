@@ -90,3 +90,4 @@ No feature implementation before this baseline is accepted.
 - recipient selection/email integrations
 - member portal
 - e-signature providers
+- sections or departments, activity reports, and internal section budgets (`docs/19_SECTIONS.md`, FUTURE / NOT IMPLEMENTED)

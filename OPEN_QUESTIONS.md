@@ -103,3 +103,20 @@ See `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` and ADR-0023.
 43. What is the bulletin trust model (unsigned vs signed JSON, key ownership/rotation, fail-closed rules for invalid or unsigned payloads)?
 44. If any minimal install telemetry is ever allowed with consent, what is the exact payload, consent UX, default (off), and revoke/unregister path — without sending member/person data and without becoming mandatory or secret?
 45. What is the bulletin JSON schema, allowed render subset, poll interval/backoff, and how outdated-version detection relates to WordPress/core plugin updates without fighting them?
+
+## Sections and departments
+
+**FUTURE / NOT IMPLEMENTED.** Proposal only, in `docs/19_SECTIONS.md`. These questions are open. The notes under a question are product direction from that proposal, not a locked answer.
+
+46. Should the product say "sektion", "avdelning", or let the association choose the word?
+47. Can one person belong to several sections at the same time? The product direction is yes. The exact model is not settled.
+48. Can a section have several responsible people? The proposal requires at least one for an active section. More than one is not settled.
+49. Does a section need roles besides the responsible person?
+50. Does section membership keep history, with a start and an end?
+51. How should an activity report attach to Documents and Meetings?
+52. Which section data, if any, may be published on the public site?
+53. How does a section's budget year or year of activity relate to the association's membership year?
+54. Does an economic event need an attachment, such as a receipt?
+55. Does section economy need an export to CSV or to a bookkeeping system?
+56. What retention applies to section data?
+57. How does the capability model express administration of one specific section, without granting administration of the association?

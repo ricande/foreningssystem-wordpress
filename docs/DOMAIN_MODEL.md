@@ -79,3 +79,5 @@ Public role contact is optional. If it is empty, the public board block shows th
 ## What is intentionally not in the model yet
 
 Activities, fees, and mail recipient selection are real product areas in the original brief and are outside MVP. The Person and Membership model must not block them later: a fee record would reference a Person and a membership year, and a recipient query would filter Membership status. Those tables are not part of this baseline.
+
+Sections or departments are a later proposal in `docs/19_SECTIONS.md`. They are not implemented. Section membership, if it is ever added, is a further relation and does not replace Membership in the association. No section table is part of this baseline.

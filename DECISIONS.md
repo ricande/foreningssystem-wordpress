@@ -85,3 +85,7 @@ After the first public release, released migrations are immutable. All changes u
 **First-run Setup Wizard v1 is accepted** (ADR-0023). Setup state uses local WordPress options, is not tied to schema, and reuses canonical association settings services. Unused custom board roles and meeting types can be removed; built-in rows and rows that history or the minutes permission still use cannot (ADR-0027).
 
 Contextual help, handbook/guides, and optional registered-install bulletin pull remain **proposed** product direction only. See `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` and `OPEN_QUESTIONS.md` Q40–Q45. Do not treat Help/Guides/bulletins as LOCKED. Any future optional registration or poll must still satisfy locked self-hosted / no-mandatory-SaaS / no-secret-telemetry principles.
+
+## Proposed sections and departments
+
+**FUTURE / NOT IMPLEMENTED.** Optional sections or departments inside one association, including activity reports and internal budgets, are a proposal in `docs/19_SECTIONS.md`. Open questions are Q46–Q57. This is not a locked domain and it is not legal bookkeeping. Do not implement it from this section.

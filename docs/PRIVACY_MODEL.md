@@ -24,6 +24,8 @@ The association has one setting, in years, for how long personal data and audit 
 
 The interface copy uses those words. It does not use "delete member" as a single button.
 
+Sections or departments are not implemented (`docs/19_SECTIONS.md`). This model does not export, erase, or retain section membership, activity reports, or section economic events, because those records do not exist. A later design has to decide that before any such records are stored. A section officer must not be given the whole Person register as a shortcut.
+
 ## Per object
 
 | Object | Purpose | Export | Erase / anonymize | Recommended retention |

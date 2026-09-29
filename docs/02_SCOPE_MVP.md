@@ -88,5 +88,6 @@ Initial blocks should be small and high-value:
 - advanced event/calendar system
 - advanced booking
 - sports competition administration
+- association sections or departments, their activity reports, and internal section budgets (proposal only, `docs/19_SECTIONS.md`; not implemented)
 - electronic signature providers
 - custom theme

@@ -71,6 +71,9 @@ Föreningsplugin 0.1.0 is an early development build. It is NOT ready for produc
 * migreringar till schema 16
 * första-gången-guide för uppstart och en guidad styrelseadministration
 
+Sektioner och avdelningar är ett framtida produktområde. Det är inte
+implementerat. Beskrivningen finns i källkodens docs/19_SECTIONS.md.
+
 
 == Installation ==
 

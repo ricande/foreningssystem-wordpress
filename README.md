@@ -58,6 +58,8 @@ Det som finns i pluginet nu:
 
 Help & Guides, kontextuell hjälp och registrerade installationer är förslag i `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`. De är inte implementerade.
 
+Sektioner och avdelningar är ett framtida produktområde i `docs/19_SECTIONS.md`. Det är inte implementerat.
+
 ## Snabbstart
 
 Krav: WordPress 7.1 eller senare och PHP 8.3 eller senare.
@@ -115,8 +117,9 @@ Föreslagen läsordning:
 16. `docs/14_VM_LAB.md`
 17. `docs/17_RELEASE_PACKAGING.md`
 18. `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md` (produktriktning / förslag — inte implementerat)
-19. `OPEN_QUESTIONS.md`
-20. `CURSOR_START_PROMPT.md`
+19. `docs/19_SECTIONS.md` (framtida produktområde — inte implementerat)
+20. `OPEN_QUESTIONS.md`
+21. `CURSOR_START_PROMPT.md`
 
 Viktiga teknikval är dokumenterade som ADR:er i `adr/`. Aktuell status finns i `PROJECT_STATE.md`.
 

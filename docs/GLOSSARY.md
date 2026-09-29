@@ -32,6 +32,10 @@ A human-facing word for a Person whose relevant Membership is active. Do not use
 
 The association's configured fee or membership period. It may differ from the calendar year. Dates on a Membership are the source of truth; the year label is metadata.
 
+## Section or department
+
+Not a current domain object. FUTURE / NOT IMPLEMENTED. The product has not chosen the word sektion, avdelning, or an association-chosen label. See `docs/19_SECTIONS.md`. Do not add a class or table from this entry.
+
 ## WordPress user link
 
 An optional zero-or-one relation from a Person to a `wp_user`.

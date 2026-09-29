@@ -69,3 +69,5 @@ Visibility values: public, member, board, administrator. "State" is the meeting 
 | Download a non-public file | same as viewing that visibility | — | Server-side stream. The upload URL is not the access check |
 
 REST permission callbacks, when REST exists, use this same matrix. There is no separate, weaker REST policy.
+
+A future section or department, described in `docs/19_SECTIONS.md`, is not in this matrix. It is not implemented. The open problem is permission to handle one section without `manage_association` or the rest of the association. No capability name is reserved here.

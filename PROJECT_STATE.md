@@ -114,6 +114,12 @@ The minutes step, and the matching Settings screens, list custom board roles bes
 
 Future hardening, recorded in ADR-0027 and not built here: `used()` and `remove()` share one transaction, but board assignments, meetings, and meeting templates reference the structure row by an index, not a foreign key. A concurrent insert can point at a row that has just been removed. The minutes policy in `wp_options` has the same theoretical gap.
 
+## Planned product area — sections and departments
+
+**FUTURE / NOT IMPLEMENTED / PROPOSAL.** Not part of the implemented list above. No tables, screens, capabilities, or document types exist for this.
+
+Associations may later record optional sections or departments inside the one association, with activity reports, meeting material, an internal budget, and simple economic follow-up. That money tracking is not legal bookkeeping. A person who looks after one section does not thereby administer the association. The proposal is `docs/19_SECTIONS.md`. Open questions are Q46–Q57 in `OPEN_QUESTIONS.md`. Schema 16 and plugin version 0.1.0 are unchanged. Do not start an implementation from this note.
+
 ## Lab stacks (in-repo)
 
 Three Docker labs are documented in-repo:
