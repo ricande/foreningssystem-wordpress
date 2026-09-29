@@ -2717,3 +2717,222 @@ msgstr "Inga mötestyper är angivna."
 
 msgid "Setup progress"
 msgstr "Guidens steg"
+
+msgid "Check the columns"
+msgstr "Kontrollera kolumner"
+
+msgid "Match each column to a member field. A column can be left out. Nothing is saved on this step."
+msgstr "Koppla varje kolumn till ett medlemsfält. En kolumn kan lämnas utan koppling. Inget sparas i det här steget."
+
+msgid "Delimiter"
+msgstr "Avgränsare"
+
+msgid "Comma"
+msgstr "Komma"
+
+msgid "Semicolon"
+msgstr "Semikolon"
+
+msgid "CSV column"
+msgstr "CSV-kolumn"
+
+msgid "Member field"
+msgstr "Medlemsfält"
+
+msgid "Preview the import"
+msgstr "Förhandsgranska"
+
+msgid "Check the problems"
+msgstr "Kontrollera problem"
+
+msgid "Nothing is saved until you confirm the import."
+msgstr "Inget sparas förrän du bekräftar importen."
+
+msgid "Rows read: %d"
+msgstr "Rader lästa: %d"
+
+msgid "Ready to import: %d"
+msgstr "Redo att importeras: %d"
+
+msgid "Possible duplicates: %d"
+msgstr "Möjliga dubbletter: %d"
+
+msgid "Errors: %d"
+msgstr "Fel: %d"
+
+msgid "Warnings"
+msgstr "Varningar"
+
+msgid "Showing the first 100 problems."
+msgstr "Visar de första 100 problemen."
+
+msgid "Row"
+msgstr "Rad"
+
+msgid "Membership status"
+msgstr "Medlemsstatus"
+
+msgid "Showing the first 30 ready rows."
+msgstr "Visar de första 30 raderna som är redo."
+
+msgid "Import %d members"
+msgstr "Importera %d medlemmar"
+
+msgid "No rows were ready to import."
+msgstr "Inga rader var redo att importeras."
+
+msgid "Choose a CSV file"
+msgstr "Välj CSV-fil"
+
+msgid "Bring in an existing member list. The file is checked before anything is saved."
+msgstr "Ta in ett befintligt medlemsregister. Filen kontrolleras innan något sparas."
+
+msgid "The file may use commas or semicolons. Swedish characters are kept."
+msgstr "Filen får använda komma eller semikolon. Svenska tecken behålls."
+
+msgid "Upload and continue"
+msgstr "Ladda upp och fortsätt"
+
+msgid "Import finished"
+msgstr "Import klar"
+
+msgid "Imported: %d"
+msgstr "Importerade: %d"
+
+msgid "Skipped: %d"
+msgstr "Hoppade över: %d"
+
+msgid "Failed: %d"
+msgstr "Misslyckades: %d"
+
+msgid "Start over"
+msgstr "Börja om"
+
+msgid "The uploaded file is no longer available. Choose the file again."
+msgstr "Den uppladdade filen finns inte kvar. Välj filen igen."
+
+msgid "Cancel import"
+msgstr "Avbryt import"
+
+msgid "Do not import"
+msgstr "Importera inte"
+
+msgid "Person status"
+msgstr "Personstatus"
+
+msgid "Row %d: A person needs a first and last name."
+msgstr "Rad %d: En person behöver förnamn och efternamn."
+
+msgid "Row %d: Email is not valid."
+msgstr "Rad %d: E-postadressen är inte giltig."
+
+msgid "Row %d: Date must use YYYY-MM-DD or DD.MM.YYYY."
+msgstr "Rad %d: Datum ska skrivas ÅÅÅÅ-MM-DD eller DD.MM.ÅÅÅÅ."
+
+msgid "Row %d: An ended membership needs an end date."
+msgstr "Rad %d: Ett avslutat medlemskap behöver ett slutdatum."
+
+msgid "Row %d: An open membership has no end date."
+msgstr "Rad %d: Ett öppet medlemskap har inget slutdatum."
+
+msgid "Row %d: A deceased person cannot have an open membership."
+msgstr "Rad %d: En avliden person kan inte ha ett öppet medlemskap."
+
+msgid "Row %d: Unknown membership type."
+msgstr "Rad %d: Okänd medlemstyp."
+
+msgid "Row %d: Company memberships use the structured member file."
+msgstr "Rad %d: Företagsmedlemskap förs in med den strukturerade medlemsfilen."
+
+msgid "Row %d: Unknown person or membership status."
+msgstr "Rad %d: Okänd person- eller medlemsstatus."
+
+msgid "Row %d: A youth membership needs a birth date."
+msgstr "Rad %d: Ett ungdomsmedlemskap behöver ett födelsedatum."
+
+msgid "Row %d: Birth date cannot be in the future."
+msgstr "Rad %d: Födelsedatum kan inte ligga i framtiden."
+
+msgid "Row %d: A membership cannot end before it starts."
+msgstr "Rad %d: Ett medlemskap kan inte sluta innan det börjar."
+
+msgid "Row %d: A value is too long."
+msgstr "Rad %d: Ett värde är för långt."
+
+msgid "Row %d: A membership needs a number and a type."
+msgstr "Rad %d: Ett medlemskap behöver ett nummer och en typ."
+
+msgid "Row %d: The membership number is already in the register."
+msgstr "Rad %d: Medlemsnumret finns redan i registret."
+
+msgid "Row %d: The membership number is repeated in this file."
+msgstr "Rad %d: Medlemsnumret finns på flera rader i filen."
+
+msgid "Row %d: This email already belongs to a person, so the row was not imported."
+msgstr "Rad %d: E-postadressen finns redan på en person, så raden importerades inte."
+
+msgid "Row %d: This email is repeated in this file, so the row was not imported."
+msgstr "Rad %d: E-postadressen finns på flera rader i filen, så raden importerades inte."
+
+msgid "Row %d: The row could not be saved."
+msgstr "Rad %d: Raden kunde inte sparas."
+
+msgid "Personal identity numbers are not imported. That column is ignored."
+msgstr "Personnummer importeras inte. Den kolumnen hoppas över."
+
+msgid "The column \"%s\" has no member field and will not be imported."
+msgstr "Kolumnen \"%s\" har inget medlemsfält och importeras inte."
+
+msgid "Empty membership status is imported as active."
+msgstr "Tom medlemsstatus importeras som aktiv."
+
+msgid "Empty person status is imported as known."
+msgstr "Tom personstatus importeras som känd."
+
+msgid "Map a column to first name."
+msgstr "Koppla en kolumn till förnamn."
+
+msgid "Map a column to last name."
+msgstr "Koppla en kolumn till efternamn."
+
+msgid "Map a column to membership number."
+msgstr "Koppla en kolumn till medlemsnummer."
+
+msgid "Map a column to membership type."
+msgstr "Koppla en kolumn till medlemstyp."
+
+msgid "Map a column to start date."
+msgstr "Koppla en kolumn till startdatum."
+
+msgid "%s is mapped more than once."
+msgstr "%s är kopplat till mer än en kolumn."
+
+msgid "The file is too large."
+msgstr "Filen är för stor."
+
+msgid "The file has more than %d rows."
+msgstr "Filen har mer än %d rader."
+
+msgid "The import could not be completed."
+msgstr "Importen kunde inte slutföras."
+
+msgid "The file has too many columns."
+msgstr "Filen har för många kolumner."
+
+msgid "The file is not UTF-8."
+msgstr "Filen är inte UTF-8."
+
+msgid "The file could not be read as CSV."
+msgstr "Filen kunde inte läsas som CSV."
+
+msgid "Choose a comma or a semicolon as the delimiter."
+msgstr "Välj komma eller semikolon som avgränsare."
+
+msgid "This file was already imported. Nothing was saved again."
+msgstr "Den här filen är redan importerad. Inget sparades igen."
+
+msgid "Import members from a spreadsheet"
+msgstr "Importera medlemmar från ett register"
+
+msgid "Import the plugin's own member file"
+msgstr "Importera pluginets egen medlemsfil"

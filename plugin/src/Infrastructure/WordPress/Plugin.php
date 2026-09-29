@@ -61,6 +61,10 @@ final class Plugin
         add_action('admin_post_assoc_register_person', [MembersPage::class, 'registerPerson']);
         add_action('admin_post_assoc_export_members', [MembersPage::class, 'exportMembers']);
         add_action('admin_post_assoc_import_members', [MembersPage::class, 'importMembers']);
+        add_action('admin_post_assoc_member_csv_upload', [MemberImportPage::class, 'upload']);
+        add_action('admin_post_assoc_member_csv_columns', [MemberImportPage::class, 'saveColumns']);
+        add_action('admin_post_assoc_member_csv_confirm', [MemberImportPage::class, 'confirm']);
+        add_action('admin_post_assoc_member_csv_cancel', [MemberImportPage::class, 'cancel']);
         add_action('admin_post_assoc_end_membership', [MembersPage::class, 'endMembership']);
         add_action('admin_post_assoc_add_membership', [MembersPage::class, 'addMembership']);
         add_action('admin_post_assoc_register_company', [MembersPage::class, 'registerCompany']);

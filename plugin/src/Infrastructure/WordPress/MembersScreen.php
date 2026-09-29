@@ -13,6 +13,18 @@ final class MembersScreen
 {
     public static function render(bool $canEdit): void
     {
+        $step = isset($_GET['assoc_csv']) ? sanitize_key((string) $_GET['assoc_csv']) : '';
+
+        if ($canEdit) {
+            MemberCsvVault::purgeExpiredUploads();
+        }
+
+        if ($canEdit && $step !== '') {
+            MemberImportScreen::render($step);
+
+            return;
+        }
+
         $directory = WordpressPeople::directory();
         $today = AssociationDate::fromIso(wp_date('Y-m-d'));
         $personId = isset($_GET['assoc_person']) ? absint($_GET['assoc_person']) : 0;
@@ -578,7 +590,13 @@ final class MembersScreen
     private static function exchange(bool $canEdit): void
     {
         if ($canEdit) {
-            echo '<h2>' . esc_html__('Import', 'foreningsplugin') . '</h2>';
+            echo '<h2>' . esc_html__('Import members from a spreadsheet', 'foreningsplugin') . '</h2>';
+            echo '<p>' . esc_html__('Bring in an existing member list. The file is checked before anything is saved.', 'foreningsplugin') . '</p>';
+            echo '<p><a class="button" href="' . esc_url(add_query_arg([
+                'page' => 'foreningsplugin-members',
+                'assoc_csv' => 'choose',
+            ], admin_url('admin.php'))) . '">' . esc_html__('Choose a CSV file', 'foreningsplugin') . '</a></p>';
+            echo '<h2>' . esc_html__('Import the plugin\'s own member file', 'foreningsplugin') . '</h2>';
             echo '<p>' . esc_html__('The file is UTF-8 and semicolon-separated, with one row per membership period. A membership number that already exists is left unchanged. The import does not link a WordPress account and does not rename a person who already exists.', 'foreningsplugin') . '</p>';
             echo '<form method="post" enctype="multipart/form-data" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_import_members">';

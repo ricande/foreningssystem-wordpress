@@ -45,6 +45,7 @@ Det som finns i pluginet nu:
 
 - föreningsprofil och en samlad inställningshubb
 - personer och medlemskap, inklusive ordinarie, ungdom, familj och företag
+- import av ett befintligt medlemsregister från CSV, med kontroll innan något sparas
 - styrelse med historik och täckningsregeln mot medlemskap
 - möten, dagordning, anteckningar, beslut, protokoll, PDF, signerad kopia och publicering
 - besluts- och uppgiftsregister som utgår från mötet som enda källa

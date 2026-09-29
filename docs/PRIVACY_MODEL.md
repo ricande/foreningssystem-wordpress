@@ -36,7 +36,7 @@ The interface copy uses those words. It does not use "delete member" as a single
 | Documents and signed scans | Archive files that may contain personal data | Include a document only when it is specifically about the requester and the exporter is allowed to read it | Removing a private file is a manual association action, not an automatic eraser success | Signed copies are kept as originals. Other documents follow their own validity dates |
 | Audit event | Show who performed a critical action | Export events about the requester, without other people's payloads | Do not store field values in the event | The retention setting, default 5 years after the event, then remove |
 
-A personal identity number lives in `assoc_personal_identity`, not on the person row. It is not encrypted. See ADR-0021.
+A personal identity number lives in `assoc_personal_identity`, not on the person row. It is not encrypted. See ADR-0021. The member spreadsheet import does not read or store that column. The temporary upload can still contain it until the file is deleted, and this import does not add encryption.
 
 ## WordPress exporter and eraser
 

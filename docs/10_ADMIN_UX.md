@@ -80,6 +80,8 @@ Critical tasks:
 - link WordPress account where needed
 - export/import where authorized
 
+Someone who may edit members can import a foreign spreadsheet from the member list. The steps are choose a CSV file, check the columns, preview, check problems, and confirm. Nothing is saved before confirm. A file with more than 2 000 data rows is refused, and the screen states that limit. The preview shows how many rows were read, how many are ready, possible duplicates, and errors, with the CSV row number. A personal identity number, phone number, or address column is left out. Company memberships stay in the structured member file. The plugin's own member file remains the separate exact-format import on the same screen.
+
 Member detail has a Member account section. An active individual member with a usable email normally receives a WordPress subscriber account. A known age under 18 does not. A missing birth date is not treated as proof of minority in this version; that is implementation behavior, not a legal conclusion. The section shows whether the account is linked, not created, or needs attention because the email is shared or already belongs to a WordPress user. An authorized officer can create the account, link an existing WordPress user after confirming that exact account, or unlink it. Unlinking does not delete the WordPress user. The plugin does not set or display a password. Changing the member's contact email does not change the WordPress account email. Ending the membership leaves the account in place; member-only access follows current membership coverage.
 
 Dangerous actions must distinguish:

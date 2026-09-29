@@ -98,6 +98,14 @@ Four storage and concurrency findings are fixed. Plugin version stays 0.1.0 and 
 
 Not part of this batch: retention and guardian policy, personal-identity-number encryption.
 
+## Update — member spreadsheet import — 2026-09-29
+
+Association → Members can import a foreign member spreadsheet (ADR-0026). The plugin's own member file and the structured member file are unchanged. Plugin version stays 0.1.0. Schema stays 16. No migration.
+
+The wizard parses UTF-8 CSV (comma or semicolon, quotes, Swedish characters), lets an officer map columns onto the person and membership fields that exist, and validates every row before anything is saved. More than 2 000 data rows is refused, and the admin message states that limit. Preview does not write. Confirm reads the stored file again and creates people and memberships through the existing repositories, one transaction per row.
+
+Phone, street address, postal code, and city are not imported, because Person has no such fields. A personal identity number is not imported. Its storage stays unencrypted in its own table, as in ADR-0021. Company rows and extra family participants stay in the structured file. The wizard does not link a WordPress user. An existing membership number, a repeated number, or a shared or repeated email is skipped and explained. The same name is not treated as the same person.
+
 ## Lab stacks (in-repo)
 
 Three Docker labs are documented in-repo:

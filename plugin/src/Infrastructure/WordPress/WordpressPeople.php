@@ -50,6 +50,17 @@ final class WordpressPeople
         );
     }
 
+    public static function registerImport(): \Foreningssystem\Application\People\MemberRegisterImport
+    {
+        return new \Foreningssystem\Application\People\MemberRegisterImport(
+            new WpdbPersonRepository(),
+            new WpdbMembershipRepository(),
+            new MembershipLedger(),
+            self::authorizer(),
+            self::transaction()
+        );
+    }
+
     public static function directory(): MemberDirectory
     {
         return new MemberDirectory(

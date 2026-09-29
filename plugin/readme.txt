@@ -58,6 +58,7 @@ Föreningsplugin 0.1.0 is an early development build. It is NOT ready for produc
 
 * föreningsprofil och en samlad inställningshubb
 * personer och medlemskap: ordinarie, ungdom, familj och företag
+* import av ett befintligt medlemsregister från CSV, med kontroll innan något sparas
 * styrelse med historik och täckningsregeln mot medlemskap
 * möten, dagordning, anteckningar, beslut, protokoll, PDF, signerad kopia och
   publicering

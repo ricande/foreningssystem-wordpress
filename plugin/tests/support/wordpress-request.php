@@ -26,12 +26,19 @@ namespace Foreningssystem\Tests\Support {
         /** @var array<string, bool> */
         public static array $uploads = [];
 
+        /** @var array<string, mixed> */
+        public static array $transients = [];
+
+        public static int $userId = 1;
+
         public static function reset(): void
         {
             self::$capabilities = [];
             self::$nonces = [];
             self::$calls = [];
             self::$uploads = [];
+            self::$transients = [];
+            self::$userId = 1;
             $_POST = [];
             $_GET = [];
             $_FILES = [];
@@ -196,5 +203,79 @@ namespace {
         unset($domain);
 
         return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+
+    function esc_html(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+
+    function esc_attr(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+
+    function esc_url(string $url): string
+    {
+        return htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+
+    function __(string $text, string $domain = 'default'): string
+    {
+        unset($domain);
+
+        return $text;
+    }
+
+    function get_current_user_id(): int
+    {
+        return WordPressRequest::$userId;
+    }
+
+    function set_transient(string $key, mixed $value, int $expiration): bool
+    {
+        unset($expiration);
+        WordPressRequest::$transients[$key] = $value;
+
+        return true;
+    }
+
+    function get_transient(string $key): mixed
+    {
+        return WordPressRequest::$transients[$key] ?? false;
+    }
+
+    function delete_transient(string $key): bool
+    {
+        unset(WordPressRequest::$transients[$key]);
+
+        return true;
+    }
+
+    function wp_nonce_field(string $action = '-1'): string
+    {
+        WordPressRequest::$calls[] = 'wp_nonce_field:' . $action;
+        echo '<input type="hidden" name="_wpnonce" value="' . esc_attr($action) . '">';
+
+        return $action;
+    }
+
+    function submit_button(string $text = '', string $type = 'primary'): void
+    {
+        unset($type);
+        echo '<button type="submit">' . esc_html($text) . '</button>';
+    }
+
+    function wp_date(string $format): string
+    {
+        return $format === 'Y-m-d' ? '2026-09-29' : $format;
+    }
+
+    if (! defined('MINUTE_IN_SECONDS')) {
+        define('MINUTE_IN_SECONDS', 60);
+    }
+
+    if (! defined('HOUR_IN_SECONDS')) {
+        define('HOUR_IN_SECONDS', 3600);
     }
 }
