@@ -423,11 +423,13 @@ try {
         AssociationSettingsPage::render();
     });
     unset($_GET['section']);
-    $meetingList = $capture(static function (): void {
+    $_GET['assoc_meeting_step'] = 'new';
+    $newMeeting = $capture(static function (): void {
         MeetingsPage::render();
     });
+    unset($_GET['assoc_meeting_step']);
 
-    if (! str_contains($settings, 'Budgetmöte') || ! str_contains($meetingList, 'Budgetmöte') || str_contains($settings, 'custom_budgetmote') || ! str_contains($meetingList, 'Styrelsemöte') || ! str_contains($meetingList, 'Ingen mall')) {
+    if (! str_contains($settings, 'Budgetmöte') || str_contains($settings, 'custom_budgetmote') || ! str_contains($newMeeting, 'Budgetmöte') || ! str_contains($newMeeting, 'Styrelsemöte') || ! str_contains($newMeeting, 'Ingen mall')) {
         \WP_CLI::error('The custom meeting type did not appear beside the built-in types.');
     }
 
