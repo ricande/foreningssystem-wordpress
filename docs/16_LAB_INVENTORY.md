@@ -17,10 +17,10 @@ Inspected 2026-09-24. This is the development lab on the project owner's Mac. It
 | Debug | `WP_DEBUG` enabled |
 | Plugin mount | `./plugin` → `wp-content/plugins/foreningsplugin` |
 | Mail capture | Mailpit. Web UI `http://localhost:8025`, SMTP `mailpit:1025` inside the Docker network. `mu-plugins/local-mailpit.php` points WordPress `wp_mail()` there. Nothing is delivered to the public internet |
-| Node on the host | Available. Not required for the current placeholder plugin |
+| Node on the host | Available. Not required to run the plugin |
 | Composer in the containers | Not installed |
 | Snapshots | `make snap name=...` and `make restore name=...` dump the database and `uploads`. `ren-install` is the clean baseline |
 
 Local credentials live only in `.env`. Snapshots stay on the machine and are gitignored because a database dump can contain personal data once real testing starts. Use synthetic data only.
 
-The placeholder plugin shows an admin screen so the mount can be checked. It is not the product structure in `docs/PLUGIN_ARCHITECTURE.md`.
+This inventory was written when the mounted plugin was described as a placeholder admin screen. `plugin/foreningsplugin.php` now bootstraps the plugin through `Plugin::register`. The package layout in `docs/PLUGIN_ARCHITECTURE.md` remains **proposed**.

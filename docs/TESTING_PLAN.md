@@ -42,6 +42,12 @@ The current lab is the Docker environment in `docs/16_LAB_INVENTORY.md`. Use syn
 
 PDF tests start only after a library spike. They must include Swedish characters, a multi-page agenda, and a signature block that is not split from its heading in a way that makes the page unusable. Modest memory is part of that spike, not a later surprise.
 
-## What this plan does not require yet
+## Continuous integration that exists now
 
-A continuous-integration configuration can wait until the test harness exists. The harness itself is part of phase B in `docs/15_RELEASE_ROADMAP.md`, after this baseline is accepted.
+`.github/workflows/tests.yml` already runs the three jobs described in `docs/12_TEST_STRATEGY.md`, section **Continuous integration**: `phpunit`, `lab`, and `package-install`. The `phpunit` job uses `plugin/tests/bootstrap.php`. It does not boot the WordPress test library. WordPress-backed checks in the current workflow are the `lab` job and the `package-install` job.
+
+The layers table above remains the proposed split. Its integration-test row, "PHPUnit with the WordPress test library", is not a description of the current `phpunit` job.
+
+The sentence that a continuous-integration configuration could wait belonged to the original Phase B sequencing in `docs/15_RELEASE_ROADMAP.md`. It does not describe the repository now.
+
+This plan stays **proposed**. The case list above is the proposed bar for calling MVP done. This note does not accept the plan and does not claim that every case already passes.

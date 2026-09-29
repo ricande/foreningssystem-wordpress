@@ -66,13 +66,15 @@ Föreningsplugin 0.1.0 is an early development build. It is NOT ready for produc
 * dokument med privat lagring och medlemsbehörighet
 * publika block för styrelse, senaste möte, senaste protokoll, medlemsantal
   och dokument
-* Mina sidor för den inloggade medlemmens egna uppgifter och dokument
 * integritetsexport, radering och kvarhållning
 * migreringar till schema 17
 * första-gången-guide för uppstart och en guidad styrelseadministration
 
 Sektioner och avdelningar är ett framtida produktområde. Det är inte
 implementerat. Beskrivningen finns i källkodens docs/19_SECTIONS.md.
+
+Mina sidor är inte en färdig funktion. Kod som finns beskrivs i källkodens
+docs/MEMBER_AREA.md. Den är inte en medlemsportal.
 
 
 == Installation ==

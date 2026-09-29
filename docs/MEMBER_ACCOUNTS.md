@@ -26,4 +26,4 @@ Two unlinked People who share an email are both left unlinked. A WordPress user 
 
 Public WordPress registration is left unchanged. These accounts are created from membership data.
 
-A linked account can open Mina sidor, the read-only member block described in `docs/MEMBER_AREA.md`. That screen does not change provisioning, and it does not turn the account into an officer or into an editable profile.
+A linked WordPress account is the login identity described above. It does not open a finished Mina sidor. Code that reads the link is recorded in `docs/MEMBER_AREA.md` and is not that feature. The link does not change provisioning, and it does not turn the account into an officer or into an editable profile.

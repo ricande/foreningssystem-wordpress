@@ -1,6 +1,6 @@
 # Plugin architecture
 
-Status: **proposed**. No package layout here is locked. The file `plugin/foreningsplugin.php` currently in the repository is a lab placeholder, not this architecture.
+Status: **proposed**. No package layout here is locked. `plugin/foreningsplugin.php` bootstraps `Plugin::register`. It is not a lab placeholder. The directory layout below remains a proposal.
 
 ## Boundaries
 
@@ -49,6 +49,8 @@ MVP blocks are dynamic server-rendered blocks:
 - Document archive
 - Member count
 - Member area (Mina sidor), private to the logged-in linked person and not publicly cacheable
+
+Listing a member area here is part of this proposal. The block registered in code is described in `docs/MEMBER_AREA.md`. The owner has said Mina sidor is not built, so that block is not a finished feature and this list does not lock it.
 
 The saved block contains configuration only, such as how many meetings to show. It does not contain member emails or minutes HTML. Editor preview uses the same visibility rules as the front end. A user who cannot see board documents does not see them in a preview response.
 

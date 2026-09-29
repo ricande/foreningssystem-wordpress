@@ -65,6 +65,12 @@ Every schema change:
 
 ## Continuous integration
 
-GitHub Actions runs two jobs. The fast job installs Composer dependencies, checks PHP syntax, and runs PHPUnit on PHP 8.3. The lab job copies `.env.example`, installs WordPress, activates the plugin, and runs `scripts/test-lab.sh`. A matrix for an older PHP or WordPress version waits until that floor is locked. The workflow token is limited to `contents: read`.
+GitHub Actions workflow `.github/workflows/tests.yml` runs on push and pull request. The workflow token is limited to `contents: read`. It has three jobs:
+
+- `phpunit` installs Composer dependencies, checks PHP syntax under `plugin/`, and runs PHPUnit on PHP 8.3.
+- `lab` copies `.env.example` to `.env`, runs `scripts/install.sh`, and runs `scripts/test-lab.sh`.
+- `package-install` runs `scripts/test-release-install.sh` with a 30-minute job timeout.
+
+A matrix for an older PHP or WordPress version waits until that floor is locked.
 
 Results are reported as GitHub Checks, and the project posts no legacy commit statuses. The legacy combined-status endpoint (`GET /commits/{sha}/status`) therefore answers `pending` with `total_count: 0` even when every check run has passed; read the check runs, not the combined status.

@@ -1,25 +1,24 @@
-# Mina sidor v1
+# Mina sidor
 
-Mina sidor is a read-only view of the logged-in person's own relationship with the association. It is a dynamic Gutenberg block, `foreningsplugin/member-area`, titled Member area. The association places that block on an ordinary WordPress page, such as `/mina-sidor/`. The plugin does not create that page and does not register its own front-end route.
+Status: **not a finished feature**. The owner has said Mina sidor is not built. This file records code that is already in the repository. It does not accept a member-portal design, and it does not move the deferred member portal in `docs/15_RELEASE_ROADMAP.md`.
 
-WordPress owns the page, menu, theme, login, logout, and password. The block does not contain a login form, a password field, or a way to edit the Person.
+`docs/MEMBER_ACCOUNTS.md` describes WordPress account provisioning. A linked account is not Mina sidor.
 
-## Identity
+## What is not in the product
 
-The block asks WordPress who is logged in and passes that user id to the member-area read model. A snapshot exists only when that WordPress user currently exists and exactly one Person stores the same `wp_user_id`. Email, username, name, membership number, query parameters, and administrator capability do not select a Person.
+The plugin does not create a member page and does not register its own front-end route. There is no finished screen named Mina sidor. Profile editing, guardian access to another person's record, and member self-service requests are not part of this code. Guardian approval of an account for a minor remains future member-portal design and is OPEN in `DECISIONS.md`.
 
-A logged-out visitor sees a login link back to the current page. A live account with no Person link sees a short unlinked message and no suggested matches. A linked Person marked deceased does not receive the normal portal. The account is left in place for an officer to handle.
+## Code that exists
 
-## What the member sees
+These types are building blocks. They are not a finished Mina sidor.
 
-The linked view shows the person's own name, contact email, birth date when one is recorded, and the WordPress account email. Those two email addresses stay separate. A difference is noted and neither address is changed.
+`Foreningssystem\Application\MemberArea\MemberArea::open` takes a WordPress user id and an association date.
 
-Membership dates come from `MemberCoverage::effectiveMemberCoverages`: the overlap of a membership period and this person's own participation. A family member therefore sees the date they joined, not the date the family membership began, and does not see the other participants. Current status comes from `MemberCoverage::isActiveMember`. Ended and future coverage remain visible as history. A company contact relationship is not shown as an individual membership.
+- A user id below 1, or a user the account port does not report as existing, returns state `logged_out`.
+- No Person with that `wp_user_id` returns `unlinked`. Email, username, name, membership number, query parameters, and administrator capability are not used to choose a Person.
+- A Person with status deceased returns `unavailable`.
+- Otherwise the snapshot is `linked`. It carries the person's name, contact email, birth date when one is stored, whether a personal identity record exists, the WordPress account email, whether those two emails differ, whether `MemberCoverage::isActiveMember` is true, and coverage rows from `MemberCoverage::effectiveMemberCoverages`. The identity number itself is not on the snapshot.
 
-Member documents use the existing member-document check: a live WordPress user, the explicit Person link, and active individual coverage. A former member can see their own history and cannot open member-only documents.
+`plugin/src/Infrastructure/WordPress/MemberAreaBlock.php` registers the dynamic block `foreningsplugin/member-area` on `init`, with the title "Member area". `Plugin::register` adds that registration. `render` ignores block attributes and content. It calls `PersonalizedOutput::doNotCache()` and uses `get_current_user_id()` as the only viewer. When the snapshot is linked and the person is an active member, it asks `WordpressDocuments::archive()->memberList()` for document titles and download URLs. `present` turns a snapshot into HTML: a login link when logged out, a short unlinked message, an unavailable message, or sections titled My details, My membership, My documents, My privacy, and My account. One privacy sentence in that HTML says "This is a summary from Mina sidor." That string is in the block template. It does not make the feature finished.
 
-The privacy section says whether a birth date and a personal identity number are recorded. It does not show the number, a masked number, or the protected storage. It is a summary of this screen, not a statutory disclosure. There is no export or erasure request on the page.
-
-## Not in this version
-
-Mina sidor does not edit the Person, change either email address, open another person's record, or act for a child. Guardian relationships do not grant access to someone else's data. That delegation is future work.
+`plugin/tests/MemberAreaTest.php` calls the read model and `present` without WordPress. `plugin/tests/lab-member-area.php` is a lab script. It can create a page with the slug `mina-sidor-lab` and the block. `scripts/test-lab.sh` runs that script. The plugin does not create that page on activation.

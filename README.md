@@ -51,7 +51,6 @@ Det som finns i pluginet nu:
 - besluts- och uppgiftsregister som utgår från mötet som enda källa
 - dokument med privat lagring och medlemsbehörighet
 - publika Gutenberg-block för styrelse, senaste möte, senaste protokoll, medlemsantal och dokument
-- Mina sidor: en inloggad medlems egna uppgifter, medlemskap och medlemsdokument
 - integritetsexport, radering och kvarhållning
 - migreringar till schema 17
 - första-gången-guide för uppstart och en guidad styrelseadministration
@@ -59,6 +58,8 @@ Det som finns i pluginet nu:
 Help & Guides, kontextuell hjälp och registrerade installationer är förslag i `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`. De är inte implementerade.
 
 Sektioner och avdelningar är ett framtida produktområde i `docs/19_SECTIONS.md`. Det är inte implementerat.
+
+Mina sidor är inte en färdig funktion. Kod som finns beskrivs i `docs/MEMBER_AREA.md`. Den är inte en medlemsportal.
 
 ## Snabbstart
 
