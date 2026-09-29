@@ -15,7 +15,7 @@ $templates = $wpdb->prefix . 'assoc_meeting_template';
 $items = $wpdb->prefix . 'assoc_meeting_template_item';
 
 $cleanup = static function () use ($wpdb, $meetings, $agenda, $templates, $items): void {
-    $meetingIds = $wpdb->get_col($wpdb->prepare("SELECT id FROM {$meetings} WHERE title = %s", 'LAB-TEMPLATE'));
+    $meetingIds = $wpdb->get_col("SELECT id FROM {$meetings} WHERE title IN ('LAB-TEMPLATE', 'LAB-TEMPLATE-A', 'LAB-TEMPLATE-B')");
 
     if (is_array($meetingIds)) {
         foreach ($meetingIds as $meetingId) {
@@ -24,7 +24,7 @@ $cleanup = static function () use ($wpdb, $meetings, $agenda, $templates, $items
         }
     }
 
-    $templateIds = $wpdb->get_col($wpdb->prepare("SELECT id FROM {$templates} WHERE name = %s", 'LAB-TEMPLATE-MALL'));
+    $templateIds = $wpdb->get_col("SELECT id FROM {$templates} WHERE name IN ('LAB-TEMPLATE-MALL', 'LAB-TEMPLATE-EGEN', 'LAB-TEMPLATE-EGEN-SPARAD')");
 
     if (is_array($templateIds)) {
         foreach ($templateIds as $templateId) {
@@ -102,20 +102,76 @@ try {
 ob_start();
 MeetingsPage::render();
 $html = (string) ob_get_clean();
+$_GET['assoc_template_step'] = 'choose';
+ob_start();
+MeetingsPage::render();
+$choose = (string) ob_get_clean();
+$_GET['assoc_template_step'] = 'items';
+$_GET['starter'] = 'annual';
+ob_start();
+MeetingsPage::render();
+$points = (string) ob_get_clean();
+unset($_GET['assoc_template_step'], $_GET['starter']);
+
+$emptyId = WordpressMeetings::templates()->createFromStarter('empty', 'LAB-TEMPLATE-EGEN', $typeId, []);
+WordpressMeetings::templates()->addHeading($emptyId, 'Egen punkt');
+WordpressMeetings::templates()->rename($emptyId, 'LAB-TEMPLATE-EGEN-SPARAD');
+$opened = WordpressMeetings::templates()->headings($emptyId);
+$openedName = '';
+
+foreach (WordpressMeetings::templates()->all() as $template) {
+    if ((int) $template->id() === $emptyId) {
+        $openedName = $template->name();
+    }
+}
+
+$meetingA = WordpressMeetings::service()->schedule(
+    $typeId,
+    'LAB-TEMPLATE-A',
+    MeetingMoment::fromLocal('2027-04-02 18:00'),
+    'Lokalen'
+);
+$meetingB = WordpressMeetings::service()->schedule(
+    $typeId,
+    'LAB-TEMPLATE-B',
+    MeetingMoment::fromLocal('2028-04-02 18:00'),
+    'Lokalen'
+);
+WordpressMeetings::templates()->copyOnto($meetingA, $emptyId);
+WordpressMeetings::templates()->copyOnto($meetingB, $emptyId);
+WordpressMeetings::templates()->renameHeading($emptyId, (int) $opened[0]->id(), 'Ändrad mall');
+$savedTitle = WordpressMeetings::templates()->headings($emptyId)[0]->title();
+$titlesA = $wpdb->get_col($wpdb->prepare("SELECT title FROM {$agenda} WHERE meeting_id = %d ORDER BY position ASC", $meetingA));
+$titlesB = $wpdb->get_col($wpdb->prepare("SELECT title FROM {$agenda} WHERE meeting_id = %d ORDER BY position ASC", $meetingB));
 
 if (
     $denied !== true
     || $mismatched !== true
     || $titles !== ['LAB öppnande', 'LAB nästa']
-    || ! str_contains($html, 'En mall är en lista med rubriker')
+    || $openedName !== 'LAB-TEMPLATE-EGEN-SPARAD'
+    || count($opened) !== 1
+    || $opened[0]->title() !== 'Egen punkt'
+    || $savedTitle !== 'Ändrad mall'
+    || $titlesA !== ['Egen punkt']
+    || $titlesB !== ['Egen punkt']
+    || ! str_contains($html, 'Skapa en mötesmall från en startmall')
+    || ! str_contains($html, 'Skapa ny mall')
     || ! str_contains($html, 'LAB-TEMPLATE-MALL')
-    || str_contains($html, 'Val av styrelse')
+    || ! str_contains($html, 'Öppna mall')
+    || ! str_contains($choose, 'Tom mall')
+    || ! str_contains($choose, 'Föreningsmöte')
+    || ! str_contains($choose, 'Årsmöte')
+    || ! str_contains($points, 'Fastställande av röstlängd')
+    || ! str_contains($points, 'Val av mötesordförande')
+    || ! str_contains($points, 'Mötets avslutande')
+    || ! str_contains($points, 'name="heading[]"')
+    || str_contains($html . $choose . $points, 'Val av styrelse')
 ) {
     $fail('The meeting template rewrote an existing agenda or arrived with a hardcoded annual agenda.');
 }
 
 $cleanup();
-$left = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$templates} WHERE name = %s", 'LAB-TEMPLATE-MALL'));
+$left = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$templates} WHERE name IN ('LAB-TEMPLATE-MALL', 'LAB-TEMPLATE-EGEN', 'LAB-TEMPLATE-EGEN-SPARAD')");
 
 if ($left !== 0) {
     \WP_CLI::error('The lab meeting template was not removed.');

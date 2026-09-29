@@ -88,6 +88,8 @@ final class MinutesDraftTest extends TestCase
         $personId = (int) $people->add(new Person(null, 'Ada', 'Lovelace', 'ada@example.test', PersonStatus::Known, null))->id();
         $meetingId = $meetings->schedule(1, 'Styrelsemöte', MeetingMoment::fromLocal('2024-05-02 18:00'), 'Lokalen');
         $participants->add(new Participant(null, $meetingId, $personId, Presence::Present, MeetingDuty::Chair));
+        $secretaryId = (int) $people->add(new Person(null, 'Grace', 'Hopper', 'grace@example.test', PersonStatus::Known, null))->id();
+        $participants->add(new Participant(null, $meetingId, $secretaryId, Presence::Present, MeetingDuty::Secretary));
         $itemId = (int) $agenda->add(new AgendaItem(null, $meetingId, 1, 'Inköp', '§2'))->id();
         $notes->add(new MeetingNote(null, $meetingId, $itemId, 'Tre offerter granskades.', true));
         $notes->add(new MeetingNote(null, $meetingId, $itemId, 'Intern skiss.', false));
@@ -134,6 +136,11 @@ final class MinutesDraftTest extends TestCase
         self::assertStringContainsString('Beslut: Föreningen köper modell X.', $draft->body());
         self::assertStringContainsString('Uppgift: Ada kontaktar kommunen om hyresavtalet. (Ada Lovelace, 2026-11-15, öppen)', $draft->body());
         self::assertStringContainsString('Mötesordförande: Ada Lovelace', $draft->body());
+        self::assertStringContainsString('Sekreterare: Grace Hopper', $draft->body());
+        self::assertLessThan(
+            strpos((string) $draft->body(), 'Sekreterare:'),
+            strpos((string) $draft->body(), 'Mötesordförande:')
+        );
         self::assertStringNotContainsString('Intern skiss.', $draft->body());
         self::assertStringNotContainsString('@', $draft->body());
         self::assertStringNotContainsString('@', $draft->payload());

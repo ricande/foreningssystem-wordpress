@@ -92,8 +92,13 @@ final class Plugin
         add_action('admin_post_assoc_end_assignment', [BoardPage::class, 'end']);
         add_action('admin_post_assoc_cancel_assignment', [BoardPage::class, 'cancelScheduled']);
         add_action('admin_post_assoc_schedule_meeting', [MeetingsPage::class, 'schedule']);
+        add_action('admin_post_assoc_template_guide', [MeetingsPage::class, 'continueTemplateGuide']);
         add_action('admin_post_assoc_save_meeting_template', [MeetingsPage::class, 'saveTemplate']);
+        add_action('admin_post_assoc_rename_meeting_template', [MeetingsPage::class, 'renameTemplate']);
         add_action('admin_post_assoc_add_template_heading', [MeetingsPage::class, 'addTemplateHeading']);
+        add_action('admin_post_assoc_rename_template_heading', [MeetingsPage::class, 'renameTemplateHeading']);
+        add_action('admin_post_assoc_remove_template_heading', [MeetingsPage::class, 'removeTemplateHeading']);
+        add_action('admin_post_assoc_move_template_heading', [MeetingsPage::class, 'moveTemplateHeading']);
         add_action('admin_post_assoc_remove_meeting_template', [MeetingsPage::class, 'removeTemplate']);
         add_action('admin_post_assoc_start_meeting', [MeetingsPage::class, 'start']);
         add_action('admin_post_assoc_mark_meeting_held', [MeetingsPage::class, 'markHeld']);
@@ -290,7 +295,7 @@ final class Plugin
             'foreningsplugin-admin',
             plugins_url('assets/admin.css', self::$file),
             [],
-            self::VERSION
+            (string) filemtime(dirname(self::$file) . '/assets/admin.css')
         );
     }
 

@@ -51,4 +51,14 @@ final class MeetingTemplateItem
     {
         return new self($id, $this->templateId, $this->position, $this->title);
     }
+
+    public function withTitle(string $title): self
+    {
+        return new self($this->id, $this->templateId, $this->position, $title);
+    }
+
+    public function withPosition(int $position): self
+    {
+        return new self($this->id, $this->templateId, $position, $this->title);
+    }
 }

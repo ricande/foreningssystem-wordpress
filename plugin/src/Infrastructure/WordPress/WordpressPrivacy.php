@@ -357,6 +357,7 @@ final class WordpressPrivacy
     {
         return match ($duty) {
             MeetingDuty::Chair->value => __('Chair', 'foreningsplugin'),
+            MeetingDuty::Secretary->value => __('Secretary', 'foreningsplugin'),
             MeetingDuty::Adjuster->value => __('Adjuster', 'foreningsplugin'),
             default => __('None', 'foreningsplugin'),
         };

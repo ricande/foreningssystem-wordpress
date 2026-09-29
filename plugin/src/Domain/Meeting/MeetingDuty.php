@@ -8,5 +8,6 @@ enum MeetingDuty: string
 {
     case None = 'none';
     case Chair = 'chair';
+    case Secretary = 'secretary';
     case Adjuster = 'adjuster';
 }

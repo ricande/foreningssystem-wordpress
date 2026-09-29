@@ -119,6 +119,10 @@ $_GET['agenda'] = (string) $itemIds['Equipment purchase'];
 ob_start();
 MeetingsPage::render();
 $during = (string) ob_get_clean();
+$_GET['assoc_meeting_tab'] = 'participants';
+ob_start();
+MeetingsPage::render();
+$peopleTab = (string) ob_get_clean();
 $_GET = [];
 $record->addNote($meetingId, $itemIds['Equipment purchase'], 'Three offers were reviewed.', false);
 $record->addDecision(
@@ -194,7 +198,12 @@ if (
     || ! str_contains($during, 'id="agenda-' . $itemIds['Equipment purchase'] . '"')
     || ! str_contains($during, 'Equipment purchase')
     || ! str_contains($during, 'assoc_add_note')
+    || str_contains($during, 'assoc_add_participant')
+    || ! str_contains($during, 'nav-tab')
+    || ! str_contains($peopleTab, 'assoc_add_participant')
+    || str_contains($peopleTab, 'assoc_add_note')
     || str_contains($during, 'value="' . $nils . '"')
+    || str_contains($peopleTab, 'value="' . $nils . '"')
     || $held !== MeetingStatus::Held
     || $beforeDraft !== null
     || $draft === null

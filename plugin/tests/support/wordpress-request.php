@@ -266,6 +266,13 @@ namespace {
         echo '<button type="submit">' . esc_html($text) . '</button>';
     }
 
+    function wp_json_encode(mixed $value, int $flags = 0, int $depth = 512): string|false
+    {
+        unset($flags, $depth);
+
+        return json_encode($value);
+    }
+
     function wp_date(string $format): string
     {
         return $format === 'Y-m-d' ? '2026-09-29' : $format;

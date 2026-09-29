@@ -64,7 +64,7 @@ Implemented areas:
 - schema migrations through version 17
 - members admin UX v1: list, detail, typed create flows, guardians, protected identity display and membership history
 - board admin UX v1: guided board wizard (overview, one task at a time, confirm, separate history view) over the same BoardService rules for replacement, multi-holder roles, ending, and cancelling scheduled changes without deleting history
-- meetings admin UX v1: operational overview and a single meeting workspace for preparation, capture, and minutes
+- meetings admin UX v1: operational overview and a single meeting workspace for preparation, capture, and minutes. A guide copies a system starting point into an association-owned meeting template: check the original items, then add and reorder headings. The annual-meeting starting point lists the usual annual-meeting items. Creating a meeting copies the saved template onto the meeting. Schema 17 is unchanged
 - overview / dashboard UX v1: capability-aware association work overview for attention, counts, meetings, board, tasks, and recent documents
 - member account provisioning v1: an active individual member with a usable email can receive a linked WordPress subscriber login. A missing WordPress user stays a broken link until an officer clears it. Member-only documents require a live WordPress user, an explicit Person link, and active individual coverage
 - Mina sidor v1: a read-only Gutenberg block shows the logged-in person's own details, effective membership coverage, member documents while the membership is active, a privacy summary, and the WordPress account. Profile editing, guardian access, and member self-service requests are not implemented

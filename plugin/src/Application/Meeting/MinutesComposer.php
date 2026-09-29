@@ -108,6 +108,12 @@ final class MinutesComposer
         }
 
         foreach ($attendance as $row) {
+            if ($row->participant()->duty() === MeetingDuty::Secretary) {
+                $closing[] = 'Sekreterare: ' . $row->personName();
+            }
+        }
+
+        foreach ($attendance as $row) {
             if ($row->participant()->duty() === MeetingDuty::Adjuster) {
                 $closing[] = 'Justerare: ' . $row->personName();
             }

@@ -17,6 +17,7 @@ use Foreningssystem\Domain\Meeting\MeetingStatus;
 use Foreningssystem\Domain\Meeting\MeetingType;
 use Foreningssystem\Domain\Meeting\MinutesRevision;
 use Foreningssystem\Domain\Meeting\Presence;
+use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Person\PersonStatus;
 
 final class MeetingWorkspaceScreen
@@ -64,15 +65,25 @@ final class MeetingWorkspaceScreen
         }
 
         self::header($meeting, $type instanceof MeetingType ? $type : null, $canEdit, $canRecord, $draft, $types);
-        echo '<p>' . esc_html__('An adjunct person does not have to be a member. The list shows names, not private email.', 'foreningsplugin') . '</p>';
 
         if ($meeting->status() === MeetingStatus::InProgress) {
-            self::agenda($meeting, $agenda, $notes, $decisionRows, $actionRows, $people, $canEdit, $canRecord, $focus);
-            echo '<details><summary>' . esc_html__('Participants', 'foreningsplugin') . '</summary>';
-            self::participants($meetingId, $attendance, $people, $canEdit);
-            echo '</details>';
+            $tab = isset($_GET['assoc_meeting_tab']) && sanitize_key((string) $_GET['assoc_meeting_tab']) === 'participants'
+                ? 'participants'
+                : 'agenda';
+            echo '<div class="assoc-meeting-focus"' . ($focus > 0 ? ' id="agenda-' . esc_attr((string) $focus) . '"' : '') . '>';
+            self::meetingTabs($meetingId, $focus, $tab);
+
+            if ($tab === 'participants') {
+                self::participants($meetingId, $attendance, $canEdit, $meeting->startsAt()->date());
+            } elseif ($agenda !== []) {
+                self::conduct($meeting, $agenda, $notes, $decisionRows, $actionRows, $people, $canEdit, $canRecord, $focus);
+            } else {
+                self::agenda($meeting, $agenda, $notes, $decisionRows, $actionRows, $people, $canEdit, $canRecord, $focus);
+            }
+
+            echo '</div>';
         } else {
-            self::participants($meetingId, $attendance, $people, $canEdit);
+            self::participants($meetingId, $attendance, $canEdit, $meeting->startsAt()->date());
             self::agenda($meeting, $agenda, $notes, $decisionRows, $actionRows, $people, $canEdit, $canRecord, $focus);
         }
 
@@ -186,23 +197,42 @@ final class MeetingWorkspaceScreen
         echo '</form>';
     }
 
+    private static function meetingTabs(int $meetingId, int $focus, string $current): void
+    {
+        $agendaArgs = [
+            'page' => 'foreningsplugin-meetings',
+            'meeting' => $meetingId,
+        ];
+
+        if ($focus > 0) {
+            $agendaArgs['agenda'] = $focus;
+        }
+
+        $agendaUrl = add_query_arg($agendaArgs, admin_url('admin.php'));
+        $participantsUrl = add_query_arg([
+            'page' => 'foreningsplugin-meetings',
+            'meeting' => $meetingId,
+            'assoc_meeting_tab' => 'participants',
+        ], admin_url('admin.php'));
+        echo '<nav class="nav-tab-wrapper assoc-meeting-tabs" aria-label="' . esc_attr__('Meeting', 'foreningsplugin') . '">';
+        echo '<a class="nav-tab' . ($current === 'agenda' ? ' nav-tab-active' : '') . '" href="' . esc_url($agendaUrl) . '"' . ($current === 'agenda' ? ' aria-current="page"' : '') . '>' . esc_html__('Agenda', 'foreningsplugin') . '</a>';
+        echo '<a class="nav-tab' . ($current === 'participants' ? ' nav-tab-active' : '') . '" href="' . esc_url($participantsUrl) . '"' . ($current === 'participants' ? ' aria-current="page"' : '') . '>' . esc_html__('Participants', 'foreningsplugin') . '</a>';
+        echo '</nav>';
+    }
+
     /**
      * @param list<\Foreningssystem\Application\Meeting\AttendanceRow> $attendance
-     * @param array<int, string> $people
      */
-    private static function participants(int $meetingId, array $attendance, array $people, bool $canEdit): void
+    private static function participants(int $meetingId, array $attendance, bool $canEdit, string $meetingDate): void
     {
         echo '<h2 id="assoc-participants">' . esc_html__('Participants', 'foreningsplugin') . '</h2>';
+        echo '<p>' . esc_html__('Add anyone who is present. The board and the other members are listed separately. Chair, secretary and adjuster are optional functions for this meeting.', 'foreningsplugin') . '</p>';
 
         if ($canEdit) {
             MeetingAdminForms::begin('assoc_add_participant', $meetingId);
             echo '<p><label>' . esc_html__('Person', 'foreningsplugin') . ' <select name="person_id" required>';
             echo '<option value="">' . esc_html__('Choose person', 'foreningsplugin') . '</option>';
-
-            foreach ($people as $id => $name) {
-                echo '<option value="' . esc_attr((string) $id) . '">' . esc_html($name) . '</option>';
-            }
-
+            self::attendeeOptions($meetingDate);
             echo '</select></label></p>';
             echo '<p><label>' . esc_html__('Attendance', 'foreningsplugin') . ' <select name="presence">';
 
@@ -218,6 +248,7 @@ final class MeetingWorkspaceScreen
             }
 
             echo '</select></label></p>';
+            echo '<p class="description">' . esc_html__('Leave the function as none when the person is only present.', 'foreningsplugin') . '</p>';
             submit_button(__('Add participant', 'foreningsplugin'), 'secondary');
             echo '</form>';
         }
@@ -257,6 +288,112 @@ final class MeetingWorkspaceScreen
         }
 
         echo '</tbody></table>';
+    }
+
+    /**
+     * @param list<AgendaItem> $agenda
+     * @param list<MeetingNote> $notes
+     * @param list<DecisionRow> $decisionRows
+     * @param list<ActionItemRow> $actionRows
+     * @param array<int, string> $people
+     */
+    private static function conduct(
+        Meeting $meeting,
+        array $agenda,
+        array $notes,
+        array $decisionRows,
+        array $actionRows,
+        array $people,
+        bool $canEdit,
+        bool $canRecord,
+        int $focus,
+    ): void {
+        $current = $agenda[0];
+        $index = 0;
+
+        foreach ($agenda as $position => $item) {
+            if ((int) $item->id() === $focus) {
+                $current = $item;
+                $index = $position;
+            }
+        }
+
+        $previous = $index > 0 ? $agenda[$index - 1] : null;
+        $next = $agenda[$index + 1] ?? null;
+        $meetingId = (int) $meeting->id();
+        $itemId = (int) $current->id();
+        echo '<div class="assoc-setup">';
+        echo '<nav class="assoc-setup-progress" aria-label="' . esc_attr__('Agenda', 'foreningsplugin') . '">';
+        echo '<p class="assoc-setup-progress-status">' . esc_html(sprintf(
+            /* translators: 1: current agenda item, 2: number of agenda items */
+            __('Step %1$d of %2$d', 'foreningsplugin'),
+            $index + 1,
+            count($agenda)
+        )) . '</p>';
+        echo '<ol class="assoc-meeting-steps">';
+
+        foreach ($agenda as $item) {
+            $linkId = (int) $item->id();
+            $url = add_query_arg([
+                'page' => 'foreningsplugin-meetings',
+                'meeting' => $meetingId,
+                'agenda' => $linkId,
+            ], admin_url('admin.php'));
+            $here = $linkId === $itemId;
+            echo '<li' . ($here ? ' class="is-current" aria-current="step"' : '') . '>';
+            echo '<a href="' . esc_url($url) . '">' . esc_html($item->displayNumber() . '. ' . $item->title()) . '</a>';
+            echo '</li>';
+        }
+
+        echo '</ol></nav>';
+        echo '<h2>' . esc_html($current->displayNumber() . '. ' . $current->title()) . '</h2>';
+        echo '<p>' . esc_html__('Write for this item, then continue to the next one.', 'foreningsplugin') . '</p>';
+        self::capture($meetingId, $itemId, $notes, $decisionRows, $actionRows, $people, $canRecord, 'records');
+
+        if ($canRecord) {
+            MeetingAdminForms::begin('assoc_add_note', $meetingId);
+            echo '<input type="hidden" name="agenda_item_id" value="' . esc_attr((string) $itemId) . '">';
+
+            if ($previous instanceof AgendaItem && $previous->id() !== null) {
+                echo '<input type="hidden" name="previous_agenda" value="' . esc_attr((string) $previous->id()) . '">';
+            }
+
+            if ($next instanceof AgendaItem && $next->id() !== null) {
+                echo '<input type="hidden" name="next_agenda" value="' . esc_attr((string) $next->id()) . '">';
+            }
+
+            echo '<p><label>' . esc_html__('Text', 'foreningsplugin') . '<br><textarea class="large-text" name="body" rows="8"></textarea></label></p>';
+            echo '<p><label><input type="checkbox" name="include_in_minutes" value="1" checked> ' . esc_html__('Include in minutes', 'foreningsplugin') . '</label></p>';
+            echo '<p class="assoc-setup-actions">';
+
+            if ($previous instanceof AgendaItem) {
+                echo '<button type="submit" class="button" name="direction" value="back">' . esc_html__('Back', 'foreningsplugin') . '</button>';
+            }
+
+            echo '<button type="submit" class="button button-primary" name="direction" value="next">';
+            echo esc_html($next instanceof AgendaItem ? __('Next item', 'foreningsplugin') : __('Add note', 'foreningsplugin'));
+            echo '</button></p></form>';
+            self::capture($meetingId, $itemId, $notes, $decisionRows, $actionRows, $people, true, 'extra');
+        }
+
+        if ($canEdit) {
+            echo '<details><summary>' . esc_html__('Change the agenda', 'foreningsplugin') . '</summary>';
+            MeetingAdminForms::begin('assoc_add_agenda_item', $meetingId);
+            echo '<p><label>' . esc_html__('Item', 'foreningsplugin') . ' <input class="regular-text" type="text" name="title" required></label></p>';
+            submit_button(__('Add item', 'foreningsplugin'), 'secondary');
+            echo '</form>';
+            MeetingAdminForms::post('assoc_move_agenda_item', $meetingId, [
+                'item_id' => (string) $itemId,
+                'direction' => '-1',
+            ], __('Move up', 'foreningsplugin'));
+            MeetingAdminForms::post('assoc_move_agenda_item', $meetingId, [
+                'item_id' => (string) $itemId,
+                'direction' => '1',
+            ], __('Move down', 'foreningsplugin'));
+            echo '</details>';
+        }
+
+        echo '</div>';
     }
 
     /**
@@ -360,8 +497,15 @@ final class MeetingWorkspaceScreen
         array $actionRows,
         array $people,
         bool $canRecord,
+        string $part = 'all',
     ): void {
         $fields = $agendaItemId === null ? [] : ['agenda_item_id' => (string) $agendaItemId];
+
+        if ($part === 'extra') {
+            self::captureForms($meetingId, $fields, $people, false);
+
+            return;
+        }
 
         foreach ($notes as $note) {
             if ($note->agendaItemId() !== $agendaItemId) {
@@ -442,24 +586,35 @@ final class MeetingWorkspaceScreen
             }
         }
 
-        if (! $canRecord) {
+        if (! $canRecord || $part === 'records') {
             return;
         }
 
+        self::captureForms($meetingId, $fields, $people, true);
+    }
+
+    /**
+     * @param array<string, string> $fields
+     * @param array<int, string> $people
+     */
+    private static function captureForms(int $meetingId, array $fields, array $people, bool $includeNote): void
+    {
         $hidden = '';
 
         foreach ($fields as $name => $value) {
             $hidden .= '<input type="hidden" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '">';
         }
 
-        echo '<details><summary>' . esc_html__('Add note', 'foreningsplugin') . '</summary>';
-        MeetingAdminForms::begin('assoc_add_note', $meetingId);
-        echo $hidden;
-        echo '<p><label>' . esc_html__('Working note', 'foreningsplugin') . '<br><textarea class="large-text" name="body" rows="3" required></textarea></label></p>';
-        echo '<p><label><input type="checkbox" name="include_in_minutes" value="1"> ' . esc_html__('Include in minutes', 'foreningsplugin') . '</label></p>';
-        echo '<p class="description">' . esc_html__('A working note stays with the meeting. Only a note marked for inclusion is copied into the minutes draft.', 'foreningsplugin') . '</p>';
-        submit_button(__('Add note', 'foreningsplugin'), 'secondary');
-        echo '</form></details>';
+        if ($includeNote) {
+            echo '<details><summary>' . esc_html__('Add note', 'foreningsplugin') . '</summary>';
+            MeetingAdminForms::begin('assoc_add_note', $meetingId);
+            echo $hidden;
+            echo '<p><label>' . esc_html__('Working note', 'foreningsplugin') . '<br><textarea class="large-text" name="body" rows="3" required></textarea></label></p>';
+            echo '<p><label><input type="checkbox" name="include_in_minutes" value="1"> ' . esc_html__('Include in minutes', 'foreningsplugin') . '</label></p>';
+            echo '<p class="description">' . esc_html__('A working note stays with the meeting. Only a note marked for inclusion is copied into the minutes draft.', 'foreningsplugin') . '</p>';
+            submit_button(__('Add note', 'foreningsplugin'), 'secondary');
+            echo '</form></details>';
+        }
 
         echo '<details><summary>' . esc_html__('Add decision', 'foreningsplugin') . '</summary>';
         MeetingAdminForms::begin('assoc_add_decision', $meetingId);
@@ -479,6 +634,74 @@ final class MeetingWorkspaceScreen
         echo '<p class="description">' . esc_html__('A task is something to be done. It is not the same as a decision.', 'foreningsplugin') . '</p>';
         submit_button(__('Add task', 'foreningsplugin'), 'secondary');
         echo '</form></details>';
+    }
+
+    private static function attendeeOptions(string $meetingDate): void
+    {
+        $on = AssociationDate::fromIso($meetingDate);
+        $board = [];
+
+        foreach (WordpressBoard::directory()->seats($on) as $seat) {
+            if ($seat->state() !== 'current') {
+                continue;
+            }
+
+            $id = $seat->personId();
+            $board[$id] = isset($board[$id])
+                ? $board[$id] . ', ' . $seat->roleName()
+                : $seat->personName() . ', ' . $seat->roleName();
+        }
+
+        $members = [];
+
+        foreach (WordpressPeople::directory()->listRows('', '', 'active', $on) as $row) {
+            $id = (int) $row['person_id'];
+
+            if ($id < 1 || isset($board[$id])) {
+                continue;
+            }
+
+            $members[$id] = (string) $row['title'];
+        }
+
+        $used = $board + $members;
+        $others = [];
+
+        foreach (self::livingPeople() as $id => $name) {
+            if (! isset($used[$id])) {
+                $others[$id] = $name;
+            }
+        }
+
+        asort($board);
+        asort($members);
+        $groups = [
+            __('Board', 'foreningsplugin') => $board,
+            __('Members', 'foreningsplugin') => $members,
+            __('Other people', 'foreningsplugin') => $others,
+        ];
+
+        if ($board === [] && $members === [] && $others === []) {
+            foreach (self::livingPeople() as $id => $name) {
+                echo '<option value="' . esc_attr((string) $id) . '">' . esc_html($name) . '</option>';
+            }
+
+            return;
+        }
+
+        foreach ($groups as $label => $people) {
+            if ($people === []) {
+                continue;
+            }
+
+            echo '<optgroup label="' . esc_attr($label) . '">';
+
+            foreach ($people as $id => $name) {
+                echo '<option value="' . esc_attr((string) $id) . '">' . esc_html($name) . '</option>';
+            }
+
+            echo '</optgroup>';
+        }
     }
 
     /**

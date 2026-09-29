@@ -33,6 +33,32 @@ final class WpdbMeetingTemplateItemRepository implements MeetingTemplateItemRepo
         return $item->withId((int) $wpdb->insert_id);
     }
 
+    public function save(MeetingTemplateItem $item): void
+    {
+        global $wpdb;
+
+        $id = $item->id();
+
+        if ($id === null) {
+            throw new \RuntimeException('Meeting template item was not found.');
+        }
+
+        $updated = $wpdb->update(
+            $this->table(),
+            [
+                'position' => $item->position(),
+                'title' => $item->title(),
+            ],
+            ['id' => $id],
+            ['%d', '%s'],
+            ['%d']
+        );
+
+        if ($updated === false) {
+            throw new \RuntimeException('The template heading could not be saved.');
+        }
+    }
+
     public function remove(int $id): void
     {
         global $wpdb;
@@ -42,6 +68,25 @@ final class WpdbMeetingTemplateItemRepository implements MeetingTemplateItemRepo
         if ($deleted === false) {
             throw new \RuntimeException('The template heading could not be removed.');
         }
+    }
+
+    public function find(int $id): ?MeetingTemplateItem
+    {
+        global $wpdb;
+
+        $row = $wpdb->get_row(
+            $wpdb->prepare('SELECT * FROM ' . $this->table() . ' WHERE id = %d', $id),
+            ARRAY_A
+        );
+
+        return is_array($row)
+            ? new MeetingTemplateItem(
+                (int) $row['id'],
+                (int) $row['template_id'],
+                (int) $row['position'],
+                (string) $row['title']
+            )
+            : null;
     }
 
     public function forTemplate(int $templateId): array

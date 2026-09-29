@@ -28,11 +28,11 @@ final class MeetingDetailPage
                 Presence::from(self::text('presence')),
                 MeetingDuty::from(self::text('meeting_duty') === '' ? MeetingDuty::None->value : self::text('meeting_duty'))
             );
-            self::redirect($meetingId, 'participant_added');
+            self::redirect($meetingId, 'participant_added', null, 'participants');
         } catch (MeetingRuleException $error) {
-            self::redirect($meetingId, self::ruleNotice($error, 'duplicate_participant'));
+            self::redirect($meetingId, self::ruleNotice($error, 'duplicate_participant'), null, 'participants');
         } catch (\InvalidArgumentException | \RuntimeException | \ValueError) {
-            self::redirect($meetingId, 'invalid');
+            self::redirect($meetingId, 'invalid', null, 'participants');
         }
     }
 
@@ -43,11 +43,11 @@ final class MeetingDetailPage
 
         try {
             WordpressMeetings::workspace()->removeParticipant(self::integer('participant_id'), $meetingId);
-            self::redirect($meetingId, 'participant_removed');
+            self::redirect($meetingId, 'participant_removed', null, 'participants');
         } catch (MeetingRuleException $error) {
-            self::redirect($meetingId, self::ruleNotice($error, 'invalid'));
+            self::redirect($meetingId, self::ruleNotice($error, 'invalid'), null, 'participants');
         } catch (\RuntimeException) {
-            self::redirect($meetingId, 'invalid');
+            self::redirect($meetingId, 'invalid', null, 'participants');
         }
     }
 
@@ -103,14 +103,28 @@ final class MeetingDetailPage
         self::guardRecord('assoc_add_note');
         $meetingId = self::integer('meeting_id');
 
+        $body = trim(self::textarea('body'));
+        $current = self::optionalInteger('agenda_item_id');
+        $previous = self::text('direction') === 'back' ? self::optionalInteger('previous_agenda') : null;
+        $next = $previous === null ? self::optionalInteger('next_agenda') : null;
+        $target = $previous ?? $next;
+
         try {
-            WordpressMeetings::record()->addNote(
-                $meetingId,
-                self::optionalInteger('agenda_item_id'),
-                self::textarea('body'),
-                self::checked('include_in_minutes')
-            );
-            self::redirect($meetingId, 'note_added', self::optionalInteger('agenda_item_id'));
+            if ($body !== '') {
+                WordpressMeetings::record()->addNote(
+                    $meetingId,
+                    $current,
+                    $body,
+                    self::checked('include_in_minutes')
+                );
+                self::redirect($meetingId, 'note_added', $target ?? $current);
+            }
+
+            if ($target !== null) {
+                self::redirect($meetingId, 'continued', $target);
+            }
+
+            throw new \InvalidArgumentException('A note needs text.');
         } catch (MeetingRuleException $error) {
             self::redirect($meetingId, self::ruleNotice($error, 'wrong_item'), self::optionalInteger('agenda_item_id'));
         } catch (\InvalidArgumentException | \RuntimeException) {
@@ -532,13 +546,17 @@ final class MeetingDetailPage
         }
     }
 
-    private static function redirect(int $meetingId, string $notice, ?int $agendaItemId = null): void
+    private static function redirect(int $meetingId, string $notice, ?int $agendaItemId = null, string $tab = ''): void
     {
         $args = [
             'page' => 'foreningsplugin-meetings',
             'meeting' => $meetingId,
             'assoc_notice' => $notice,
         ];
+
+        if ($tab === 'participants') {
+            $args['assoc_meeting_tab'] = 'participants';
+        }
 
         if ($agendaItemId !== null && $agendaItemId > 0) {
             $args['agenda'] = $agendaItemId;
@@ -641,6 +659,7 @@ final class MeetingDetailPage
         return match ($duty) {
             MeetingDuty::None => __('None', 'foreningsplugin'),
             MeetingDuty::Chair => __('Chair', 'foreningsplugin'),
+            MeetingDuty::Secretary => __('Secretary', 'foreningsplugin'),
             MeetingDuty::Adjuster => __('Adjuster', 'foreningsplugin'),
         };
     }

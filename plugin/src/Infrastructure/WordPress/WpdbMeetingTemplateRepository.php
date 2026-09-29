@@ -32,6 +32,29 @@ final class WpdbMeetingTemplateRepository implements MeetingTemplateRepository
         return $template->withId((int) $wpdb->insert_id);
     }
 
+    public function save(MeetingTemplate $template): void
+    {
+        global $wpdb;
+
+        $id = $template->id();
+
+        if ($id === null) {
+            throw new \RuntimeException('Meeting template was not found.');
+        }
+
+        $updated = $wpdb->update(
+            $this->table(),
+            ['name' => $template->name()],
+            ['id' => $id],
+            ['%s'],
+            ['%d']
+        );
+
+        if ($updated === false) {
+            throw new \RuntimeException('The meeting template could not be saved.');
+        }
+    }
+
     public function remove(int $id): void
     {
         global $wpdb;

@@ -60,7 +60,7 @@ A category such as board meeting, annual meeting, extraordinary annual meeting, 
 
 ## Meeting template
 
-A reusable agenda structure and meeting configuration. Annual-meeting templates follow the association's own bylaws. No universal Swedish legal agenda is hardcoded.
+A reusable agenda the association saves and edits. A guide copies a system starting point into that saved template: the association checks which original items to keep, then adds and reorders headings. A meeting then gets its own copy. The three copies stay independent. The annual-meeting starting point lists the usual annual-meeting items, and the association chooses which of them to keep.
 
 ## Meeting
 
@@ -68,7 +68,7 @@ One scheduled occurrence, with its own lifecycle. It is operational working data
 
 ## Meeting participant
 
-A Person's participation in one Meeting, including a presence category such as present, absent, or co-opted, and an optional meeting function such as chair or adjuster for that day.
+A Person's participation in one Meeting, including a presence category such as present, absent, or co-opted, and an optional meeting function such as chair, secretary, or adjuster for that day.
 
 ## Agenda item
 

@@ -43,6 +43,7 @@ final class MeetingLabels
         return match ($duty) {
             MeetingDuty::None => __('None', 'foreningsplugin'),
             MeetingDuty::Chair => __('Chair', 'foreningsplugin'),
+            MeetingDuty::Secretary => __('Secretary', 'foreningsplugin'),
             MeetingDuty::Adjuster => __('Adjuster', 'foreningsplugin'),
         };
     }

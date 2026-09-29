@@ -410,10 +410,13 @@ final class BoardScreen
             }
 
             $holders = $wizard->currentHoldersForRole($seats, $role->id());
-            $holderNames = array_map(static fn (BoardSeat $seat): string => $seat->personName(), $holders);
-            $holderEnd = $holders[0]->endedOn() ?? null;
+            $replacing = $task === BoardWizardTask::REPLACE && $holders !== [];
+            $holderNames = $replacing
+                ? array_map(static fn (BoardSeat $seat): string => $seat->personName(), $holders)
+                : [];
+            $holderEnd = $replacing ? $holders[0]->endedOn() : null;
 
-            if ($task === BoardWizardTask::REPLACE && $holders !== []) {
+            if ($replacing) {
                 echo '<p class="description assoc-replace-preview" data-current="' . esc_attr(implode(', ', $holderNames)) . '" data-end="' . esc_attr((string) $holderEnd) . '">';
                 echo esc_html(sprintf(
                     /* translators: 1: current holder, 2: new person, 3: start date. */
@@ -433,7 +436,7 @@ final class BoardScreen
                 )) . '</p>';
             }
 
-            echo '<form method="post" class="' . esc_attr($task === BoardWizardTask::REPLACE ? 'assoc-replace-form' : 'assoc-place-form') . '" action="' . esc_url(admin_url('admin-post.php')) . '">';
+            echo '<form method="post" class="' . esc_attr($replacing ? 'assoc-replace-form' : 'assoc-place-form') . '" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_place_assignment">';
             echo '<input type="hidden" name="wizard" value="1">';
             echo '<input type="hidden" name="assoc_board_task" value="' . esc_attr($task) . '">';
@@ -444,7 +447,7 @@ final class BoardScreen
             echo '<input type="hidden" name="public_contact" value="' . esc_attr($publicContact) . '">';
             echo '<input type="hidden" name="term_label" value="' . esc_attr($termLabel) . '">';
 
-            if ($task === BoardWizardTask::REPLACE && $holders !== []) {
+            if ($replacing) {
                 echo '<input type="hidden" class="assoc-current-holder" value="' . esc_attr(implode(', ', $holderNames)) . '">';
             }
 
@@ -453,7 +456,7 @@ final class BoardScreen
                 . esc_html__('I understand the current row may close and history is preserved.', 'foreningsplugin')
                 . '</label></p>';
             submit_button(
-                $task === BoardWizardTask::REPLACE
+                $replacing
                     ? sprintf(
                         /* translators: %s is the board role name. */
                         __('Replace %s', 'foreningsplugin'),

@@ -96,8 +96,8 @@ msgstr "En uppgift är något som ska göras, inte ett beslut. Att markera den s
 msgid "A task is something to be done. It is not the same as a decision."
 msgstr "En uppgift är något som ska göras. Den är inte samma sak som ett beslut."
 
-msgid "A template is a list of headings. It is copied in when the meeting is created. A later change to the template does not change the meeting, and the template does not contain a ready-made annual-meeting agenda."
-msgstr "En mall är en lista med rubriker. Den kopieras in när mötet skapas. En senare ändring av mallen ändrar inte mötet, och mallen innehåller ingen färdig årsmötesdagordning."
+msgid "Create a meeting template from a starting point. Check the items to keep, then add headings and change their order. A meeting gets its own copy."
+msgstr "Skapa en mötesmall från en startmall. Bocka i punkterna som ska följa med, och lägg sedan till punkter och ändra ordningen. Ett möte får en egen kopia."
 
 msgid "A WordPress account already uses this email."
 msgstr "Ett WordPress-konto använder redan den här e-postadressen."
@@ -1830,8 +1830,8 @@ msgstr "Uppgifter antecknas i möten."
 msgid "Template"
 msgstr "Mall"
 
-msgid "Template headings are copied into this meeting. Changing the template later does not rewrite the meeting. A template is not a complete legal annual-meeting agenda."
-msgstr "Mallens rubriker kopieras in i det här mötet. En senare ändring av mallen skriver inte om mötet. En mall är inte en juridiskt fullständig årsmötesdagordning."
+msgid "The list shows meeting templates the association has saved. Choosing one copies its headings into this meeting. A later change to the template does not change the meeting."
+msgstr "Listan visar mötesmallar som föreningen har sparat. När en mall väljs kopieras dess rubriker in i det här mötet. En senare ändring av mallen ändrar inte mötet."
 
 msgid "Templates"
 msgstr "Mallar"
@@ -2981,3 +2981,153 @@ msgstr "Den här behörigheten är inte detsamma som att vara utsedd att justera
 
 msgid "It cannot be removed."
 msgstr "Den kan inte tas bort."
+
+msgid "Association meeting"
+msgstr "Föreningsmöte"
+
+msgid "Empty template"
+msgstr "Tom mall"
+
+msgid "Starting point"
+msgstr "Startmall"
+
+msgid "Choose a starting point"
+msgstr "Välj startmall"
+
+msgid "The meeting type is used for the empty template. The other starting points already belong to a meeting type."
+msgstr "Mötestypen används för den tomma mallen. De andra startmallarna hör redan till en mötestyp."
+
+msgid "Saved templates"
+msgstr "Sparade mallar"
+
+msgid "No saved meeting templates yet."
+msgstr "Inga sparade mötesmallar ännu."
+
+msgid "Open template"
+msgstr "Öppna mall"
+
+msgid "Save heading"
+msgstr "Spara rubrik"
+
+msgid "Remove heading"
+msgstr "Ta bort rubrik"
+
+msgid "Opening of the meeting"
+msgstr "Mötets öppnande"
+
+msgid "Approval of the agenda"
+msgstr "Godkännande av dagordningen"
+
+msgid "Election of chair, secretary and adjusters"
+msgstr "Val av ordförande, sekreterare och justerare"
+
+msgid "Reports"
+msgstr "Rapporter"
+
+msgid "Elections"
+msgstr "Val"
+
+msgid "Close of the meeting"
+msgstr "Mötets avslutande"
+
+msgid "Previous minutes"
+msgstr "Föregående protokoll"
+
+msgid "Other business"
+msgstr "Övriga frågor"
+
+msgid "Information"
+msgstr "Information"
+
+msgid "Create new template"
+msgstr "Skapa ny mall"
+
+msgid "All items are checked. Uncheck the ones to leave out."
+msgstr "Alla punkter är ibockade. Bocka ur dem som inte ska följa med."
+
+msgid "Add headings and change their order. Rename the template if the association uses its own name."
+msgstr "Lägg till punkter och ändra ordningen. Byt namn om föreningen vill ha ett eget namn på mallen."
+
+msgid "Adoption of the voting list"
+msgstr "Fastställande av röstlängd"
+
+msgid "Election of the meeting chair"
+msgstr "Val av mötesordförande"
+
+msgid "Election of the meeting secretary"
+msgstr "Val av mötessekreterare"
+
+msgid "Election of two adjusters"
+msgstr "Val av två protokolljusterare"
+
+msgid "Question of whether the meeting was duly convened"
+msgstr "Fråga om mötet blivit behörigen utlyst"
+
+msgid "Adoption of the agenda"
+msgstr "Fastställande av dagordning"
+
+msgid "The board's activity report"
+msgstr "Styrelsens verksamhetsberättelse"
+
+msgid "Financial report"
+msgstr "Ekonomisk berättelse"
+
+msgid "Auditor's report"
+msgstr "Revisionsberättelse"
+
+msgid "Adoption of the income statement and balance sheet"
+msgstr "Fastställande av resultat- och balansräkning"
+
+msgid "Question of discharge from liability for the board"
+msgstr "Fråga om ansvarsfrihet för styrelsen"
+
+msgid "Consideration of motions"
+msgstr "Behandling av motioner"
+
+msgid "Consideration of proposals from the board"
+msgstr "Behandling av propositioner från styrelsen"
+
+msgid "Setting of membership fees"
+msgstr "Fastställande av medlemsavgifter"
+
+msgid "Adoption of the plan of operations"
+msgstr "Fastställande av verksamhetsplan"
+
+msgid "Adoption of the budget"
+msgstr "Fastställande av budget"
+
+msgid "Election of the chair"
+msgstr "Val av ordförande"
+
+msgid "Election of the other board members"
+msgstr "Val av övriga styrelseledamöter"
+
+msgid "Election of alternates"
+msgstr "Val av suppleanter"
+
+msgid "Election of auditors"
+msgstr "Val av revisorer"
+
+msgid "Election of the nomination committee"
+msgstr "Val av valberedning"
+
+msgid "Add anyone who is present. The board and the other members are listed separately. Chair, secretary and adjuster are optional functions for this meeting."
+msgstr "Lägg till den som är närvarande. Styrelsen och de andra medlemmarna står var för sig. Ordförande, sekreterare och justerare är valfria funktioner för det här mötet."
+
+msgid "Leave the function as none when the person is only present."
+msgstr "Låt funktionen vara ingen när personen bara är närvarande."
+
+msgid "Write for this item, then continue to the next one."
+msgstr "Skriv för den här punkten och gå sedan vidare till nästa."
+
+msgid "Text"
+msgstr "Text"
+
+msgid "Next item"
+msgstr "Nästa punkt"
+
+msgid "Change the agenda"
+msgstr "Ändra dagordningen"
+
+msgid "Other people"
+msgstr "Övriga personer"

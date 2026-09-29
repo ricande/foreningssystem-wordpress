@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Meeting\MeetingStarterCatalog;
+use Foreningssystem\Application\Meeting\MeetingTemplates;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Meeting\MeetingMoment;
@@ -41,35 +43,139 @@ final class MeetingsPage
         } catch (NotAllowed) {
             wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (MeetingRuleException | \InvalidArgumentException) {
-            self::redirect('invalid');
+            self::redirectNewMeeting('invalid');
+        }
+    }
+
+    public static function continueTemplateGuide(): void
+    {
+        self::guardManage('assoc_template_guide');
+        $starter = MeetingStarterCatalog::find(self::text('starter'));
+
+        try {
+            if ($starter === null) {
+                throw new MeetingRuleException('Meeting template was not found.');
+            }
+
+            if ($starter->headings() === []) {
+                $templateId = WordpressMeetings::templates()->createFromStarter(
+                    $starter->key(),
+                    __($starter->label(), 'foreningsplugin'),
+                    self::integer('type_id'),
+                    []
+                );
+                self::redirectTemplate('template_saved', $templateId);
+            }
+
+            self::redirectGuide('items', $starter->key());
+        } catch (NotAllowed) {
+            wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
+        } catch (MeetingRuleException | \InvalidArgumentException) {
+            self::redirectGuide('choose', '', true);
         }
     }
 
     public static function saveTemplate(): void
     {
         self::guardManage('assoc_save_meeting_template');
+        $starter = MeetingStarterCatalog::find(self::text('starter'));
 
         try {
-            WordpressMeetings::templates()->create(self::integer('type_id'), self::text('name'));
-            self::redirect('template_saved');
+            if ($starter === null || $starter->headings() === []) {
+                throw new MeetingRuleException('Meeting template was not found.');
+            }
+
+            $templateId = WordpressMeetings::templates()->createFromStarter(
+                $starter->key(),
+                __($starter->label(), 'foreningsplugin'),
+                self::integer('type_id'),
+                self::selectedHeadings($starter)
+            );
+            self::redirectTemplate('template_saved', $templateId);
         } catch (NotAllowed) {
             wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (MeetingRuleException | \InvalidArgumentException) {
-            self::redirect('invalid');
+            self::redirectGuide('items', $starter?->key() ?? '', true);
+        }
+    }
+
+    public static function renameTemplate(): void
+    {
+        self::guardManage('assoc_rename_meeting_template');
+        $templateId = self::integer('template_id');
+
+        try {
+            WordpressMeetings::templates()->rename($templateId, self::text('name'));
+            self::redirectTemplate('template_saved', $templateId);
+        } catch (NotAllowed) {
+            wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
+        } catch (MeetingRuleException | \InvalidArgumentException) {
+            self::redirectTemplate('invalid', $templateId);
         }
     }
 
     public static function addTemplateHeading(): void
     {
         self::guardManage('assoc_add_template_heading');
+        $templateId = self::integer('template_id');
 
         try {
-            WordpressMeetings::templates()->addHeading(self::integer('template_id'), self::text('title'));
-            self::redirect('template_saved');
+            WordpressMeetings::templates()->addHeading($templateId, self::text('title'));
+            self::redirectTemplate('template_saved', $templateId);
         } catch (NotAllowed) {
             wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (MeetingRuleException | \InvalidArgumentException) {
-            self::redirect('invalid');
+            self::redirectTemplate('invalid', $templateId);
+        }
+    }
+
+    public static function renameTemplateHeading(): void
+    {
+        self::guardManage('assoc_rename_template_heading');
+        $templateId = self::integer('template_id');
+
+        try {
+            WordpressMeetings::templates()->renameHeading($templateId, self::integer('item_id'), self::text('title'));
+            self::redirectTemplate('template_saved', $templateId);
+        } catch (NotAllowed) {
+            wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
+        } catch (MeetingRuleException | \InvalidArgumentException) {
+            self::redirectTemplate('invalid', $templateId);
+        }
+    }
+
+    public static function removeTemplateHeading(): void
+    {
+        self::guardManage('assoc_remove_template_heading');
+        $templateId = self::integer('template_id');
+
+        try {
+            WordpressMeetings::templates()->removeHeading($templateId, self::integer('item_id'));
+            self::redirectTemplate('template_saved', $templateId);
+        } catch (NotAllowed) {
+            wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
+        } catch (MeetingRuleException | \InvalidArgumentException) {
+            self::redirectTemplate('invalid', $templateId);
+        }
+    }
+
+    public static function moveTemplateHeading(): void
+    {
+        self::guardManage('assoc_move_template_heading');
+        $templateId = self::integer('template_id');
+        $direction = self::text('direction');
+
+        try {
+            if ($direction !== 'up' && $direction !== 'down') {
+                throw new MeetingRuleException('The agenda item cannot move that way.');
+            }
+
+            WordpressMeetings::templates()->moveHeading($templateId, self::integer('item_id'), $direction === 'up' ? -1 : 1);
+            self::redirectTemplate('template_saved', $templateId);
+        } catch (NotAllowed) {
+            wp_die(esc_html__('You do not have permission to plan meetings.', 'foreningsplugin'), '', ['response' => 403]);
+        } catch (MeetingRuleException | \InvalidArgumentException) {
+            self::redirectTemplate('invalid', $templateId);
         }
     }
 
@@ -144,45 +250,33 @@ final class MeetingsPage
             }
         }
 
+        $openId = isset($_GET['template']) ? absint($_GET['template']) : 0;
+        $templateStep = isset($_GET['assoc_template_step']) ? sanitize_key((string) $_GET['assoc_template_step']) : '';
+        $newMeeting = isset($_GET['assoc_meeting_step']) && sanitize_key((string) $_GET['assoc_meeting_step']) === 'new';
+        $inTemplateFlow = $openId > 0 || $templateStep === 'choose' || $templateStep === 'items';
+        $templateService = $canManage ? WordpressMeetings::templates() : null;
+
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Meetings', 'foreningsplugin') . '</h1>';
-        echo '<p>' . esc_html__('A held meeting is not minutes. Notes are working material until minutes are created.', 'foreningsplugin') . '</p>';
+
+        if (! $newMeeting && ! $inTemplateFlow) {
+            echo '<p>' . esc_html__('A held meeting is not minutes. Notes are working material until minutes are created.', 'foreningsplugin') . '</p>';
+        }
+
         self::notice();
 
-        if ($canManage) {
-            echo '<h2>' . esc_html__('New meeting', 'foreningsplugin') . '</h2>';
-            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-            echo '<input type="hidden" name="action" value="assoc_schedule_meeting">';
-            wp_nonce_field('assoc_schedule_meeting');
-            echo '<p><label>' . esc_html__('Type', 'foreningsplugin') . ' <select name="type_id" required>';
-            echo '<option value="">' . esc_html__('Choose type', 'foreningsplugin') . '</option>';
+        if ($newMeeting && $templateService instanceof MeetingTemplates) {
+            self::newMeetingForm($types, $templateService);
+            echo '</div>';
 
-            foreach ($types as $type) {
-                echo '<option value="' . esc_attr((string) $type->id()) . '">' . esc_html(self::typeLabel($type)) . '</option>';
-            }
+            return;
+        }
 
-            echo '</select></label></p>';
-            $templateService = WordpressMeetings::templates();
-            echo '<p class="description">' . esc_html__('Template headings are copied into this meeting. Changing the template later does not rewrite the meeting. A template is not a complete legal annual-meeting agenda.', 'foreningsplugin') . '</p>';
-            echo '<p><label>' . esc_html__('Template', 'foreningsplugin') . ' <select name="template_id">';
-            echo '<option value="0">' . esc_html__('No template', 'foreningsplugin') . '</option>';
+        if ($inTemplateFlow && $templateService instanceof MeetingTemplates) {
+            self::templateEditor($types, $templateService, $openId);
+            echo '</div>';
 
-            foreach ($templateService->all() as $template) {
-                $type = $types[$template->typeId()] ?? null;
-                $label = ($type instanceof MeetingType ? self::typeLabel($type) : '') . ': ' . $template->name();
-                echo '<option value="' . esc_attr((string) $template->id()) . '">' . esc_html($label) . '</option>';
-            }
-
-            echo '</select></label></p>';
-            self::field('title', __('Title', 'foreningsplugin'), 'text', true);
-            self::field('meeting_date', __('Date', 'foreningsplugin'), 'date', true);
-            self::field('meeting_time', __('Time', 'foreningsplugin'), 'time', true);
-            self::field('place', __('Place', 'foreningsplugin'), 'text', false);
-            submit_button(__('Save meeting', 'foreningsplugin'));
-            echo '</form>';
-            echo '<details><summary>' . esc_html__('Meeting templates', 'foreningsplugin') . '</summary>';
-            self::templateEditor($types, $templateService);
-            echo '</details>';
+            return;
         }
 
         $sections = (new \Foreningssystem\Application\Meeting\MeetingOverview())->sections($service->listMeetings());
@@ -198,7 +292,55 @@ final class MeetingsPage
         self::meetingSection(__('In progress', 'foreningsplugin'), $sections['in_progress'], $types, $canRecord, 'in_progress');
         self::meetingSection(__('Upcoming', 'foreningsplugin'), $sections['planned'], $types, $canRecord, 'planned');
         self::meetingSection(__('Held', 'foreningsplugin'), $sections['held'], $types, $canRecord, 'held');
+
+        if ($templateService instanceof MeetingTemplates) {
+            $createUrl = add_query_arg([
+                'page' => 'foreningsplugin-meetings',
+                'assoc_meeting_step' => 'new',
+            ], admin_url('admin.php'));
+            echo '<p><a class="button button-primary" href="' . esc_url($createUrl) . '">' . esc_html__('New meeting', 'foreningsplugin') . '</a></p>';
+            self::templateEditor($types, $templateService, 0);
+        }
+
         echo '</div>';
+    }
+
+    /**
+     * @param array<int, MeetingType> $types
+     */
+    private static function newMeetingForm(array $types, MeetingTemplates $templates): void
+    {
+        $listUrl = add_query_arg(['page' => 'foreningsplugin-meetings'], admin_url('admin.php'));
+        echo '<p><a href="' . esc_url($listUrl) . '">' . esc_html__('Meetings', 'foreningsplugin') . '</a></p>';
+        echo '<h2>' . esc_html__('New meeting', 'foreningsplugin') . '</h2>';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<input type="hidden" name="action" value="assoc_schedule_meeting">';
+        wp_nonce_field('assoc_schedule_meeting');
+        echo '<p><label>' . esc_html__('Type', 'foreningsplugin') . ' <select name="type_id" required>';
+        echo '<option value="">' . esc_html__('Choose type', 'foreningsplugin') . '</option>';
+
+        foreach ($types as $type) {
+            echo '<option value="' . esc_attr((string) $type->id()) . '">' . esc_html(self::typeLabel($type)) . '</option>';
+        }
+
+        echo '</select></label></p>';
+        echo '<p class="description">' . esc_html__('The list shows meeting templates the association has saved. Choosing one copies its headings into this meeting. A later change to the template does not change the meeting.', 'foreningsplugin') . '</p>';
+        echo '<p><label>' . esc_html__('Template', 'foreningsplugin') . ' <select name="template_id">';
+        echo '<option value="0">' . esc_html__('No template', 'foreningsplugin') . '</option>';
+
+        foreach ($templates->all() as $template) {
+            $type = $types[$template->typeId()] ?? null;
+            $label = ($type instanceof MeetingType ? self::typeLabel($type) : '') . ': ' . $template->name();
+            echo '<option value="' . esc_attr((string) $template->id()) . '">' . esc_html($label) . '</option>';
+        }
+
+        echo '</select></label></p>';
+        self::field('title', __('Title', 'foreningsplugin'), 'text', true);
+        self::field('meeting_date', __('Date', 'foreningsplugin'), 'date', true);
+        self::field('meeting_time', __('Time', 'foreningsplugin'), 'time', true);
+        self::field('place', __('Place', 'foreningsplugin'), 'text', false);
+        submit_button(__('Save meeting', 'foreningsplugin'));
+        echo '</form>';
     }
 
     /**
@@ -265,14 +407,89 @@ final class MeetingsPage
     /**
      * @param array<int, MeetingType> $types
      */
-    private static function templateEditor(array $types, \Foreningssystem\Application\Meeting\MeetingTemplates $templates): void
+    private static function templateEditor(array $types, MeetingTemplates $templates, int $openId): void
     {
-        echo '<h3>' . esc_html__('Templates', 'foreningsplugin') . '</h3>';
-        echo '<p>' . esc_html__('A template is a list of headings. It is copied in when the meeting is created. A later change to the template does not change the meeting, and the template does not contain a ready-made annual-meeting agenda.', 'foreningsplugin') . '</p>';
+        echo '<h2>' . esc_html__('Meeting templates', 'foreningsplugin') . '</h2>';
+        echo '<p>' . esc_html__('Create a meeting template from a starting point. Check the items to keep, then add headings and change their order. A meeting gets its own copy.', 'foreningsplugin') . '</p>';
+
+        $open = null;
+
+        foreach ($templates->all() as $template) {
+            if ($template->id() === $openId) {
+                $open = $template;
+            }
+        }
+
+        $step = isset($_GET['assoc_template_step']) ? sanitize_key((string) $_GET['assoc_template_step']) : '';
+        $starter = self::guideStarter();
+
+        if ($open instanceof MeetingTemplate) {
+            self::savedTemplateEditor($types, $templates, $open);
+        } elseif ($step === 'items' && $starter !== null) {
+            self::templatePoints($starter);
+
+            return;
+        } elseif ($step === 'choose' || $step === 'items') {
+            self::chooseStarter($types);
+
+            return;
+        } else {
+            $createUrl = add_query_arg([
+                'page' => 'foreningsplugin-meetings',
+                'assoc_template_step' => 'choose',
+            ], admin_url('admin.php'));
+            echo '<p><a class="button button-primary" href="' . esc_url($createUrl) . '">' . esc_html__('Create new template', 'foreningsplugin') . '</a></p>';
+        }
+
+        echo '<h3>' . esc_html__('Saved templates', 'foreningsplugin') . '</h3>';
+        $saved = $templates->all();
+
+        if ($saved === []) {
+            echo '<p>' . esc_html__('No saved meeting templates yet.', 'foreningsplugin') . '</p>';
+
+            return;
+        }
+
+        echo '<ul>';
+
+        foreach ($saved as $template) {
+            if ($template->id() === null) {
+                continue;
+            }
+
+            $type = $types[$template->typeId()] ?? null;
+            $label = ($type instanceof MeetingType ? self::typeLabel($type) . ': ' : '') . $template->name();
+            $url = add_query_arg([
+                'page' => 'foreningsplugin-meetings',
+                'template' => (int) $template->id(),
+            ], admin_url('admin.php'));
+            echo '<li>' . esc_html($label) . ' <a href="' . esc_url($url) . '">' . esc_html__('Open template', 'foreningsplugin') . '</a></li>';
+        }
+
+        echo '</ul>';
+    }
+
+    /**
+     * @param array<int, MeetingType> $types
+     */
+    private static function chooseStarter(array $types): void
+    {
+        $listUrl = add_query_arg(['page' => 'foreningsplugin-meetings'], admin_url('admin.php'));
+        echo '<p><a href="' . esc_url($listUrl) . '">' . esc_html__('Meeting templates', 'foreningsplugin') . '</a></p>';
+        echo '<h3>' . esc_html__('Create new template', 'foreningsplugin') . '</h3>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-        echo '<input type="hidden" name="action" value="assoc_save_meeting_template">';
-        wp_nonce_field('assoc_save_meeting_template');
-        echo '<p><label>' . esc_html__('Type', 'foreningsplugin') . ' <select name="type_id" required>';
+        echo '<input type="hidden" name="action" value="assoc_template_guide">';
+        wp_nonce_field('assoc_template_guide');
+        echo '<fieldset><legend>' . esc_html__('Choose a starting point', 'foreningsplugin') . '</legend>';
+
+        foreach (MeetingStarterCatalog::all() as $starter) {
+            echo '<p><label><input type="radio" name="starter" value="' . esc_attr($starter->key()) . '" required> ';
+            echo esc_html(__($starter->label(), 'foreningsplugin')) . '</label></p>';
+        }
+
+        echo '</fieldset>';
+        echo '<p class="description">' . esc_html__('The meeting type is used for the empty template. The other starting points already belong to a meeting type.', 'foreningsplugin') . '</p>';
+        echo '<p><label>' . esc_html__('Type', 'foreningsplugin') . ' <select name="type_id">';
         echo '<option value="">' . esc_html__('Choose type', 'foreningsplugin') . '</option>';
 
         foreach ($types as $type) {
@@ -280,38 +497,116 @@ final class MeetingsPage
         }
 
         echo '</select></label></p>';
-        self::field('name', __('Name', 'foreningsplugin'), 'text', true);
-        submit_button(__('Save template', 'foreningsplugin'));
+        submit_button(__('Next', 'foreningsplugin'));
         echo '</form>';
+    }
 
-        foreach ($templates->all() as $template) {
-            if (! $template instanceof MeetingTemplate || $template->id() === null) {
-                continue;
-            }
+    private static function templatePoints(\Foreningssystem\Application\Meeting\MeetingStarter $starter): void
+    {
+        $backUrl = add_query_arg([
+            'page' => 'foreningsplugin-meetings',
+            'assoc_template_step' => 'choose',
+        ], admin_url('admin.php'));
+        echo '<p><a href="' . esc_url($backUrl) . '">' . esc_html__('Choose a starting point', 'foreningsplugin') . '</a></p>';
+        echo '<h3>' . esc_html(__($starter->label(), 'foreningsplugin')) . '</h3>';
+        echo '<p>' . esc_html__('All items are checked. Uncheck the ones to leave out.', 'foreningsplugin') . '</p>';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<input type="hidden" name="action" value="assoc_save_meeting_template">';
+        echo '<input type="hidden" name="starter" value="' . esc_attr($starter->key()) . '">';
+        wp_nonce_field('assoc_save_meeting_template');
+        echo '<ol>';
 
-            $type = $types[$template->typeId()] ?? null;
-            echo '<h3>' . esc_html(($type instanceof MeetingType ? self::typeLabel($type) . ': ' : '') . $template->name()) . '</h3>';
-            echo '<ol>';
-
-            foreach ($templates->headings((int) $template->id()) as $heading) {
-                echo '<li>' . esc_html($heading->title()) . '</li>';
-            }
-
-            echo '</ol>';
-            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-            echo '<input type="hidden" name="action" value="assoc_add_template_heading">';
-            echo '<input type="hidden" name="template_id" value="' . esc_attr((string) $template->id()) . '">';
-            wp_nonce_field('assoc_add_template_heading');
-            self::field('title', __('Heading', 'foreningsplugin'), 'text', true);
-            submit_button(__('Add heading', 'foreningsplugin'), 'secondary');
-            echo '</form>';
-            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
-            echo '<input type="hidden" name="action" value="assoc_remove_meeting_template">';
-            echo '<input type="hidden" name="template_id" value="' . esc_attr((string) $template->id()) . '">';
-            wp_nonce_field('assoc_remove_meeting_template');
-            submit_button(__('Remove template', 'foreningsplugin'), 'delete');
-            echo '</form>';
+        foreach ($starter->headings() as $index => $heading) {
+            echo '<li><label><input type="checkbox" name="heading[]" value="' . esc_attr((string) $index) . '" checked> ';
+            echo esc_html(__($heading, 'foreningsplugin')) . '</label></li>';
         }
+
+        echo '</ol>';
+        submit_button(__('Next', 'foreningsplugin'));
+        echo '</form>';
+    }
+
+    private static function guideStarter(): ?\Foreningssystem\Application\Meeting\MeetingStarter
+    {
+        $key = isset($_GET['starter']) ? sanitize_key((string) $_GET['starter']) : '';
+        $starter = MeetingStarterCatalog::find($key);
+
+        if ($starter === null || $starter->headings() === []) {
+            return null;
+        }
+
+        return $starter;
+    }
+
+    /**
+     * @param array<int, MeetingType> $types
+     */
+    private static function savedTemplateEditor(array $types, MeetingTemplates $templates, MeetingTemplate $template): void
+    {
+        $templateId = (int) $template->id();
+        $type = $types[$template->typeId()] ?? null;
+        $listUrl = add_query_arg(['page' => 'foreningsplugin-meetings'], admin_url('admin.php'));
+        echo '<p><a href="' . esc_url($listUrl) . '">' . esc_html__('Meeting templates', 'foreningsplugin') . '</a></p>';
+        echo '<h3>' . esc_html(($type instanceof MeetingType ? self::typeLabel($type) . ': ' : '') . $template->name()) . '</h3>';
+        echo '<p>' . esc_html__('Add headings and change their order. Rename the template if the association uses its own name.', 'foreningsplugin') . '</p>';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<input type="hidden" name="action" value="assoc_rename_meeting_template">';
+        echo '<input type="hidden" name="template_id" value="' . esc_attr((string) $templateId) . '">';
+        wp_nonce_field('assoc_rename_meeting_template');
+        echo '<p><label>' . esc_html__('Name', 'foreningsplugin') . ' ';
+        echo '<input class="regular-text" type="text" name="name" value="' . esc_attr($template->name()) . '" required>';
+        echo '</label> ';
+        submit_button(__('Save template', 'foreningsplugin'), 'secondary', 'submit', false);
+        echo '</p></form>';
+        echo '<ol>';
+
+        foreach ($templates->headings($templateId) as $heading) {
+            $itemId = (int) $heading->id();
+            echo '<li>';
+            self::headingForm('assoc_rename_template_heading', $templateId, $itemId, '');
+            echo '<input class="regular-text" type="text" name="title" value="' . esc_attr($heading->title()) . '" required> ';
+            submit_button(__('Save heading', 'foreningsplugin'), 'secondary', 'submit', false);
+            echo '</form> ';
+            self::headingForm('assoc_move_template_heading', $templateId, $itemId, 'up');
+            submit_button(__('Move up', 'foreningsplugin'), 'secondary', 'submit', false);
+            echo '</form> ';
+            self::headingForm('assoc_move_template_heading', $templateId, $itemId, 'down');
+            submit_button(__('Move down', 'foreningsplugin'), 'secondary', 'submit', false);
+            echo '</form> ';
+            self::headingForm('assoc_remove_template_heading', $templateId, $itemId, '');
+            submit_button(__('Remove heading', 'foreningsplugin'), 'delete', 'submit', false);
+            echo '</form>';
+            echo '</li>';
+        }
+
+        echo '</ol>';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<input type="hidden" name="action" value="assoc_add_template_heading">';
+        echo '<input type="hidden" name="template_id" value="' . esc_attr((string) $templateId) . '">';
+        wp_nonce_field('assoc_add_template_heading');
+        self::field('title', __('Heading', 'foreningsplugin'), 'text', true);
+        submit_button(__('Add heading', 'foreningsplugin'), 'secondary');
+        echo '</form>';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<input type="hidden" name="action" value="assoc_remove_meeting_template">';
+        echo '<input type="hidden" name="template_id" value="' . esc_attr((string) $templateId) . '">';
+        wp_nonce_field('assoc_remove_meeting_template');
+        submit_button(__('Remove template', 'foreningsplugin'), 'delete');
+        echo '</form>';
+    }
+
+    private static function headingForm(string $action, int $templateId, int $itemId, string $direction): void
+    {
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline-block;margin-right:0.5em">';
+        echo '<input type="hidden" name="action" value="' . esc_attr($action) . '">';
+        echo '<input type="hidden" name="template_id" value="' . esc_attr((string) $templateId) . '">';
+        echo '<input type="hidden" name="item_id" value="' . esc_attr((string) $itemId) . '">';
+
+        if ($direction !== '') {
+            echo '<input type="hidden" name="direction" value="' . esc_attr($direction) . '">';
+        }
+
+        wp_nonce_field($action);
     }
 
     private static function transitionForm(int $meetingId, string $action, string $label, bool $confirmHeld): void
@@ -361,6 +656,77 @@ final class MeetingsPage
 
         wp_safe_redirect(add_query_arg($args, admin_url('admin.php')));
         exit;
+    }
+
+    private static function redirectNewMeeting(string $notice): void
+    {
+        wp_safe_redirect(add_query_arg([
+            'page' => 'foreningsplugin-meetings',
+            'assoc_meeting_step' => 'new',
+            'assoc_notice' => $notice,
+        ], admin_url('admin.php')));
+        exit;
+    }
+
+    private static function redirectTemplate(string $notice, int $templateId): void
+    {
+        $args = [
+            'page' => 'foreningsplugin-meetings',
+            'assoc_notice' => $notice,
+        ];
+
+        if ($templateId > 0) {
+            $args['template'] = $templateId;
+        }
+
+        wp_safe_redirect(add_query_arg($args, admin_url('admin.php')));
+        exit;
+    }
+
+    private static function redirectGuide(string $step, string $starter = '', bool $invalid = false): void
+    {
+        $args = [
+            'page' => 'foreningsplugin-meetings',
+            'assoc_template_step' => $step,
+        ];
+
+        if ($starter !== '') {
+            $args['starter'] = $starter;
+        }
+
+        if ($invalid) {
+            $args['assoc_notice'] = 'invalid';
+        }
+
+        wp_safe_redirect(add_query_arg($args, admin_url('admin.php')));
+        exit;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function selectedHeadings(\Foreningssystem\Application\Meeting\MeetingStarter $starter): array
+    {
+        $posted = $_POST['heading'] ?? [];
+        $wanted = [];
+
+        if (is_array($posted)) {
+            foreach ($posted as $value) {
+                if (is_numeric($value)) {
+                    $wanted[(int) $value] = true;
+                }
+            }
+        }
+
+        $headings = [];
+
+        foreach ($starter->headings() as $index => $heading) {
+            if (isset($wanted[$index])) {
+                $headings[] = __($heading, 'foreningsplugin');
+            }
+        }
+
+        return $headings;
     }
 
     private static function noticeCode(MeetingRuleException $error): string

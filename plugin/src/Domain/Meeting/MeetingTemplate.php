@@ -45,4 +45,9 @@ final class MeetingTemplate
     {
         return new self($id, $this->typeId, $this->name);
     }
+
+    public function withName(string $name): self
+    {
+        return new self($this->id, $this->typeId, $name);
+    }
 }

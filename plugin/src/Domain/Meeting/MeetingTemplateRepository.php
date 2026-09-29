@@ -8,6 +8,8 @@ interface MeetingTemplateRepository
 {
     public function add(MeetingTemplate $template): MeetingTemplate;
 
+    public function save(MeetingTemplate $template): void;
+
     public function remove(int $id): void;
 
     public function find(int $id): ?MeetingTemplate;
