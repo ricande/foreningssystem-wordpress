@@ -24,7 +24,7 @@ Until now, an administrator clicked "The web server blocks the directory" and th
   - **Unclear** (request failed, redirect, server error, page without the token): the old behaviour, a warning until acknowledged.
 - Pressing "The web server blocks the directory" runs the check first and does not record the acknowledgement when the file is served.
 - The filter `foreningsplugin_private_storage_probe_url` can change the address, for a site behind a proxy whose own address does not reach the web server. The lab test uses it, because WP-CLI runs in another container.
-- **The plugin does not refuse to store files** in an exposed directory. See Options.
+- **The plugin does not refuse to store files** in an exposed directory. See Options. *Changed by ADR-0038: the owner decided that nothing is uploaded while the directory is served.*
 
 The request goes only to the site's own address and sends nothing but the request for the test file. It is not telemetry.
 

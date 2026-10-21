@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Tests;
 
+use Foreningssystem\Application\Files\PrivateStorageExposed;
 use Foreningssystem\Application\Meeting\MinutesPdf;
 use Foreningssystem\Application\Meeting\MinutesPdfDocument;
 use Foreningssystem\Application\Meeting\MinutesPdfException;
@@ -70,6 +71,22 @@ final class MinutesPdfTest extends TestCase
         foreach ($entries[1] as $index => $position) {
             self::assertSame(($index + 1) . " 0 obj\n", substr($pdf, (int) $position, strlen(($index + 1) . " 0 obj\n")));
         }
+    }
+
+    public function test_a_pdf_is_delivered_but_not_stored_while_the_private_directory_is_served(): void
+    {
+        $minutes = new MemoryMinutesRepository();
+        $minutes->addDocument(4);
+        $revision = $minutes->addRevision(new MinutesRevision(null, 1, 4, 1, RevisionState::Finalized, 'Beslutet står fast.', '{}', false));
+        $files = new MemoryMinutesPdfStore();
+        $files->exposed = true;
+        $pdf = new MinutesPdf($minutes, $files, new MinutesPdfDocument(new MinutesPdfLayout(10)), $this->authorizer([
+            Capabilities::VIEW_INTERNAL_MEETINGS,
+        ]));
+
+        self::assertStringStartsWith('%PDF-1.4', $pdf->bytes((int) $revision->id()));
+        self::assertSame(0, $files->writes);
+        self::assertNull($files->stored((int) $revision->id()));
     }
 
     public function test_text_outside_windows_1252_stops_the_pdf_instead_of_disappearing(): void
@@ -174,6 +191,8 @@ final class MemoryMinutesPdfStore implements MinutesPdfStore
 {
     public int $writes = 0;
 
+    public bool $exposed = false;
+
     /** @var array<int, array{hash: string, name: string, bytes: string}> */
     private array $files = [];
 
@@ -191,6 +210,10 @@ final class MemoryMinutesPdfStore implements MinutesPdfStore
 
     public function put(int $revisionId, string $hash, string $bytes): void
     {
+        if ($this->exposed) {
+            throw new PrivateStorageExposed('The web server serves the private directory.');
+        }
+
         $this->writes++;
         $this->files[$revisionId] = [
             'hash' => $hash,

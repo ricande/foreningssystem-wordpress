@@ -489,6 +489,8 @@ final class MeetingDetailPage
                 $meetingId
             );
             self::redirect($meetingId, $result === 'replaced' ? 'signed_replaced' : 'signed_uploaded');
+        } catch (\Foreningssystem\Application\Files\PrivateStorageExposed) {
+            self::redirect($meetingId, 'storage_exposed');
         } catch (NotAllowed) {
             wp_die(esc_html__('You do not have permission to upload the signed copy.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (MeetingRuleException) {
@@ -650,6 +652,7 @@ final class MeetingDetailPage
             'signed_replaced' => __('The signed copy is replaced. The minutes text is unchanged.', 'foreningsplugin'),
             'signed_blocked' => __('A signed copy can be attached only to a locked revision.', 'foreningsplugin'),
             'signed_type' => __('The signed copy must be a PDF, JPEG, or PNG.', 'foreningsplugin'),
+            'storage_exposed' => __('The file was not saved. The web server serves the directory for protected files to anyone, so nothing new is stored there until the directory is blocked or moved outside the web root.', 'foreningsplugin'),
             'signed_busy' => __('Another signed copy for this revision is being saved right now. Try again in a moment.', 'foreningsplugin'),
             'wrong_item' => __('The item does not belong to this meeting.', 'foreningsplugin'),
             'header_saved' => __('The meeting details are saved.', 'foreningsplugin'),

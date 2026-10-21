@@ -53,6 +53,9 @@ final class PrivateStorageWarning
             ) . '</strong> ' . esc_html__(
                 'The web server returned a test file from the private directory to a request without a login. Anyone who knows a file address can read that file without any authorization check. Put the directory outside the web root with FORENINGSPLUGIN_PRIVATE_DIR, or block wp-content/uploads/assoc-private in the web server. This warning goes away when a new check shows the directory is blocked.',
                 'foreningsplugin'
+            ) . ' ' . esc_html__(
+                'Until then, new documents and signed copies are not saved, and minutes PDFs are delivered without being stored.',
+                'foreningsplugin'
             ) . '</p>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_recheck_private_storage">';

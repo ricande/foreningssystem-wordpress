@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Application\Meeting;
 
+use Foreningssystem\Application\Files\PrivateStorageExposed;
 use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
@@ -64,7 +65,13 @@ final class MinutesPdf
             sprintf($this->revisionLabel, $revision->number()),
             $this->pageLabel
         );
-        $this->files->put($revisionId, $hash, $bytes);
+
+        try {
+            $this->files->put($revisionId, $hash, $bytes);
+        } catch (PrivateStorageExposed) {
+            // The directory is served by the web server. The PDF is still delivered to the
+            // reader who may have it, but no copy is left where anyone could fetch it.
+        }
 
         return $bytes;
     }

@@ -3211,3 +3211,9 @@ msgstr "Kontrollera igen"
 
 msgid "The web server returned a test file from wp-content/uploads/assoc-private to a request without a login. Block the directory in the web server or move it outside the web root with FORENINGSPLUGIN_PRIVATE_DIR."
 msgstr "Webbservern lämnade ut en testfil från wp-content/uploads/assoc-private till en begäran utan inloggning. Blockera katalogen i webbservern eller flytta den utanför webbroten med FORENINGSPLUGIN_PRIVATE_DIR."
+
+msgid "The file was not saved. The web server serves the directory for protected files to anyone, so nothing new is stored there until the directory is blocked or moved outside the web root."
+msgstr "Filen sparades inte. Webbservern lämnar ut katalogen för skyddade filer till vem som helst, så inget nytt sparas där förrän katalogen blockeras eller flyttas utanför webbroten."
+
+msgid "Until then, new documents and signed copies are not saved, and minutes PDFs are delivered without being stored."
+msgstr "Till dess sparas inga nya dokument eller signerade kopior, och protokoll-PDF:er lämnas ut utan att sparas."

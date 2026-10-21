@@ -22,7 +22,7 @@ The plugin writes an Apache `.htaccess` deny rule and an `index.php` into the di
 
 While the directory is under the web root, the plugin checks once a day whether the web server serves it. It writes a test file with a random token, requests it from the site's own address, and removes it. See `adr/0037-verify-private-directory-is-blocked.md`.
 
-- The server returns the file: the association screen shows an error and Site Health reports "critical". An earlier "The web server blocks the directory" does not hide this. Fix the server, then press "Check again".
+- The server returns the file: the association screen shows an error and Site Health reports "critical". An earlier "The web server blocks the directory" does not hide this. Fix the server, then press "Check again". Until then, new documents and signed copies are refused, and minutes PDFs are delivered without being stored. Files already stored stay where they are. See `adr/0038-no-private-uploads-while-exposed.md`.
 - The server refuses the file (401, 403, 404 or 410): no warning.
 - The request fails or the answer is unclear, for example when the host blocks requests to its own address: the screen warns until an administrator confirms that the web server blocks the directory. Pressing that button runs the check first.
 

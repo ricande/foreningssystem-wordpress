@@ -7,10 +7,14 @@
  * so the probe address is pointed at the WordPress service for this test.
  */
 
+use Foreningssystem\Application\Files\PrivateStorageExposed;
 use Foreningssystem\Infrastructure\Files\PrivateStorageExposure;
 use Foreningssystem\Infrastructure\WordPress\PrivateStorageProbe;
 use Foreningssystem\Infrastructure\WordPress\PrivateStorageWarning;
 use Foreningssystem\Infrastructure\WordPress\PrivateUploadDirectory;
+use Foreningssystem\Infrastructure\WordPress\WpDocumentFileStore;
+use Foreningssystem\Infrastructure\WordPress\WpMinutesPdfStore;
+use Foreningssystem\Infrastructure\WordPress\WpSignedFileStore;
 
 $directory = PrivateUploadDirectory::path();
 $guard = $directory . '/.htaccess';
@@ -75,6 +79,29 @@ if (
     || str_contains($notice, $directory)
 ) {
     $fail('An exposed directory did not give a critical status and an error notice without an acknowledgement button.');
+}
+
+// While the directory is served, nothing new is written into it (ADR-0038).
+$bytes = "%PDF-1.4\nLAB-EXPOSED\n%%EOF";
+$hash = hash('sha256', $bytes);
+$writes = [
+    'document-' . $hash . '.pdf' => static fn () => (new WpDocumentFileStore())->put('document-' . $hash . '.pdf', $bytes),
+    'signed-1-' . $hash . '.pdf' => static fn () => (new WpSignedFileStore())->put('signed-1-' . $hash . '.pdf', $bytes),
+    'revision-999999-' . $hash . '.pdf' => static fn () => (new WpMinutesPdfStore())->put(999999, $hash, $bytes),
+];
+
+foreach ($writes as $name => $write) {
+    $refused = false;
+
+    try {
+        $write();
+    } catch (PrivateStorageExposed) {
+        $refused = true;
+    }
+
+    if (! $refused || is_file($directory . '/' . $name)) {
+        $fail('A private file was written into a directory the web server serves: ' . $name);
+    }
 }
 
 if ($leftovers() !== []) {
