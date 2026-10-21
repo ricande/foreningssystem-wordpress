@@ -322,7 +322,7 @@ final class MeetingDetailPage
             self::redirect($meetingId, 'draft_regenerated');
         } catch (MeetingRuleException $error) {
             self::redirect($meetingId, self::ruleNotice($error, 'confirm_regenerate'));
-        } catch (\RuntimeException) {
+        } catch (\InvalidArgumentException | \RuntimeException) {
             self::redirect($meetingId, 'invalid');
         }
     }
@@ -337,7 +337,7 @@ final class MeetingDetailPage
             self::redirect($meetingId, 'minutes_submitted');
         } catch (MeetingRuleException $error) {
             self::redirect($meetingId, self::ruleNotice($error, 'minutes_blocked'));
-        } catch (\RuntimeException) {
+        } catch (\InvalidArgumentException | \RuntimeException) {
             self::redirect($meetingId, 'invalid');
         }
     }
@@ -352,7 +352,7 @@ final class MeetingDetailPage
             self::redirect($meetingId, 'minutes_returned');
         } catch (MeetingRuleException $error) {
             self::redirect($meetingId, self::ruleNotice($error, 'minutes_blocked'));
-        } catch (\RuntimeException) {
+        } catch (\InvalidArgumentException | \RuntimeException) {
             self::redirect($meetingId, 'invalid');
         }
     }
@@ -371,7 +371,7 @@ final class MeetingDetailPage
             self::redirect($meetingId, 'minutes_finalized');
         } catch (MeetingRuleException $error) {
             self::redirect($meetingId, self::ruleNotice($error, 'minutes_blocked'));
-        } catch (\RuntimeException) {
+        } catch (\InvalidArgumentException | \RuntimeException) {
             self::redirect($meetingId, 'invalid');
         }
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Tests;
 
 use Foreningssystem\Domain\Meeting\FinalizedRevisionChange;
+use Foreningssystem\Domain\Meeting\MeetingRuleException;
 use Foreningssystem\Domain\Meeting\MinutesRevision;
 use Foreningssystem\Domain\Meeting\PublicationVisibility;
 use Foreningssystem\Domain\Meeting\RevisionState;
@@ -29,6 +30,16 @@ final class FinalizedRevisionChangeTest extends TestCase
         $stored = $this->revision(RevisionState::Draft, 'Utkast.', null, PublicationVisibility::Board);
         FinalizedRevisionChange::assertAllowed($stored, $stored->withBody('Utkastet är ändrat.'));
         self::assertSame('Utkastet är ändrat.', $stored->withBody('Utkastet är ändrat.')->body());
+    }
+
+    public function test_a_revision_is_locked_only_with_the_stored_text(): void
+    {
+        $stored = $this->revision(RevisionState::UnderAdjustment, 'Sekreterarens sista ändring.', null, PublicationVisibility::Board);
+        $read = $this->revision(RevisionState::UnderAdjustment, 'Texten som granskades.', null, PublicationVisibility::Board);
+        FinalizedRevisionChange::assertAllowed($stored, $stored->withState(RevisionState::Finalized));
+
+        $this->expectException(MeetingRuleException::class);
+        FinalizedRevisionChange::assertAllowed($stored, $read->withState(RevisionState::Finalized));
     }
 
     public function test_revision_numbers_are_unique_per_meeting(): void
