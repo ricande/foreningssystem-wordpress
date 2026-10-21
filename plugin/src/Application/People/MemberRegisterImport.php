@@ -16,6 +16,7 @@ use Foreningssystem\Domain\Membership\MembershipStatus;
 use Foreningssystem\Domain\Membership\ParticipantAdmission;
 use Foreningssystem\Domain\Membership\ParticipantRole;
 use Foreningssystem\Domain\Membership\MembershipParticipant;
+use Foreningssystem\Domain\Person\ContactDetails;
 use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonRepository;
 use Foreningssystem\Domain\Person\PersonStatus;
@@ -256,7 +257,7 @@ final class MemberRegisterImport
     /**
      * @param array{line: int, cells: list<string>, oversize: bool} $row
      * @param array<int, string> $fields
-     * @return array{issue: ?MemberRegisterIssue, row: array{line: int, first_name: string, last_name: string, email: string, birth_date: string, person_status: string, membership_number: string, membership_type: string, membership_status: string, started_on: string, ended_on: string}, status_default: bool, person_default: bool}
+     * @return array{issue: ?MemberRegisterIssue, row: array{line: int, first_name: string, last_name: string, email: string, birth_date: string, person_status: string, membership_number: string, membership_type: string, membership_status: string, started_on: string, ended_on: string, street_address: string, postal_code: string, city: string, phone: string}, status_default: bool, person_default: bool}
      */
     private function candidate(array $row, array $fields, AssociationDate $today): array
     {
@@ -272,6 +273,10 @@ final class MemberRegisterImport
             'membership_status' => '',
             'started_on' => '',
             'ended_on' => '',
+            'street_address' => '',
+            'postal_code' => '',
+            'city' => '',
+            'phone' => '',
         ];
         $failed = static fn (string $code): array => [
             'issue' => new MemberRegisterIssue($row['line'], 'error', $code),
@@ -305,6 +310,17 @@ final class MemberRegisterImport
         if ($values['email'] !== '' && filter_var($values['email'], FILTER_VALIDATE_EMAIL) === false) {
             return $failed('invalid_email');
         }
+
+        try {
+            $contact = new ContactDetails($values['street_address'], $values['postal_code'], $values['city'], $values['phone']);
+        } catch (\InvalidArgumentException $error) {
+            return $failed($error->getMessage() === 'Phone number is not valid.' ? 'invalid_phone' : 'value_too_long');
+        }
+
+        $values['street_address'] = $contact->streetAddress();
+        $values['postal_code'] = $contact->postalCode();
+        $values['city'] = $contact->city();
+        $values['phone'] = $contact->phone();
 
         $kind = $this->kind($values['membership_type']);
 
@@ -396,10 +412,10 @@ final class MemberRegisterImport
     }
 
     /**
-     * @param list<array{line: int, first_name: string, last_name: string, email: string, birth_date: string, person_status: string, membership_number: string, membership_type: string, membership_status: string, started_on: string, ended_on: string}> $candidates
+     * @param list<array{line: int, first_name: string, last_name: string, email: string, birth_date: string, person_status: string, membership_number: string, membership_type: string, membership_status: string, started_on: string, ended_on: string, street_address: string, postal_code: string, city: string, phone: string}> $candidates
      * @param array<string, bool> $knownEmails
      * @param list<MemberRegisterIssue> $issues
-     * @return list<array{line: int, first_name: string, last_name: string, email: string, birth_date: string, person_status: string, membership_number: string, membership_type: string, membership_status: string, started_on: string, ended_on: string}>
+     * @return list<array{line: int, first_name: string, last_name: string, email: string, birth_date: string, person_status: string, membership_number: string, membership_type: string, membership_status: string, started_on: string, ended_on: string, street_address: string, postal_code: string, city: string, phone: string}>
      */
     private function withoutDuplicates(array $candidates, array $knownEmails, array &$issues): array
     {
@@ -457,7 +473,7 @@ final class MemberRegisterImport
     }
 
     /**
-     * @param array{line: int, first_name: string, last_name: string, email: string, birth_date: string, person_status: string, membership_number: string, membership_type: string, membership_status: string, started_on: string, ended_on: string} $row
+     * @param array{line: int, first_name: string, last_name: string, email: string, birth_date: string, person_status: string, membership_number: string, membership_type: string, membership_status: string, started_on: string, ended_on: string, street_address: string, postal_code: string, city: string, phone: string} $row
      */
     private function write(array $row): void
     {
@@ -484,7 +500,8 @@ final class MemberRegisterImport
             $row['email'],
             PersonStatus::from($row['person_status']),
             null,
-            $birthDate
+            $birthDate,
+            new ContactDetails($row['street_address'], $row['postal_code'], $row['city'], $row['phone'])
         ));
         $personId = $person->id();
 

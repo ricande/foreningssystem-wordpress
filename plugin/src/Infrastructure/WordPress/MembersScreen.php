@@ -155,6 +155,7 @@ final class MembersScreen
             self::input('last_name', __('Last name', 'foreningsplugin'), 'text', true, (string) $detail['last_name']);
             self::input('email', __('Email', 'foreningsplugin'), 'email', false, (string) $detail['email']);
             self::input('birth_date', __('Birth date', 'foreningsplugin'), 'date', false, (string) ($detail['birth_date'] ?? ''));
+            self::contactInputs($detail);
             submit_button(__('Save person', 'foreningsplugin'));
             echo '</form>';
         } else {
@@ -162,6 +163,8 @@ final class MembersScreen
             if (is_string($detail['birth_date']) && $detail['birth_date'] !== '') {
                 echo '<p>' . esc_html(__('Birth date', 'foreningsplugin') . ': ' . $detail['birth_date']) . '</p>';
             }
+
+            self::contactText($detail);
         }
 
         MemberAccountSection::render($personId, $canEdit);
@@ -340,6 +343,7 @@ final class MembersScreen
         self::input('last_name', __('Last name', 'foreningsplugin'), 'text', false, '');
         self::input('email', __('Email', 'foreningsplugin'), 'email', false, '');
         self::input('birth_date', __('Birth date', 'foreningsplugin'), 'date', false, '');
+        self::contactInputs([]);
         submit_button(__('Add family participant', 'foreningsplugin'));
         echo '</form>';
     }
@@ -567,6 +571,7 @@ final class MembersScreen
         self::input('last_name', __('Last name', 'foreningsplugin'), 'text', true, '');
         self::input('email', __('Email', 'foreningsplugin'), 'email', false, '');
         self::input('birth_date', __('Birth date', 'foreningsplugin'), 'date', $kind === 'youth', '');
+        self::contactInputs([]);
         self::input('membership_number', __('Membership number', 'foreningsplugin'), 'text', true, '');
         self::input('started_on', __('Start date', 'foreningsplugin'), 'date', true, '');
         submit_button($kind === 'family' ? __('Add family membership', 'foreningsplugin') : __('Add member', 'foreningsplugin'));
@@ -640,6 +645,37 @@ final class MembersScreen
     private static function confirm(string $label): void
     {
         echo '<p><label><input type="checkbox" name="confirm" value="1" required> ' . esc_html($label) . '</label></p>';
+    }
+
+    /**
+     * @param array<string, mixed> $values
+     */
+    private static function contactInputs(array $values): void
+    {
+        self::input('street_address', __('Street address', 'foreningsplugin'), 'text', false, (string) ($values['street_address'] ?? ''));
+        self::input('postal_code', __('Postal code', 'foreningsplugin'), 'text', false, (string) ($values['postal_code'] ?? ''));
+        self::input('city', __('City', 'foreningsplugin'), 'text', false, (string) ($values['city'] ?? ''));
+        self::input('phone', __('Phone', 'foreningsplugin'), 'tel', false, (string) ($values['phone'] ?? ''));
+    }
+
+    /**
+     * @param array<string, mixed> $detail
+     */
+    private static function contactText(array $detail): void
+    {
+        $street = (string) ($detail['street_address'] ?? '');
+        $place = trim((string) ($detail['postal_code'] ?? '') . ' ' . (string) ($detail['city'] ?? ''));
+        $phone = (string) ($detail['phone'] ?? '');
+
+        if ($street !== '' || $place !== '') {
+            echo '<p>' . esc_html($street);
+            echo $street !== '' && $place !== '' ? '<br>' : '';
+            echo esc_html($place) . '</p>';
+        }
+
+        if ($phone !== '') {
+            echo '<p>' . esc_html(__('Phone', 'foreningsplugin') . ': ' . $phone) . '</p>';
+        }
     }
 
     private static function input(string $name, string $label, string $type, bool $required, string $value): void

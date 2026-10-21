@@ -163,6 +163,17 @@ final class WordpressPrivacy
                 [__('Status', 'foreningsplugin'), self::personStatus($person->status())],
             ]);
 
+            $contact = $person->contactDetails();
+
+            if (! $contact->isEmpty()) {
+                $groups[] = self::item('foreningsplugin-person', __('Person', 'foreningsplugin'), 'contact-' . $person->id(), [
+                    [__('Street address', 'foreningsplugin'), $contact->streetAddress()],
+                    [__('Postal code', 'foreningsplugin'), $contact->postalCode()],
+                    [__('City', 'foreningsplugin'), $contact->city()],
+                    [__('Phone', 'foreningsplugin'), $contact->phone()],
+                ]);
+            }
+
             if ($person->birthDate() !== null) {
                 $groups[] = self::item('foreningsplugin-person', __('Person', 'foreningsplugin'), 'birth-' . $person->id(), [
                     [__('Birth date', 'foreningsplugin'), $person->birthDate()],
@@ -338,6 +349,8 @@ final class WordpressPrivacy
         return match ($part) {
             'email' => __('Email', 'foreningsplugin'),
             'birth_date' => __('Birth date', 'foreningsplugin'),
+            'address' => __('Address', 'foreningsplugin'),
+            'phone' => __('Phone', 'foreningsplugin'),
             default => __('Name', 'foreningsplugin'),
         };
     }

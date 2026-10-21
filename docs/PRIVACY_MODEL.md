@@ -30,7 +30,7 @@ Sections or departments are not implemented (`docs/19_SECTIONS.md`). This model 
 
 | Object | Purpose | Export | Erase / anonymize | Recommended retention |
 |---|---|---|---|---|
-| Person contact data | Know who the person is and how to reach them | Yes, to that person | Anonymize direct identifiers. Block full row deletion while governance snapshots name them, and report what was kept | The retention setting, default 5 years after the membership ends, then anonymize |
+| Person contact data (name, email, birth date, street address, postal code, city, phone) | Know who the person is and how to reach them | Yes, to that person | Anonymize direct identifiers. Block full row deletion while governance snapshots name them, and report what was kept | The retention setting, default 5 years after the membership ends, then anonymize |
 | Membership | Record that a period happened | Status, type, dates, membership number | Keep the period. Remove it from active lists | Keep the period. Identifiers follow the person retention setting |
 | Board assignment | Answer who held an office | Role, dates, person reference | Keep the assignment. Public contact override is removed on anonymization | Keep the assignment dates. The person must have been a member for those dates |
 | Meeting participation | Record attendance | That person's attendance rows | Keep the participation row. Display name inside a finalized snapshot is not rewritten | Keep |

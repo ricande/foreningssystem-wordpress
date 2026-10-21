@@ -14,6 +14,7 @@ use Foreningssystem\Domain\Board\BoardRuleException;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Membership\MembershipKind;
 use Foreningssystem\Domain\Membership\MembershipRuleException;
+use Foreningssystem\Domain\Person\ContactDetails;
 
 final class MembersPage
 {
@@ -32,7 +33,8 @@ final class MembersPage
                 $kind === '' ? 'ordinary' : $kind,
                 AssociationDate::fromIso(self::text('started_on')),
                 $birth === '' ? null : AssociationDate::fromIso($birth),
-                AssociationDate::fromIso(wp_date('Y-m-d'))
+                AssociationDate::fromIso(wp_date('Y-m-d')),
+                self::contactDetails()
             );
             WordpressMemberAccounts::provisionPerson($personId);
             self::redirect('created', ['assoc_person' => (string) $personId]);
@@ -111,7 +113,8 @@ final class MembersPage
                     $startedOn,
                     \Foreningssystem\Domain\Membership\ParticipantRole::Member,
                     $primary,
-                    AssociationDate::fromIso(wp_date('Y-m-d'))
+                    AssociationDate::fromIso(wp_date('Y-m-d')),
+                    self::contactDetails()
                 );
             }
 
@@ -321,7 +324,8 @@ final class MembersPage
                 $birthDate,
                 AssociationDate::fromIso(wp_date('Y-m-d')),
                 get_current_user_id(),
-                self::text('contact_version')
+                self::text('contact_version'),
+                self::contactDetails()
             );
             WordpressMemberAccounts::provisionPerson($personId);
             self::redirect('person_saved', ['assoc_person' => (string) $personId]);
@@ -621,6 +625,8 @@ final class MembersPage
             'Company contacts can only be added to company memberships.' => 'company_only',
             'An ordinary or youth membership has one member.' => 'single_member',
             'Add a birth date before starting a youth membership.' => 'youth_birth',
+            'Phone number is not valid.' => 'invalid_phone',
+            'Street address is too long.', 'Postal code is too long.', 'City is too long.', 'Phone number is too long.' => 'contact_too_long',
             default => 'invalid',
         };
     }
@@ -773,6 +779,8 @@ final class MembersPage
             'youth_birth' => __('Add a birth date before starting a youth membership.', 'foreningsplugin'),
             'confirm' => __('Confirm the action before it is saved.', 'foreningsplugin'),
             'invalid' => __('Check the details and try again.', 'foreningsplugin'),
+            'invalid_phone' => __('The phone number may contain digits, spaces, dashes, parentheses and a leading plus sign. Nothing was saved.', 'foreningsplugin'),
+            'contact_too_long' => __('The street address, postal code, city or phone number is too long. Nothing was saved.', 'foreningsplugin'),
             'register_busy' => __('Another change to the member register is being saved right now. Nothing was saved. Try again in a moment.', 'foreningsplugin'),
             'contact_changed' => __('Someone else saved this person after you opened the form. Your changes were not saved. Check the current details and try again.', 'foreningsplugin'),
             'deceased_period' => __('A deceased person cannot receive a new membership period.', 'foreningsplugin'),
@@ -850,6 +858,11 @@ final class MembersPage
         }
 
         echo '</div>';
+    }
+
+    private static function contactDetails(): ContactDetails
+    {
+        return new ContactDetails(self::text('street_address'), self::text('postal_code'), self::text('city'), self::text('phone'));
     }
 
     private static function text(string $key): string

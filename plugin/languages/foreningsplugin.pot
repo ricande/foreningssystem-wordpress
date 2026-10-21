@@ -1971,3 +1971,34 @@ msgstr ""
 
 msgid "Are you sure?"
 msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+#: src/Infrastructure/WordPress/MemberImportScreen.php
+#: src/Infrastructure/WordPress/WordpressPrivacy.php
+msgid "Street address"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+#: src/Infrastructure/WordPress/MemberImportScreen.php
+#: src/Infrastructure/WordPress/WordpressPrivacy.php
+msgid "Postal code"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+#: src/Infrastructure/WordPress/MemberImportScreen.php
+#: src/Infrastructure/WordPress/WordpressPrivacy.php
+msgid "City"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php
+msgid "The phone number may contain digits, spaces, dashes, parentheses and a leading plus sign. Nothing was saved."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersPage.php
+msgid "The street address, postal code, city or phone number is too long. Nothing was saved."
+msgstr ""
+
+#: src/Infrastructure/WordPress/MemberImportScreen.php
+#, php-format
+msgid "Row %d: The phone number may contain digits, spaces, dashes, parentheses and a leading plus sign."
+msgstr ""

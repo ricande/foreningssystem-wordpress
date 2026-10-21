@@ -22,6 +22,10 @@ final class MemberCsvColumns
         'membership_status',
         'started_on',
         'ended_on',
+        'street_address',
+        'postal_code',
+        'city',
+        'phone',
     ];
 
     /** @var list<string> */
@@ -50,6 +54,10 @@ final class MemberCsvColumns
             'membership_status' => ['medlemsstatus', 'membership status', 'membership_status', 'status'],
             'started_on' => ['startdatum', 'start date', 'started_on', 'start', 'inträde', 'intrade'],
             'ended_on' => ['slutdatum', 'end date', 'ended_on', 'slut'],
+            'street_address' => ['adress', 'gatuadress', 'gata', 'utdelningsadress', 'address', 'street', 'street address', 'street_address'],
+            'postal_code' => ['postnummer', 'postnr', 'postal code', 'postal_code', 'zip', 'zip code'],
+            'city' => ['ort', 'postort', 'stad', 'city', 'town'],
+            'phone' => ['telefon', 'telefonnummer', 'tel', 'mobil', 'mobilnummer', 'mobiltelefon', 'phone', 'mobile'],
         ];
 
         foreach ($aliases as $field => $names) {
@@ -65,10 +73,6 @@ final class MemberCsvColumns
         }
 
         $unsupported = [
-            'telefon', 'phone', 'tel', 'mobil',
-            'adress', 'address', 'gatuadress',
-            'postnummer', 'postal code', 'zip',
-            'ort', 'city', 'stad',
             'namn', 'name',
         ];
 

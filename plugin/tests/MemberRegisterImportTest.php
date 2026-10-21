@@ -232,10 +232,33 @@ final class MemberRegisterImportTest extends TestCase
         $this->assertCount(2, $memberships->allMemberships());
     }
 
+    public function test_address_and_phone_columns_are_mapped_and_stored(): void
+    {
+        $people = new MemoryPersonRepository();
+        $memberships = new MemoryMembershipRepository();
+        $import = $this->importer($people, $memberships, [Capabilities::EDIT_MEMBERS]);
+        $csv = "Förnamn;Efternamn;Adress;Postnummer;Ort;Telefon;Medlemsnummer;Medlemstyp;Startdatum\n"
+            . "Åsa;Öberg;Ängsvägen 12;582 22;Linköping;070-123 45 03;M-1;Ordinarie;2020-01-01\n"
+            . "Bo;Berg;Gata 1;111 22;Ort;070-ABC;M-2;Ordinarie;2020-01-01\n";
+        $table = $this->parser->parse($csv);
+        $mapping = $this->auto($table);
+
+        $this->assertSame(['street_address', 'postal_code', 'city', 'phone'], [$mapping[2], $mapping[3], $mapping[4], $mapping[5]]);
+        $plan = $import->plan($table, $mapping, $this->today());
+        $this->assertSame([], array_values(array_filter($plan->notices, static fn (array $notice): bool => $notice['code'] === 'ignored_column')));
+
+        $result = $import->commit($table, $mapping, $this->today());
+
+        $this->assertSame(1, $result->imported);
+        $this->assertSame(['invalid_phone'], array_map(static fn ($issue): string => $issue->code, $result->issues));
+        $contact = $people->all()[0]->contactDetails();
+        $this->assertSame(['Ängsvägen 12', '582 22', 'Linköping', '070-123 45 03'], [$contact->streetAddress(), $contact->postalCode(), $contact->city(), $contact->phone()]);
+    }
+
     public function test_personal_identity_numbers_are_not_kept_in_the_plan(): void
     {
-        $csv = "Förnamn;Efternamn;Personnummer;Telefon;Medlemsnummer;Medlemstyp;Startdatum\n"
-            . "Anna;Berg;19900101-1234;0700000000;M-1;Ordinarie;2020-01-01\n";
+        $csv = "Förnamn;Efternamn;Personnummer;Namn;Medlemsnummer;Medlemstyp;Startdatum\n"
+            . "Anna;Berg;19900101-1234;Anna Berg-Lund;M-1;Ordinarie;2020-01-01\n";
         $table = $this->parser->parse($csv);
         $people = new MemoryPersonRepository();
         $memberships = new MemoryMembershipRepository();
@@ -243,7 +266,7 @@ final class MemberRegisterImportTest extends TestCase
         $encoded = (string) json_encode($plan);
 
         $this->assertStringNotContainsString('19900101-1234', $encoded);
-        $this->assertStringNotContainsString('0700000000', $encoded);
+        $this->assertStringNotContainsString('Berg-Lund', $encoded);
         $this->assertSame('ignored_identity', $plan->notices[0]['code']);
         $this->assertSame('', $plan->notices[0]['header']);
         $this->assertSame(1, $plan->ready());

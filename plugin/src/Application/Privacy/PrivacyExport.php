@@ -53,7 +53,8 @@ final class PrivacyExport
             $person->birthDate()?->iso(),
             $this->identityFor($id, $actorUserId),
             $this->guardianNotes($id),
-            $this->contactChanges($id)
+            $this->contactChanges($id),
+            $person->contactDetails()
         );
 
         if ($actorUserId >= 1) {
@@ -121,6 +122,8 @@ final class PrivacyExport
             'contact_name_changed' => 'name',
             'contact_email_changed' => 'email',
             'contact_birth_date_changed' => 'birth_date',
+            'contact_address_changed' => 'address',
+            'contact_phone_changed' => 'phone',
         ];
         $changes = [];
 

@@ -73,6 +73,7 @@ final class Retention
             $person->firstName() !== $clear->firstName()
             || $person->lastName() !== $clear->lastName()
             || $person->email() !== ''
+            || ! $person->contactDetails()->isEmpty()
             || $person->wordpressUserId() !== null
             || $person->birthDate() !== null
             || $this->identities->findForPerson((int) $person->id()) !== null

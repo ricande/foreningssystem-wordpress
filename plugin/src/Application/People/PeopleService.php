@@ -19,6 +19,7 @@ use Foreningssystem\Domain\Membership\MembershipRuleException;
 use Foreningssystem\Domain\Membership\MembershipStatus;
 use Foreningssystem\Domain\Membership\ParticipantAdmission;
 use Foreningssystem\Domain\Membership\ParticipantRole;
+use Foreningssystem\Domain\Person\ContactDetails;
 use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonRepository;
 use Foreningssystem\Domain\Person\PersonStatus;
@@ -47,6 +48,7 @@ final class PeopleService
         AssociationDate $startedOn,
         ?AssociationDate $birthDate = null,
         ?AssociationDate $today = null,
+        ?ContactDetails $contactDetails = null,
     ): int {
         $this->require(Capabilities::EDIT_MEMBERS);
         $kind = MembershipKind::knownSlug($membershipType) ? MembershipKind::fromSlug($membershipType) : MembershipKind::Ordinary;
@@ -55,7 +57,7 @@ final class PeopleService
             throw new MembershipRuleException('Add a birth date before starting a youth membership.');
         }
 
-        return $this->write(function () use ($firstName, $lastName, $email, $membershipNumber, $membershipType, $startedOn, $birthDate, $today): int {
+        return $this->write(function () use ($firstName, $lastName, $email, $membershipNumber, $membershipType, $startedOn, $birthDate, $today, $contactDetails): int {
             $person = $this->people->add(new Person(
                 null,
                 trim($firstName),
@@ -63,7 +65,8 @@ final class PeopleService
                 trim($email),
                 PersonStatus::Known,
                 null,
-                $this->birthDate($birthDate, $today ?? $startedOn)
+                $this->birthDate($birthDate, $today ?? $startedOn),
+                $contactDetails ?? new ContactDetails()
             ));
             $personId = $person->id();
 
@@ -83,6 +86,7 @@ final class PeopleService
         string $email,
         ?AssociationDate $birthDate = null,
         ?AssociationDate $today = null,
+        ?ContactDetails $contactDetails = null,
     ): int {
         $this->require(Capabilities::EDIT_MEMBERS);
         $person = $this->people->add(new Person(
@@ -92,7 +96,8 @@ final class PeopleService
             trim($email),
             PersonStatus::Known,
             null,
-            $this->birthDate($birthDate, $today ?? AssociationDate::fromIso('1970-01-01'))
+            $this->birthDate($birthDate, $today ?? AssociationDate::fromIso('1970-01-01')),
+            $contactDetails ?? new ContactDetails()
         ));
 
         return (int) $person->id();
@@ -108,10 +113,11 @@ final class PeopleService
         ParticipantRole $role,
         bool $primary,
         ?AssociationDate $today = null,
+        ?ContactDetails $contactDetails = null,
     ): int {
         $this->require(Capabilities::EDIT_MEMBERS);
 
-        return $this->write(function () use ($membershipId, $firstName, $lastName, $email, $birthDate, $startedOn, $role, $primary, $today): int {
+        return $this->write(function () use ($membershipId, $firstName, $lastName, $email, $birthDate, $startedOn, $role, $primary, $today, $contactDetails): int {
             $membership = $this->requireAccount($membershipId);
 
             ParticipantAdmission::assertRole(
@@ -128,7 +134,8 @@ final class PeopleService
                 trim($email),
                 PersonStatus::Known,
                 null,
-                $this->birthDate($birthDate, $today ?? $startedOn)
+                $this->birthDate($birthDate, $today ?? $startedOn),
+                $contactDetails ?? new ContactDetails()
             ));
             $personId = (int) $person->id();
             $participant = new MembershipParticipant(null, $membershipId, $personId, $role, $primary, $startedOn, null);
@@ -277,18 +284,19 @@ final class PeopleService
         AssociationDate $today,
         int $actorUserId,
         ?string $expectedVersion = null,
+        ?ContactDetails $contactDetails = null,
     ): void {
         $this->require(Capabilities::EDIT_MEMBERS);
         $birthDate = $this->birthDate($birthDate, $today);
 
-        $this->write(function () use ($personId, $firstName, $lastName, $email, $birthDate, $actorUserId, $expectedVersion): void {
+        $this->write(function () use ($personId, $firstName, $lastName, $email, $birthDate, $actorUserId, $expectedVersion, $contactDetails): void {
             $person = $this->requirePerson($personId);
 
             if ($expectedVersion !== null && ! hash_equals($person->contactVersion(), $expectedVersion)) {
                 throw new ContactChanged('The contact details changed after the form was opened.');
             }
 
-            $changed = $person->withContact($firstName, $lastName, $email, $birthDate);
+            $changed = $person->withContact($firstName, $lastName, $email, $birthDate, $contactDetails);
             $this->people->save($changed);
 
             foreach (self::contactChanges($person, $changed) as $action) {
@@ -316,6 +324,14 @@ final class PeopleService
 
         if ($before->birthDate()?->iso() !== $after->birthDate()?->iso()) {
             $actions[] = 'contact_birth_date_changed';
+        }
+
+        if (! $before->contactDetails()->sameAddress($after->contactDetails())) {
+            $actions[] = 'contact_address_changed';
+        }
+
+        if ($before->contactDetails()->phone() !== $after->contactDetails()->phone()) {
+            $actions[] = 'contact_phone_changed';
         }
 
         return $actions;

@@ -20,6 +20,7 @@ final class Person
         private readonly PersonStatus $status,
         private readonly ?int $wordpressUserId,
         private readonly ?\Foreningssystem\Domain\Membership\AssociationDate $birthDate = null,
+        private readonly ContactDetails $contactDetails = new ContactDetails(),
     ) {
         if ($this->firstName === '' || $this->lastName === '') {
             throw new InvalidArgumentException('A person needs a first and last name.');
@@ -65,14 +66,36 @@ final class Person
         return $this->birthDate;
     }
 
-    public function withId(int $id): self
+    public function contactDetails(): ContactDetails
     {
-        return new self($id, $this->firstName, $this->lastName, $this->email, $this->status, $this->wordpressUserId, $this->birthDate);
+        return $this->contactDetails;
     }
 
-    public function withContact(string $firstName, string $lastName, string $email, ?\Foreningssystem\Domain\Membership\AssociationDate $birthDate): self
+    public function withId(int $id): self
     {
-        return new self($this->id, trim($firstName), trim($lastName), trim($email), $this->status, $this->wordpressUserId, $birthDate);
+        return new self($id, $this->firstName, $this->lastName, $this->email, $this->status, $this->wordpressUserId, $this->birthDate, $this->contactDetails);
+    }
+
+    /**
+     * Without contact details, the stored address and phone stay as they are.
+     */
+    public function withContact(
+        string $firstName,
+        string $lastName,
+        string $email,
+        ?\Foreningssystem\Domain\Membership\AssociationDate $birthDate,
+        ?ContactDetails $contactDetails = null,
+    ): self {
+        return new self(
+            $this->id,
+            trim($firstName),
+            trim($lastName),
+            trim($email),
+            $this->status,
+            $this->wordpressUserId,
+            $birthDate,
+            $contactDetails ?? $this->contactDetails
+        );
     }
 
     /**
@@ -86,17 +109,21 @@ final class Person
             $this->lastName,
             $this->email,
             $this->birthDate?->iso(),
+            $this->contactDetails->streetAddress(),
+            $this->contactDetails->postalCode(),
+            $this->contactDetails->city(),
+            $this->contactDetails->phone(),
         ]));
     }
 
     public function markedDeceased(): self
     {
-        return new self($this->id, $this->firstName, $this->lastName, $this->email, PersonStatus::Deceased, $this->wordpressUserId, $this->birthDate);
+        return new self($this->id, $this->firstName, $this->lastName, $this->email, PersonStatus::Deceased, $this->wordpressUserId, $this->birthDate, $this->contactDetails);
     }
 
     public function anonymized(): self
     {
-        return new self($this->id, self::ANONYMOUS_FIRST_NAME, self::ANONYMOUS_LAST_NAME, '', $this->status, null, null);
+        return new self($this->id, self::ANONYMOUS_FIRST_NAME, self::ANONYMOUS_LAST_NAME, '', $this->status, null, null, new ContactDetails());
     }
 
     public function linkedToWordpressUser(int $userId): self
@@ -105,11 +132,11 @@ final class Person
             throw new InvalidArgumentException('A WordPress user id is required.');
         }
 
-        return new self($this->id, $this->firstName, $this->lastName, $this->email, $this->status, $userId, $this->birthDate);
+        return new self($this->id, $this->firstName, $this->lastName, $this->email, $this->status, $userId, $this->birthDate, $this->contactDetails);
     }
 
     public function withoutWordpressUser(): self
     {
-        return new self($this->id, $this->firstName, $this->lastName, $this->email, $this->status, null, $this->birthDate);
+        return new self($this->id, $this->firstName, $this->lastName, $this->email, $this->status, null, $this->birthDate, $this->contactDetails);
     }
 }

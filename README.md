@@ -23,9 +23,9 @@ Några grundprinciper som styr bygget:
 
 ## Status
 
-Aktuell version är **0.1.0** och aktuellt databasschema är **17**. Implementationen pågår.
+Aktuell version är **0.1.0** och aktuellt databasschema är **18**. Implementationen pågår.
 
-Flera tidiga designfrågor är fortfarande öppna, bland annat migrationspolicyn och kryptering av personnummer. Schema 17 är det schema som koden använder nu. Det betyder inte att varje tidigare förslag är låst. Öppna frågor finns i `OPEN_QUESTIONS.md`.
+Flera tidiga designfrågor är fortfarande öppna, bland annat migrationspolicyn och kryptering av personnummer. Schema 18 är det schema som koden använder nu. Det betyder inte att varje tidigare förslag är låst. Öppna frågor finns i `OPEN_QUESTIONS.md`.
 
 ## Viktig utvecklingsvarning
 
@@ -52,7 +52,7 @@ Det som finns i pluginet nu:
 - dokument med privat lagring och medlemsbehörighet
 - publika Gutenberg-block för styrelse, senaste möte, senaste protokoll, medlemsantal och dokument
 - integritetsexport, radering och kvarhållning
-- migreringar till schema 17
+- migreringar till schema 18
 - första-gången-guide för uppstart och en guidad styrelseadministration
 
 Help & Guides, kontextuell hjälp och registrerade installationer är förslag i `docs/18_SETUP_HELP_GUIDES_AND_BULLETINS.md`. De är inte implementerade.

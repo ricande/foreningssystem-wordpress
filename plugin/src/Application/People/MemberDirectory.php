@@ -33,7 +33,7 @@ final class MemberDirectory
     }
 
     /**
-     * @return list<array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, has_history: bool}>
+     * @return list<array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, search_contact: string, has_history: bool}>
      */
     public function listRows(string $query, string $kind, string $state, AssociationDate $today): array
     {
@@ -96,6 +96,10 @@ final class MemberDirectory
             'last_name' => $person->lastName(),
             'email' => $person->email(),
             'birth_date' => $person->birthDate()?->iso(),
+            'street_address' => $person->contactDetails()->streetAddress(),
+            'postal_code' => $person->contactDetails()->postalCode(),
+            'city' => $person->contactDetails()->city(),
+            'phone' => $person->contactDetails()->phone(),
             'contact_version' => $person->contactVersion(),
             'deceased' => $person->status() === PersonStatus::Deceased,
             'active_member' => MemberCoverage::isActiveMember($personId, $today, $snapshot['participants'], $snapshot['periods']),
@@ -201,7 +205,7 @@ final class MemberDirectory
 
     /**
      * @param array<string, mixed> $snapshot
-     * @return array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, has_history: bool}|null
+     * @return array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, search_contact: string, has_history: bool}|null
      */
     private function personView(Person $person, array $snapshot, AssociationDate $today): ?array
     {
@@ -304,13 +308,14 @@ final class MemberDirectory
             'person_id' => $personId,
             'membership_number' => '',
             'search_numbers' => implode(' ', array_keys($searchNumbers)),
+            'search_contact' => self::contactSearchText($person),
             'has_history' => $hasHistory,
         ];
     }
 
     /**
      * @param array<string, mixed> $snapshot
-     * @return array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, has_history: bool}
+     * @return array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, search_contact: string, has_history: bool}
      */
     private function companyRow(Membership $membership, array $snapshot, AssociationDate $today): array
     {
@@ -357,6 +362,7 @@ final class MemberDirectory
             'person_id' => 0,
             'membership_number' => $membership->number(),
             'search_numbers' => '',
+            'search_contact' => '',
             'has_history' => $hasHistory,
         ];
     }
@@ -410,13 +416,24 @@ final class MemberDirectory
         ];
     }
 
+    /**
+     * City and phone are searchable. A phone number also matches without its spaces and dashes.
+     */
+    private static function contactSearchText(Person $person): string
+    {
+        $contact = $person->contactDetails();
+        $phone = $contact->phone();
+
+        return trim($contact->city() . ' ' . $phone . ' ' . preg_replace('/[^0-9+]/', '', $phone));
+    }
+
     private function dateSpan(string $startedOn, ?string $endedOn): string
     {
         return $startedOn . '|' . ($endedOn ?? '');
     }
 
     /**
-     * @param array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, has_history: bool} $row
+     * @param array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, search_contact: string, has_history: bool} $row
      */
     private static function matches(array $row, string $query, string $kind, string $state): bool
     {
@@ -440,7 +457,7 @@ final class MemberDirectory
             return true;
         }
 
-        $haystack = mb_strtolower($row['title'] . ' ' . $row['email'] . ' ' . $row['number'] . ' ' . $row['context'] . ' ' . $row['membership_number'] . ' ' . $row['search_numbers'], 'UTF-8');
+        $haystack = mb_strtolower($row['title'] . ' ' . $row['email'] . ' ' . $row['number'] . ' ' . $row['context'] . ' ' . $row['membership_number'] . ' ' . $row['search_numbers'] . ' ' . $row['search_contact'], 'UTF-8');
 
         return str_contains($haystack, mb_strtolower($query, 'UTF-8'));
     }

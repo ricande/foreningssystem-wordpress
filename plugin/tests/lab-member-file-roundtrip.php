@@ -68,21 +68,21 @@ $file = <<<'CSV'
 membership;LAB-TRIP-1;ordinary;
 period;LAB-TRIP-1;ended;2019-01-01;2020-12-31;ordinarie
 period;LAB-TRIP-1;active;2023-01-01;;ordinary
-participant;LAB-TRIP-1;Ada;Återkommer;ada-trip@example.test;;member;1;2019-01-01;2020-12-31;known
-participant;LAB-TRIP-1;Ada;Återkommer;ada-trip@example.test;;member;0;2023-01-01;;known
+participant;LAB-TRIP-1;Ada;Återkommer;ada-trip@example.test;;member;1;2019-01-01;2020-12-31;known;Storgatan 1;111 22;Stockholm;070-123 45 01
+participant;LAB-TRIP-1;Ada;Återkommer;ada-trip@example.test;;member;0;2023-01-01;;known;Storgatan 1;111 22;Stockholm;070-123 45 01
 membership;LAB-TRIP-2;family;
 period;LAB-TRIP-2;active;2022-01-01;;family
-participant;LAB-TRIP-2;Bo;Familj;bo-trip@example.test;;member;1;2022-01-01;;known
-participant;LAB-TRIP-2;Cia;Familj;;2015-04-02;member;0;2023-05-01;;known
+participant;LAB-TRIP-2;Bo;Familj;bo-trip@example.test;;member;1;2022-01-01;;known;"Ängsvägen 3; lgh 1101";582 22;Linköping;'+46 70-123 45 67
+participant;LAB-TRIP-2;Cia;Familj;;2015-04-02;member;0;2023-05-01;;known;;;Linköping;
 membership;LAB-TRIP-3;ordinary;
 period;LAB-TRIP-3;ended;2018-01-01;2024-03-01;ordinary
-participant;LAB-TRIP-3;Dag;Avliden;dag-trip@example.test;;member;1;2018-01-01;2024-03-01;deceased
+participant;LAB-TRIP-3;Dag;Avliden;dag-trip@example.test;;member;1;2018-01-01;2024-03-01;deceased;;;;
 membership;LAB-TRIP-4;ordinary;
 period;LAB-TRIP-4;active;2024-01-01;;"Årsavgift; full"
-participant;LAB-TRIP-4;"Åsa;Maria";"Öberg ""Ö""";asa-trip@example.test;;member;1;2024-01-01;;known
+participant;LAB-TRIP-4;"Åsa;Maria";"Öberg ""Ö""";asa-trip@example.test;;member;1;2024-01-01;;known;;;;
 membership;LAB-TRIP-5;ordinary;
 period;LAB-TRIP-5;active;2024-01-01;;ordinary
-participant;LAB-TRIP-5;'=SUM(A1);Ärlig\;formel-trip@example.test;;member;1;2024-01-01;;known
+participant;LAB-TRIP-5;'=SUM(A1);Ärlig\;formel-trip@example.test;;member;1;2024-01-01;;known;;;;
 CSV;
 
 $cleanup();
@@ -108,8 +108,10 @@ if (
     || $name['first_name'] !== 'Åsa;Maria'
     || $name['last_name'] !== 'Öberg "Ö"'
     || $formula !== '=SUM(A1)'
+    || $wpdb->get_var($wpdb->prepare("SELECT phone FROM {$people} WHERE email = %s", 'bo-trip@example.test')) !== '+46 70-123 45 67'
+    || $wpdb->get_var($wpdb->prepare("SELECT street_address FROM {$people} WHERE email = %s", 'bo-trip@example.test')) !== 'Ängsvägen 3; lgh 1101'
 ) {
-    $fail('The structured member file changed a status or a name in the database.');
+    $fail('The structured member file changed a status, a name, an address or a phone in the database.');
 }
 
 $repeated = WordpressPeople::exchange()->import($exported);
@@ -139,11 +141,9 @@ $plainLines = array_values(array_filter(
     explode("\n", ltrim($plain, "\xEF\xBB\xBF")),
     static fn (string $line): bool => str_contains($line, 'LAB-TRIP-')
 ));
+$plainHeader = strtok(ltrim($plain, "\xEF\xBB\xBF"), "\n");
 $cleanup();
-$plainResult = WordpressPeople::exchange()->import(
-    "first_name;last_name;email;person_status;membership_number;membership_type;membership_status;started_on;ended_on\n"
-    . implode("\n", $plainLines) . "\n"
-);
+$plainResult = WordpressPeople::exchange()->import($plainHeader . "\n" . implode("\n", $plainLines) . "\n");
 $notImported = array_values(array_filter(
     $plainResult->errors(),
     static fn (string $error): bool => str_contains($error, 'Not imported.') && str_contains($error, 'structured member file')

@@ -64,6 +64,7 @@ final class PrivacyErase
         $identifiersCleared = $person->firstName() !== $anonymized->firstName()
             || $person->lastName() !== $anonymized->lastName()
             || $person->email() !== $anonymized->email()
+            || ! $person->contactDetails()->isEmpty()
             || $person->wordpressUserId() !== null;
         $assignments = $this->assignmentsFor($id);
         $publicContactCleared = false;

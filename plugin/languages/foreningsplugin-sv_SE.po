@@ -3151,3 +3151,22 @@ msgstr "Avsluta möte"
 
 msgid "Are you sure?"
 msgstr "Är du säker?"
+
+msgid "Street address"
+msgstr "Gatuadress"
+
+msgid "Postal code"
+msgstr "Postnummer"
+
+msgid "City"
+msgstr "Ort"
+
+msgid "The phone number may contain digits, spaces, dashes, parentheses and a leading plus sign. Nothing was saved."
+msgstr "Telefonnumret får innehålla siffror, mellanslag, bindestreck, parenteser och ett inledande plustecken. Inget sparades."
+
+msgid "The street address, postal code, city or phone number is too long. Nothing was saved."
+msgstr "Gatuadressen, postnumret, orten eller telefonnumret är för långt. Inget sparades."
+
+#, php-format
+msgid "Row %d: The phone number may contain digits, spaces, dashes, parentheses and a leading plus sign."
+msgstr "Rad %d: Telefonnumret får innehålla siffror, mellanslag, bindestreck, parenteser och ett inledande plustecken."

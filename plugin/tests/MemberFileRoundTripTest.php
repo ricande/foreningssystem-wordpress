@@ -18,6 +18,7 @@ use Foreningssystem\Domain\Membership\MembershipStatus;
 use Foreningssystem\Domain\Membership\ParticipantRole;
 use Foreningssystem\Domain\Organization\Organization;
 use Foreningssystem\Domain\Organization\OrganizationNumber;
+use Foreningssystem\Domain\Person\ContactDetails;
 use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonStatus;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -70,6 +71,13 @@ final class MemberFileRoundTripTest extends TestCase
             $register->period($company, MembershipStatus::Active, '2024-01-01', null, 'company');
             $register->participant($company, $asa, true, '2024-01-01', null, ParticipantRole::Contact);
             $register->participant($company, $ake, false, '2024-02-01', null, ParticipantRole::Contact);
+        }];
+
+        yield 'address and phone' => [static function (MemberFileRegister $register): void {
+            $membership = $register->membership('M-A', MembershipKind::Family);
+            $register->period($membership, MembershipStatus::Active, '2022-01-01', null, 'family');
+            $register->participant($membership, $register->person('Åke', 'Ström', 'ake@example.test', null, PersonStatus::Known, new ContactDetails('Ängsvägen 3; lgh 1101', '582 22', 'Linköping', '+46 70-123 45 67')), true, '2022-01-01', null);
+            $register->participant($membership, $register->person('Ella', 'Ström', '', '2012-04-01', PersonStatus::Known, new ContactDetails('', '', 'Linköping', '')), false, '2022-01-01', null);
         }];
 
         yield 'formula-like names' => [static function (MemberFileRegister $register): void {
@@ -223,7 +231,7 @@ CSV);
     public function test_the_plain_file_round_trips_single_period_people_with_hard_names(): void
     {
         $source = new MemberFileRegister();
-        $asa = $source->person('Åsa;Maria', 'Öberg "Ö"', 'asa-plain@example.test');
+        $asa = $source->person('Åsa;Maria', 'Öberg "Ö"', 'asa-plain@example.test', null, PersonStatus::Known, new ContactDetails('Storgatan "1"; 2 tr', '111 22', 'Stockholm', '+46 8 123 45'));
         $formula = $source->person('=SUM(A1)', "'=Kvot", '');
         $dag = $source->person('Dag', 'Avliden', 'dag-plain@example.test', null, PersonStatus::Deceased);
 
@@ -302,11 +310,17 @@ final class MemberFileRegister
         );
     }
 
-    public function person(string $first, string $last, string $email, ?string $birth = null, PersonStatus $status = PersonStatus::Known): int
-    {
+    public function person(
+        string $first,
+        string $last,
+        string $email,
+        ?string $birth = null,
+        PersonStatus $status = PersonStatus::Known,
+        ?ContactDetails $contact = null,
+    ): int {
         $birthDate = $birth === null ? null : AssociationDate::fromIso($birth);
 
-        return (int) $this->people->add(new Person(null, $first, $last, $email, $status, null, $birthDate))->id();
+        return (int) $this->people->add(new Person(null, $first, $last, $email, $status, null, $birthDate, $contact ?? new ContactDetails()))->id();
     }
 
     public function organization(string $name, string $number, string $address): int
@@ -360,6 +374,10 @@ final class MemberFileRegister
                 $found->email(),
                 $found->birthDate()?->iso(),
                 $found->status()->value,
+                $found->contactDetails()->streetAddress(),
+                $found->contactDetails()->postalCode(),
+                $found->contactDetails()->city(),
+                $found->contactDetails()->phone(),
             ];
         };
         $people = array_map(static fn (Person $found): array => $person((int) $found->id()), $this->people->all());

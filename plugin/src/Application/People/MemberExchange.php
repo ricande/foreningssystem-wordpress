@@ -16,6 +16,7 @@ use Foreningssystem\Domain\Membership\ParticipantAdmission;
 use Foreningssystem\Domain\Organization\Organization;
 use Foreningssystem\Domain\Organization\OrganizationNumber;
 use Foreningssystem\Domain\Organization\OrganizationRepository;
+use Foreningssystem\Domain\Person\ContactDetails;
 use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonRepository;
 use Foreningssystem\Domain\Person\PersonStatus;
@@ -33,6 +34,25 @@ final class MemberExchange
         'membership_status',
         'started_on',
         'ended_on',
+        'street_address',
+        'postal_code',
+        'city',
+        'phone',
+    ];
+
+    /**
+     * The plain file before schema 18 had no address or phone. Such a file still imports. See ADR-0035.
+     */
+    private const LEGACY_COLUMNS = [
+        'first_name',
+        'last_name',
+        'email',
+        'person_status',
+        'membership_number',
+        'membership_type',
+        'membership_status',
+        'started_on',
+        'ended_on',
     ];
 
     /**
@@ -40,6 +60,12 @@ final class MemberExchange
      * person_status is the eleventh column, added later. A row without it is a known person.
      */
     private const PARTICIPANT_STATUS = 10;
+
+    /**
+     * Street address, postal code, city and phone follow person_status on a participant row.
+     * A row without them has no address or phone. See ADR-0035.
+     */
+    private const PARTICIPANT_CONTACT = 11;
 
     /**
      * RFC 4180 quoting: a quote is doubled and a backslash is plain text.
@@ -136,6 +162,7 @@ final class MemberExchange
                 $period->status()->value,
                 $period->startedOn()->iso(),
                 $period->endedOn()?->iso() ?? '',
+                ...$this->contactCells($person),
             ], ';', '"', self::ESCAPE);
         }
 
@@ -257,7 +284,9 @@ final class MemberExchange
                 $row['last_name'],
                 $row['email'],
                 $personStatus,
-                null
+                null,
+                null,
+                new ContactDetails($row['street_address'] ?? '', $row['postal_code'] ?? '', $row['city'] ?? '', $row['phone'] ?? '')
             ));
         }
 
@@ -375,6 +404,7 @@ final class MemberExchange
                     $participant->startedOn()->iso(),
                     $participant->endedOn()?->iso() ?? '',
                     $person->status()->value,
+                    ...$this->contactCells($person),
                 ]);
             }
         }
@@ -564,7 +594,13 @@ final class MemberExchange
             if (! $person instanceof Person) {
                 $birth = $value(5) === '' ? null : AssociationDate::fromIso($value(5));
                 // A deceased person is stored as known until every row is in, so the ended history passes admission.
-                $person = $this->people->add(new Person(null, $value(2), $value(3), $email, PersonStatus::Known, null, $birth));
+                $contact = new ContactDetails(
+                    $value(self::PARTICIPANT_CONTACT),
+                    $value(self::PARTICIPANT_CONTACT + 1),
+                    $value(self::PARTICIPANT_CONTACT + 2),
+                    $value(self::PARTICIPANT_CONTACT + 3)
+                );
+                $person = $this->people->add(new Person(null, $value(2), $value(3), $email, PersonStatus::Known, null, $birth, $contact));
             }
 
             $personId = (int) $person->id();
@@ -855,7 +891,9 @@ final class MemberExchange
         rewind($handle);
         $header = fgetcsv($handle, 0, ';', '"', self::ESCAPE);
 
-        if ($header === false || array_map($this->cellIn(...), $header) !== self::COLUMNS) {
+        $columns = $header === false ? [] : array_map($this->cellIn(...), $header);
+
+        if ($columns !== self::COLUMNS && $columns !== self::LEGACY_COLUMNS) {
             fclose($handle);
 
             throw new InvalidArgumentException('The file must use the member columns separated by semicolons.');
@@ -871,7 +909,7 @@ final class MemberExchange
                 continue;
             }
 
-            if (count($data) !== count(self::COLUMNS)) {
+            if (count($data) !== count($columns)) {
                 $rows[$line] = array_fill_keys(self::COLUMNS, '');
                 $rows[$line]['membership_number'] = 'invalid-column-count';
                 $rows[$line]['membership_type'] = 'invalid';
@@ -881,9 +919,9 @@ final class MemberExchange
                 continue;
             }
 
-            $row = [];
+            $row = array_fill_keys(self::COLUMNS, '');
 
-            foreach (self::COLUMNS as $index => $column) {
+            foreach ($columns as $index => $column) {
                 $row[$column] = $this->cellIn((string) $data[$index]);
             }
 
@@ -893,6 +931,21 @@ final class MemberExchange
         fclose($handle);
 
         return $rows;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function contactCells(Person $person): array
+    {
+        $contact = $person->contactDetails();
+
+        return [
+            $this->cell($contact->streetAddress()),
+            $this->cell($contact->postalCode()),
+            $this->cell($contact->city()),
+            $this->cell($contact->phone()),
+        ];
     }
 
     private function cell(string $value): string

@@ -367,7 +367,7 @@ CSV);
         self::assertSame([], $result->errors());
         self::assertSame(1, count($people->all()));
         self::assertSame('2024-06-01', $participant->startedOn()->iso());
-        self::assertStringContainsString("participant;M-1;Ada;Lovelace;ada-struct@example.test;;member;1;2024-06-01;;known\n", $exported);
+        self::assertStringContainsString("participant;M-1;Ada;Lovelace;ada-struct@example.test;;member;1;2024-06-01;;known;;;;\n", $exported);
         self::assertSame(0, $again->created());
         self::assertSame('2024-06-01', $memberships->allParticipants()[0]->startedOn()->iso());
     }

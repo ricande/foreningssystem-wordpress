@@ -7,7 +7,7 @@
 
 ADR-0011 and ADR-0020 describe the plugin's own member files. A treasurer also arrives with a spreadsheet from another register. That file does not have the plugin's header, and it must not become a second membership model.
 
-Person still has first name, last name, optional email, status, optional birth date, and an optional WordPress user link. Membership still has a unique number, one of the four kinds, and a period. Phone, street address, postal code, and city are not person fields. A personal identity number stays in its own table, unencrypted, behind its own capability (ADR-0021). This import does not change that storage.
+Person still has first name, last name, optional email, status, optional birth date, and an optional WordPress user link. Membership still has a unique number, one of the four kinds, and a period. Phone, street address, postal code, and city were not person fields at the time. ADR-0035 added them in schema 18, and the wizard now maps them. A personal identity number stays in its own table, unencrypted, behind its own capability (ADR-0021). This import does not change that storage.
 
 ## Decision
 

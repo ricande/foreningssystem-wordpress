@@ -50,7 +50,7 @@ The rest of the baseline stands as the accepted working design. At this point in
 
 ## Update after implementation — 2026-09-24
 
-Implementation has started. The current database schema version is 17.
+Implementation has started. The current database schema version is 18.
 
 Implemented areas:
 
@@ -75,7 +75,7 @@ Implemented areas:
 - distributed information: the GitHub README and a user-oriented `plugin/readme.txt` tell the same story in the same order — what the plugin is, status, the development warning, features, installation, privacy and access, documentation, development, license. Both state that 0.1.0 is an early development build that is not for production or live association data. The readme travels inside the plugin ZIP, and the packaging contract fails if it is missing, names another version, or has lost the warning
 - fresh ZIP install of 0.1.0 was validated on a separate WordPress, not the development lab. Activation migrated schema 0 to 16, and a small synthetic association flow including minutes PDF worked from the installed archive. That is package and fresh-install validation, not a production-ready claim. The same install showed WordPress 6.7+ warning that association translations were loaded before `init`. The plugin now loads its translations on `init`. Schema 16 is unchanged
 
-Some product decisions remain provisional, including the migration policy and personal-identity encryption. Schema 17 is the current schema, not a claim that every earlier design note is locked. Schema 17 only inserts the built-in board-member role when that slug is missing (ADR-0028).
+Some product decisions remain provisional, including the migration policy and personal-identity encryption. Schema 18 is the current schema, not a claim that every earlier design note is locked. Schema 17 only inserts the built-in board-member role when that slug is missing (ADR-0028).
 
 ## Planned product area — setup, help, guides, bulletins
 
@@ -104,7 +104,7 @@ Association → Members can import a foreign member spreadsheet (ADR-0026). The 
 
 The wizard parses UTF-8 CSV (comma or semicolon, quotes, Swedish characters), lets an officer map columns onto the person and membership fields that exist, and validates every row before anything is saved. More than 2 000 data rows is refused, and the admin message states that limit. Preview does not write. Confirm reads the stored file again and creates people and memberships through the existing repositories, one transaction per row.
 
-Phone, street address, postal code, and city are not imported, because Person has no such fields. A personal identity number is not imported. Its storage stays unencrypted in its own table, as in ADR-0021. Company rows and extra family participants stay in the structured file. The wizard does not link a WordPress user. An existing membership number, a repeated number, or a shared or repeated email is skipped and explained. The same name is not treated as the same person.
+Phone, street address, postal code, and city were not imported at the time, because Person had no such fields. Schema 18 added them (ADR-0035). A personal identity number is not imported. Its storage stays unencrypted in its own table, as in ADR-0021. Company rows and extra family participants stay in the structured file. The wizard does not link a WordPress user. An existing membership number, a repeated number, or a shared or repeated email is skipped and explained. The same name is not treated as the same person.
 
 ## Update — unused custom structure in setup — 2026-09-29
 
@@ -137,6 +137,12 @@ A contact edit now leaves a trace (ADR-0032, proposed and waiting for owner revi
 ## Update — member file identity — 2026-10-21
 
 Email alone no longer decides who a member file row is about (ADR-0030 amendment, proposed and waiting for owner review). A row attaches to a stored person only when email and name agree, and the birth dates too when both are known. The name chooses between people who share an address. Another name on a known address is reported as not imported, so a mistyped email no longer puts a membership on someone else. In the structured file, a row whose address already belongs to someone on the same membership is a new person, so a family that shares one address survives export and restore. Plugin version stays 0.1.0. Schema stays 17. No migration.
+
+## Update — address and phone on a person — 2026-10-21
+
+The project owner decided that a person has a street address, postal code, city, and phone (ADR-0035). Schema 18 adds the four columns to `assoc_person` with empty values for existing people. The owner decided that they are ordinary contact data: no separate capability, no encryption, no separate retention. Like email, they are in the privacy export, emptied on anonymization, covered by the form version, and an edit leaves a value-free `contact_address_changed` or `contact_phone_changed` event.
+
+The members screen shows and edits them for a new person, a new family participant, and the person form. City and phone are searchable. The spreadsheet import maps Adress, Postnummer, Ort, and Telefon instead of ignoring them, and refuses a row with an invalid phone number. The plain member file has four more columns, and the structured file has four more cells on a participant row. Earlier files without them still import. Plugin version stays 0.1.0.
 
 ## Planned product area — sections and departments
 

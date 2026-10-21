@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Application\Privacy;
 
+use Foreningssystem\Domain\Person\ContactDetails;
+
 final class ExportedPerson
 {
     /**
@@ -26,6 +28,7 @@ final class ExportedPerson
         private readonly ?string $personalIdentityNumber = null,
         private readonly array $guardianNotes = [],
         private readonly array $contactChanges = [],
+        private readonly ?ContactDetails $contactDetails = null,
     ) {
     }
 
@@ -104,5 +107,10 @@ final class ExportedPerson
     public function contactChanges(): array
     {
         return $this->contactChanges;
+    }
+
+    public function contactDetails(): ContactDetails
+    {
+        return $this->contactDetails ?? new ContactDetails();
     }
 }

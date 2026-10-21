@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Domain\Membership\AssociationDate;
+use Foreningssystem\Domain\Person\ContactDetails;
 use Foreningssystem\Domain\Person\Person;
 use Foreningssystem\Domain\Person\PersonRepository;
 use Foreningssystem\Domain\Person\PersonStatus;
@@ -26,9 +27,13 @@ final class WpdbPersonRepository implements PersonRepository
             'first_name' => $person->firstName(),
             'last_name' => $person->lastName(),
             'email' => $person->email(),
+            'street_address' => $person->contactDetails()->streetAddress(),
+            'postal_code' => $person->contactDetails()->postalCode(),
+            'city' => $person->contactDetails()->city(),
+            'phone' => $person->contactDetails()->phone(),
             'status' => $person->status()->value,
         ];
-        $format = ['%s', '%s', '%s', '%s'];
+        $format = ['%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s'];
 
         if ($person->birthDate() !== null) {
             $data['birth_date'] = $person->birthDate()->iso();
@@ -56,12 +61,22 @@ final class WpdbPersonRepository implements PersonRepository
 
         $userId = $person->wordpressUserId();
         $table = $this->table();
-        $sql = "UPDATE {$table} SET first_name = %s, last_name = %s, email = %s, status = %s, birth_date = "
+        $sql = "UPDATE {$table} SET first_name = %s, last_name = %s, email = %s, street_address = %s, postal_code = %s, city = %s, phone = %s, status = %s, birth_date = "
             . ($person->birthDate() === null ? 'NULL' : '%s')
             . ', wp_user_id = '
             . ($userId === null ? 'NULL' : '%d')
             . ' WHERE id = %d';
-        $args = [$person->firstName(), $person->lastName(), $person->email(), $person->status()->value];
+        $contact = $person->contactDetails();
+        $args = [
+            $person->firstName(),
+            $person->lastName(),
+            $person->email(),
+            $contact->streetAddress(),
+            $contact->postalCode(),
+            $contact->city(),
+            $contact->phone(),
+            $person->status()->value,
+        ];
 
         if ($person->birthDate() !== null) {
             $args[] = $person->birthDate()->iso();
@@ -135,7 +150,13 @@ final class WpdbPersonRepository implements PersonRepository
             (string) $row['email'],
             PersonStatus::from((string) $row['status']),
             is_numeric($wordpressUserId) && (int) $wordpressUserId > 0 ? (int) $wordpressUserId : null,
-            $this->birthDate($row['birth_date'] ?? null)
+            $this->birthDate($row['birth_date'] ?? null),
+            new ContactDetails(
+                (string) ($row['street_address'] ?? ''),
+                (string) ($row['postal_code'] ?? ''),
+                (string) ($row['city'] ?? ''),
+                (string) ($row['phone'] ?? '')
+            )
         );
     }
 

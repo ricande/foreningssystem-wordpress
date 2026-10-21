@@ -307,6 +307,10 @@ final class MemberImportScreen
             'membership_status' => __('Membership status', 'foreningsplugin'),
             'started_on' => __('Start date', 'foreningsplugin'),
             'ended_on' => __('End date', 'foreningsplugin'),
+            'street_address' => __('Street address', 'foreningsplugin'),
+            'postal_code' => __('Postal code', 'foreningsplugin'),
+            'city' => __('City', 'foreningsplugin'),
+            'phone' => __('Phone', 'foreningsplugin'),
         ];
     }
 
@@ -315,6 +319,7 @@ final class MemberImportScreen
         $text = match ($issue->code) {
             'missing_name' => __('Row %d: A person needs a first and last name.', 'foreningsplugin'),
             'invalid_email' => __('Row %d: Email is not valid.', 'foreningsplugin'),
+            'invalid_phone' => __('Row %d: The phone number may contain digits, spaces, dashes, parentheses and a leading plus sign.', 'foreningsplugin'),
             'invalid_date' => __('Row %d: Date must use YYYY-MM-DD or DD.MM.YYYY.', 'foreningsplugin'),
             'ended_needs_date' => __('Row %d: An ended membership needs an end date.', 'foreningsplugin'),
             'open_has_end' => __('Row %d: An open membership has no end date.', 'foreningsplugin'),

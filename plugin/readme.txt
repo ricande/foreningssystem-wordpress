@@ -34,7 +34,7 @@ Grundprinciper:
 
 == Status ==
 
-Aktuell version är 0.1.0 och aktuellt databasschema är 17. Implementationen
+Aktuell version är 0.1.0 och aktuellt databasschema är 18. Implementationen
 pågår. Flera designfrågor är fortfarande öppna, bland annat migrationspolicyn
 och kryptering av personnummer.
 
@@ -67,7 +67,7 @@ Föreningsplugin 0.1.0 is an early development build. It is NOT ready for produc
 * publika block för styrelse, senaste möte, senaste protokoll, medlemsantal
   och dokument
 * integritetsexport, radering och kvarhållning
-* migreringar till schema 17
+* migreringar till schema 18
 * första-gången-guide för uppstart och en guidad styrelseadministration
 
 Sektioner och avdelningar är ett framtida produktområde. Det är inte
@@ -85,7 +85,7 @@ Krav: WordPress 7.1 eller senare och PHP 8.3 eller senare.
 2. Gå till Tillägg -> Lägg till nytt -> Ladda upp tillägg och välj
    foreningsplugin-0.1.0.zip.
 3. Aktivera Föreningsplugin. Aktiveringen kör pluginets migreringar upp till
-   schema 17 och lägger till föreningens behörigheter på administratörsrollen.
+   schema 18 och lägger till föreningens behörigheter på administratörsrollen.
 4. Öppna menyn Förening och gå igenom uppstartsguiden.
 
 Att avaktivera eller ta bort pluginet tar inte bort föreningens tabeller. Ta

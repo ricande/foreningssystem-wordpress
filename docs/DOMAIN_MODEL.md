@@ -31,7 +31,7 @@ A person, a membership and a membership period are different things. The members
 | Is the core model Person → Membership? | Person, membership and period are separate | The number belongs to the membership. Periods record when it was active |
 | Multiple membership periods? | Yes | Re-entry and history need separate periods |
 | Can a board member, auditor, or election-committee member exist without a current membership? | No. Locked by the owner on 2026-09-24 | Every board role in this model, including auditor and election committee, requires an active membership that covers the assignment dates |
-| Where do contact details live? | Private details on Person. Optional public role contact on Board assignment | Public blocks must not default to a private email or phone |
+| Where do contact details live? | Private details on Person: email, street address, postal code, city, and phone (ADR-0035). Optional public role contact on Board assignment | Public blocks must not default to a private email or phone |
 | How is a deceased former member represented? | Person status `deceased`. End the membership. Keep history. Omit the person from current public board output | Deleting the row destroys institutional memory |
 | What does "delete member" mean? | The product does not offer one delete action | End membership, anonymize, and erase personal data are different operations |
 
