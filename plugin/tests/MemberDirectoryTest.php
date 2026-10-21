@@ -50,6 +50,37 @@ final class MemberDirectoryTest extends TestCase
         self::assertSame('2025-12-31', $detail['memberships'][0]['periods'][0]['ended_on']);
     }
 
+    public function test_search_ignores_case_for_swedish_letters(): void
+    {
+        [$service, , , , $directory] = $this->world();
+        $today = AssociationDate::fromIso('2026-09-24');
+        $service->register('Åsa', 'Öberg', 'asa-dir@example.test', '3001', 'ordinary', AssociationDate::fromIso('2024-01-01'));
+        $service->register('Ärling', 'Lind', 'arling-dir@example.test', '3002', 'ordinary', AssociationDate::fromIso('2024-01-01'));
+
+        self::assertSame('Åsa Öberg', $directory->listRows('åsa', '', '', $today)[0]['title']);
+        self::assertSame('Åsa Öberg', $directory->listRows('öberg', '', '', $today)[0]['title']);
+        self::assertSame('Åsa Öberg', $directory->listRows('ÅSA ÖBERG', '', '', $today)[0]['title']);
+        self::assertSame('Ärling Lind', $directory->listRows('ärling', '', '', $today)[0]['title']);
+        self::assertCount(1, $directory->listRows('ä', '', '', $today));
+    }
+
+    public function test_search_finds_a_person_by_an_earlier_membership_number(): void
+    {
+        [$service, , $memberships, , $directory] = $this->world();
+        $today = AssociationDate::fromIso('2026-09-24');
+        $anna = $service->register('Anna', 'Andersson', 'anna-old@example.test', 'OLD-300', 'family', AssociationDate::fromIso('2024-01-01'));
+        $oldPeriod = (int) $memberships->periodsForMembership((int) $memberships->findMembershipByNumber('OLD-300')?->id())[0]->id();
+        $service->endMembership($oldPeriod, AssociationDate::fromIso('2025-12-31'));
+        $service->openForExistingPerson($anna, 'NEW-400', 'ordinary', AssociationDate::fromIso('2026-01-01'));
+
+        $byOld = $directory->listRows('old-300', '', '', $today);
+
+        self::assertCount(1, $byOld);
+        self::assertSame('Anna Andersson', $byOld[0]['title']);
+        self::assertSame('NEW-400', $byOld[0]['number']);
+        self::assertCount(1, $directory->listRows('NEW-400', '', '', $today));
+    }
+
     public function test_family_history_and_a_company_contact_stay_distinct(): void
     {
         [$service, $people, $memberships, $organizations, $directory] = $this->world();

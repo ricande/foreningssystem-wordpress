@@ -33,7 +33,7 @@ final class MemberDirectory
     }
 
     /**
-     * @return list<array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, has_history: bool}>
+     * @return list<array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, has_history: bool}>
      */
     public function listRows(string $query, string $kind, string $state, AssociationDate $today): array
     {
@@ -200,7 +200,7 @@ final class MemberDirectory
 
     /**
      * @param array<string, mixed> $snapshot
-     * @return array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, has_history: bool}|null
+     * @return array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, has_history: bool}|null
      */
     private function personView(Person $person, array $snapshot, AssociationDate $today): ?array
     {
@@ -244,12 +244,16 @@ final class MemberDirectory
         );
         $chosen = $current[0] ?? $past[0] ?? null;
 
+        $searchNumbers = [];
+
         foreach ($links as $participant) {
             $membership = $snapshot['memberships'][$participant->membershipId()] ?? null;
 
             if (! $membership instanceof Membership) {
                 continue;
             }
+
+            $searchNumbers[$membership->number()] = true;
 
             if (! $participant->role()->countsAsMember() && $membership->kind() === MembershipKind::Company) {
                 $organization = $snapshot['organizations'][$membership->organizationId()] ?? null;
@@ -298,13 +302,14 @@ final class MemberDirectory
             'email' => $person->email(),
             'person_id' => $personId,
             'membership_number' => '',
+            'search_numbers' => implode(' ', array_keys($searchNumbers)),
             'has_history' => $hasHistory,
         ];
     }
 
     /**
      * @param array<string, mixed> $snapshot
-     * @return array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, has_history: bool}
+     * @return array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, has_history: bool}
      */
     private function companyRow(Membership $membership, array $snapshot, AssociationDate $today): array
     {
@@ -350,6 +355,7 @@ final class MemberDirectory
             'email' => '',
             'person_id' => 0,
             'membership_number' => $membership->number(),
+            'search_numbers' => '',
             'has_history' => $hasHistory,
         ];
     }
@@ -409,7 +415,7 @@ final class MemberDirectory
     }
 
     /**
-     * @param array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, has_history: bool} $row
+     * @param array{title: string, number: string, kind: string, state: string, dates: string, context: string, person_id: int, membership_number: string, search_numbers: string, has_history: bool} $row
      */
     private static function matches(array $row, string $query, string $kind, string $state): bool
     {
@@ -433,8 +439,8 @@ final class MemberDirectory
             return true;
         }
 
-        $haystack = strtolower($row['title'] . ' ' . $row['email'] . ' ' . $row['number'] . ' ' . $row['context'] . ' ' . $row['membership_number']);
+        $haystack = mb_strtolower($row['title'] . ' ' . $row['email'] . ' ' . $row['number'] . ' ' . $row['context'] . ' ' . $row['membership_number'] . ' ' . $row['search_numbers'], 'UTF-8');
 
-        return str_contains($haystack, strtolower($query));
+        return str_contains($haystack, mb_strtolower($query, 'UTF-8'));
     }
 }
