@@ -35,3 +35,18 @@ A new member account gets the login `assoc-member-` followed by 16 random hex ch
 Accounts created by earlier versions kept `assoc-member-{personId}`. They are not renamed, because WordPress has no supported way to rename a login and the Person ↔ `wp_user` link is the user id, not the login. Those logins stay predictable. An administrator may rename them by hand, after telling the member.
 
 Members can also sign in with their email address, which WordPress accepts as a login. A random login name is therefore not brute-force protection on its own.
+
+## Protecting sign-in
+
+The plugin has no login code and does not limit login attempts (ADR-0034). WordPress core does not either: in the local lab, `wp-login.php` accepted 60 wrong passwords for one account in 6 seconds. The plugin adds member accounts, and officer accounts can read the member register, so the site should:
+
+1. **Limit login attempts.** Use a login-limiting or security plugin, or rate limiting in the web server, proxy or CDN. Cover both `wp-login.php` and `xmlrpc.php`.
+2. **Turn off XML-RPC authentication if nothing uses it.** The WordPress mobile app, Jetpack and some publishing tools use XML-RPC. Core already stops checking passwords after the first wrong one in a `system.multicall` request, but `xmlrpc.php` is still a second login endpoint that a limit on `wp-login.php` alone does not cover. Most security plugins have a switch. Without one, a must-use plugin is enough, for example `wp-content/mu-plugins/no-xmlrpc-auth.php`:
+
+   ```php
+   <?php
+   // Refuse XML-RPC methods that need a login. Pingbacks still work.
+   add_filter( 'xmlrpc_enabled', '__return_false' );
+   ```
+
+3. **Protect officer accounts.** Require strong passwords, and two-factor authentication through a plugin, for every account that holds `view_members`, `edit_members`, `export_members`, `erase_member_data`, `view_personal_identity_numbers` or `manage_association`. Give those capabilities only to the people who need them.

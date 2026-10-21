@@ -48,6 +48,7 @@ Status terminology:
 | One MySQL advisory lock serializes member register writes. A contact edit is refused when the details changed after the form was opened (ADR-0031) | PROVISIONAL |
 | A contact edit leaves one audit event per changed part (name, email, birth date) with the officer and the time, never the values. Retention removes it with the other audit events, and the privacy export lists day and part (ADR-0032) | PROVISIONAL |
 | A new member account gets the login `assoc-member-` plus 16 random hex characters. Existing logins are not renamed (ADR-0033) | PROVISIONAL |
+| The plugin ships no login limiting and no XML-RPC switch. Administrators are told to use a login-limiting plugin or server rate limiting, and two-factor authentication for officers (ADR-0034) | PROVISIONAL |
 | Guardian approval of an account for a minor is future member-portal design and is not locked | OPEN |
 
 "Where appropriate" for the Media Library means public or non-sensitive media, such as the association logo. Protected documents, minutes PDFs, and signed copies use plugin-managed private storage because a Media Library URL is not an authorization check. See ADR-0005 and `docs/PRIVATE_FILES.md`.

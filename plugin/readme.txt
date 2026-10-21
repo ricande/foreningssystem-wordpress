@@ -114,6 +114,25 @@ bort en testinstallation genom att ta bort databasen.
 
 Detta är inte juridisk rådgivning.
 
+== Inloggning och kontosäkerhet ==
+
+Pluginet skapar WordPress-konton med rollen subscriber för medlemmar, och
+funktionärer med view_members kan läsa medlemsregistret. Pluginet har ingen
+egen inloggning och begränsar inte inloggningsförsök. Det gör inte WordPress
+heller.
+
+* Begränsa inloggningsförsök med ett tillägg för inloggningsbegränsning eller
+  säkerhet, eller med hastighetsbegränsning i webbservern eller proxyn. Täck
+  både wp-login.php och xmlrpc.php.
+* Stäng av inloggning via XML-RPC om ingenting på webbplatsen använder den.
+  WordPress-appen, Jetpack och vissa publiceringsverktyg gör det.
+* Kräv starka lösenord, och tvåfaktorsinloggning via ett tillägg, för alla
+  konton med view_members, edit_members, export_members, erase_member_data,
+  view_personal_identity_numbers eller manage_association.
+* Nya medlemskonton får ett slumpat inloggningsnamn. Konton från tidigare
+  versioner behåller assoc-member-{nummer}. Medlemmar kan också logga in med
+  sin e-postadress.
+
 
 == Dokumentation ==
 
