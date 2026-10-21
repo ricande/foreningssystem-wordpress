@@ -73,3 +73,7 @@ Create a matrix:
 `Operation × capability × object state × object visibility`
 
 and use that matrix in tests.
+
+## Unprefixed slugs
+
+The slugs above have no plugin prefix. A different plugin can define `view_members` or `edit_members` with another meaning, and a role that holds it then also opens this plugin's member register. Check other plugins' roles before granting them. A migration to prefixed slugs is proposed, not decided: `OPEN_QUESTIONS.md` question 58.
