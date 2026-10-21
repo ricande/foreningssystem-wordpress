@@ -552,7 +552,8 @@ CSV);
             $this->authorizer(),
             $this->passthrough(),
             new EndOpenBoardAssignments($assignments, new BoardAssignmentLedger()),
-            new UnheldRegisterLock()
+            new UnheldRegisterLock(),
+            new MemoryAuditLog()
         );
 
         return [$service, $memberships, $assignments];
@@ -589,7 +590,8 @@ CSV);
             $this->authorizer(),
             $this->passthrough(),
             new EndOpenBoardAssignments(new MemoryBoardAssignmentRepository(), new BoardAssignmentLedger()),
-            new UnheldRegisterLock()
+            new UnheldRegisterLock(),
+            new MemoryAuditLog()
         );
     }
 

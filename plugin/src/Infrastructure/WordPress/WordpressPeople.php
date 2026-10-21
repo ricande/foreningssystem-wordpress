@@ -28,7 +28,8 @@ final class WordpressPeople
             },
             self::transaction(),
             WordpressBoard::endOpenAssignments(),
-            new WordpressMemberRegisterLock()
+            new WordpressMemberRegisterLock(),
+            new WpAuditLog()
         );
     }
 

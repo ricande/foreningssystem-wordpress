@@ -52,7 +52,7 @@ try {
             $service->register('Race', 'Number', 'lab-race-number-' . $worker . '@example.test', 'LAB-RACE-NUMBER', 'ordinary', AssociationDate::fromIso('2025-01-01'));
             break;
         case 'update_contact':
-            $service->updateContact($target, 'Race', 'Contact ' . $worker, 'lab-race-contact@example.test', null, AssociationDate::fromIso('2025-01-01'), $detail);
+            $service->updateContact($target, 'Race', 'Contact ' . $worker, 'lab-race-contact@example.test', null, AssociationDate::fromIso('2025-01-01'), 1, $detail);
             break;
         case 'board_coverage':
             [$periodId, $roleId] = array_map('intval', explode(':', $detail));

@@ -130,6 +130,10 @@ The person form carries a `contact_version` hash of the details it showed. A sav
 
 Not covered yet: the spreadsheet import checks emails once before it writes the rows, not again inside each row's hold.
 
+## Update — contact change trail — 2026-10-21
+
+A contact edit now leaves a trace (ADR-0032, proposed and waiting for owner review). `PeopleService::updateContact` takes the acting user and writes one `assoc_audit_event` row per changed part: `contact_name_changed`, `contact_email_changed`, `contact_birth_date_changed`. The row names the part, the officer and the time, never the old or new value. It is written in the edit's transaction, so a refused or failed edit leaves no event and an event that cannot be written stops the edit. Retention removes the events with the other audit events. Erase keeps them, since they hold no contact data. The privacy export lists the day and the part, not the officer. Plugin version stays 0.1.0. Schema stays 17. No migration.
+
 ## Planned product area — sections and departments
 
 **FUTURE / NOT IMPLEMENTED / PROPOSAL.** Not part of the implemented list above. No tables, screens, capabilities, or document types exist for this.

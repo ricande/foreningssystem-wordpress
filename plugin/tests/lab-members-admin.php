@@ -155,7 +155,7 @@ $service->markDeceased($nils, $today);
 $missingPerson = false;
 
 try {
-    $service->updateContact(999999999, 'Missing', 'Person', '', null, $today);
+    $service->updateContact(999999999, 'Missing', 'Person', '', null, $today, get_current_user_id());
 } catch (\RuntimeException $error) {
     $missingPerson = $error->getMessage() === 'Person was not found.';
 }

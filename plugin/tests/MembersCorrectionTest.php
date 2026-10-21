@@ -229,7 +229,8 @@ CSV);
                 }
             },
             new EndOpenBoardAssignments(new MemoryBoardAssignmentRepository(), new BoardAssignmentLedger()),
-            new UnheldRegisterLock()
+            new UnheldRegisterLock(),
+            new MemoryAuditLog()
         );
 
         return [$service, $memberships];

@@ -46,7 +46,7 @@ final class MemberRegisterLockTest extends TestCase
             'openForExistingPerson' => fn () => $service->openForExistingPerson($personId, 'M-3', 'ordinary', AssociationDate::fromIso('2025-01-01')),
             'endMembership' => fn () => $service->endMembership(1, AssociationDate::fromIso('2025-01-01')),
             'markDeceased' => fn () => $service->markDeceased($personId, AssociationDate::fromIso('2025-01-01')),
-            'updateContact' => fn () => $service->updateContact($personId, 'Changed', 'Name', '', null, AssociationDate::fromIso('2025-01-01')),
+            'updateContact' => fn () => $service->updateContact($personId, 'Changed', 'Name', '', null, AssociationDate::fromIso('2025-01-01'), 1),
         ];
 
         foreach ($calls as $name => $call) {
@@ -77,7 +77,7 @@ final class MemberRegisterLockTest extends TestCase
         $service->endParticipation($membershipId, $other, AssociationDate::fromIso('2025-02-01'));
         $service->endMembership(1, AssociationDate::fromIso('2025-03-01'));
         $service->addPeriod($membershipId, AssociationDate::fromIso('2025-04-01'));
-        $service->updateContact($personId, 'Ada', 'King', '', null, $on);
+        $service->updateContact($personId, 'Ada', 'King', '', null, $on, 1);
         $second = $service->register('Di', 'Berg', '', 'M-2', 'ordinary', AssociationDate::fromIso('2024-01-01'));
         $service->markDeceased($second, AssociationDate::fromIso('2025-05-01'));
         $service->openForExistingPerson($other, 'M-3', 'ordinary', AssociationDate::fromIso('2025-06-01'));
@@ -207,10 +207,10 @@ CSV);
         self::assertIsString($opened);
 
         // Another officer saves first, from a form opened at the same time.
-        $service->updateContact($personId, 'Ada', 'King', 'ada@example.test', null, $today, $opened);
+        $service->updateContact($personId, 'Ada', 'King', 'ada@example.test', null, $today, 1, $opened);
 
         try {
-            $service->updateContact($personId, 'Augusta', 'Lovelace', 'ada@example.test', null, $today, $opened);
+            $service->updateContact($personId, 'Augusta', 'Lovelace', 'ada@example.test', null, $today, 1, $opened);
             self::fail('The second save should not overwrite the first.');
         } catch (ContactChanged) {
         }
@@ -219,7 +219,7 @@ CSV);
         self::assertSame('Ada', $stored?->firstName());
         self::assertSame('King', $stored?->lastName());
 
-        $service->updateContact($personId, 'Augusta', 'King', 'ada@example.test', null, $today, $stored?->contactVersion());
+        $service->updateContact($personId, 'Augusta', 'King', 'ada@example.test', null, $today, 1, $stored?->contactVersion());
         self::assertSame('Augusta', $people->find($personId)?->firstName());
     }
 
@@ -298,7 +298,8 @@ CSV);
             $this->authorizer(),
             new LockCheckingTransaction(new ScriptedRegisterLock()),
             new EndOpenBoardAssignments($assignments, new BoardAssignmentLedger()),
-            new UnheldRegisterLock()
+            new UnheldRegisterLock(),
+            new MemoryAuditLog()
         );
 
         // Another officer held the register and ended the membership first.
@@ -343,7 +344,7 @@ CSV);
         $memberships = new MemoryMembershipRepository();
         $lock = new ScriptedRegisterLock();
         $transaction = new LockCheckingTransaction($lock);
-        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $transaction, new RecordingOpenAssignments(), $lock);
+        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $transaction, new RecordingOpenAssignments(), $lock, new MemoryAuditLog());
 
         return [$service, $people, $memberships, $lock, $transaction];
     }

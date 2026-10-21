@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Application\People;
 
 use Foreningssystem\Domain\Access\Capabilities;
+use Foreningssystem\Domain\Meeting\AuditLog;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Membership\CoverageSpan;
 use Foreningssystem\Domain\Membership\MemberCoverage;
@@ -33,6 +34,7 @@ final class PeopleService
         private readonly Transaction $transaction,
         private readonly OpenBoardAssignments $openAssignments,
         private readonly MemberRegisterLock $lock,
+        private readonly AuditLog $audit,
     ) {
     }
 
@@ -273,20 +275,50 @@ final class PeopleService
         string $email,
         ?AssociationDate $birthDate,
         AssociationDate $today,
+        int $actorUserId,
         ?string $expectedVersion = null,
     ): void {
         $this->require(Capabilities::EDIT_MEMBERS);
         $birthDate = $this->birthDate($birthDate, $today);
 
-        $this->write(function () use ($personId, $firstName, $lastName, $email, $birthDate, $expectedVersion): void {
+        $this->write(function () use ($personId, $firstName, $lastName, $email, $birthDate, $actorUserId, $expectedVersion): void {
             $person = $this->requirePerson($personId);
 
             if ($expectedVersion !== null && ! hash_equals($person->contactVersion(), $expectedVersion)) {
                 throw new ContactChanged('The contact details changed after the form was opened.');
             }
 
-            $this->people->save($person->withContact($firstName, $lastName, $email, $birthDate));
+            $changed = $person->withContact($firstName, $lastName, $email, $birthDate);
+            $this->people->save($changed);
+
+            foreach (self::contactChanges($person, $changed) as $action) {
+                $this->audit->record('person', $personId, $action, $actorUserId);
+            }
         });
+    }
+
+    /**
+     * Names the parts of the contact details that differ, never their values. See ADR-0032.
+     *
+     * @return list<string>
+     */
+    private static function contactChanges(Person $before, Person $after): array
+    {
+        $actions = [];
+
+        if ($before->firstName() !== $after->firstName() || $before->lastName() !== $after->lastName()) {
+            $actions[] = 'contact_name_changed';
+        }
+
+        if ($before->email() !== $after->email()) {
+            $actions[] = 'contact_email_changed';
+        }
+
+        if ($before->birthDate()?->iso() !== $after->birthDate()?->iso()) {
+            $actions[] = 'contact_birth_date_changed';
+        }
+
+        return $actions;
     }
 
     public function markDeceased(int $personId, AssociationDate $on): void

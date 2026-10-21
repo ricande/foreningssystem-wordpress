@@ -18,10 +18,11 @@ $tables = lab_membership_tables();
 $people = $wpdb->prefix . 'assoc_person';
 $roles = $wpdb->prefix . 'assoc_board_role';
 $assignments = $wpdb->prefix . 'assoc_board_assignment';
+$audit = $wpdb->prefix . 'assoc_audit_event';
 $action = (string) ($args[0] ?? '');
 $scenario = (string) ($args[1] ?? '');
 
-$cleanup = static function () use ($wpdb, $people, $roles, $assignments): void {
+$cleanup = static function () use ($wpdb, $people, $roles, $assignments, $audit): void {
     $roleId = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$roles} WHERE slug = %s", 'lab_race_board'));
 
     if ($roleId > 0) {
@@ -30,6 +31,10 @@ $cleanup = static function () use ($wpdb, $people, $roles, $assignments): void {
     }
 
     lab_delete_membership_numbers('LAB-RACE-%');
+    $wpdb->query($wpdb->prepare(
+        "DELETE FROM {$audit} WHERE object_type = 'person' AND object_id IN (SELECT id FROM {$people} WHERE email LIKE %s)",
+        'lab-race-%@example.test'
+    ));
     $wpdb->query($wpdb->prepare("DELETE FROM {$people} WHERE email LIKE %s", 'lab-race-%@example.test'));
 };
 
@@ -196,6 +201,16 @@ if ($scenario === 'update_contact') {
 
     if ($lastName !== $winner) {
         $fail("The stored name '{$lastName}' is not the one the saving worker wrote.");
+    }
+
+    $events = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$audit} WHERE object_type = 'person' AND object_id = %d AND action = %s",
+        $target,
+        'contact_name_changed'
+    ));
+
+    if ($events !== 1) {
+        $fail("Expected one contact_name_changed event for the one saved edit, found {$events}.");
     }
 }
 

@@ -38,7 +38,7 @@ final class DashboardOverviewTest extends TestCase
         $today = AssociationDate::fromIso('2026-09-25');
         $people = new MemoryPersonRepository();
         $memberships = new MemoryMembershipRepository();
-        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->transaction(), new RecordingOpenAssignments(), new UnheldRegisterLock());
+        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->transaction(), new RecordingOpenAssignments(), new UnheldRegisterLock(), new MemoryAuditLog());
         $service->register('Anna', 'Andersson', 'anna@example.test', 'M-ANNA', 'ordinary', AssociationDate::fromIso('2024-01-01'), null, $today);
         $service->register('Karin', 'Nilsson', 'karin@example.test', 'M-KARIN', 'ordinary', AssociationDate::fromIso('2024-01-01'), null, $today);
         $service->register('Johan', 'Berg', 'johan@example.test', 'M-JOHAN', 'ordinary', AssociationDate::fromIso('2024-01-01'), null, $today);
@@ -91,7 +91,7 @@ final class DashboardOverviewTest extends TestCase
         $memberships = new MemoryMembershipRepository();
         $roles = new MemoryBoardRoleRepository();
         $assignments = new MemoryBoardAssignmentRepository();
-        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->transaction(), new RecordingOpenAssignments(), new UnheldRegisterLock());
+        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->transaction(), new RecordingOpenAssignments(), new UnheldRegisterLock(), new MemoryAuditLog());
         $anna = $service->register('Anna', 'Andersson', 'anna@example.test', 'M-ANNA', 'ordinary', AssociationDate::fromIso('2024-01-01'), null, $today);
         $karin = $service->register('Karin', 'Nilsson', 'karin@example.test', 'M-KARIN', 'ordinary', AssociationDate::fromIso('2024-01-01'), null, $today);
         $johan = $service->register('Johan', 'Berg', 'johan@example.test', 'M-JOHAN', 'ordinary', AssociationDate::fromIso('2024-01-01'), null, $today);

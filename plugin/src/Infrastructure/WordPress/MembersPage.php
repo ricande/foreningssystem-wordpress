@@ -320,6 +320,7 @@ final class MembersPage
                 self::text('email'),
                 $birthDate,
                 AssociationDate::fromIso(wp_date('Y-m-d')),
+                get_current_user_id(),
                 self::text('contact_version')
             );
             WordpressMemberAccounts::provisionPerson($personId);

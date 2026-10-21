@@ -138,7 +138,7 @@ final class MembershipRemediationTest extends TestCase
             self::assertCount(1, $memberships->accounts);
         }
 
-        self::assertSame(0, (new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->plainTransaction(), new RecordingOpenAssignments(), new UnheldRegisterLock()))->activeMemberCount(AssociationDate::fromIso('2024-06-01')));
+        self::assertSame(0, (new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->plainTransaction(), new RecordingOpenAssignments(), new UnheldRegisterLock(), new MemoryAuditLog()))->activeMemberCount(AssociationDate::fromIso('2024-06-01')));
         self::assertSame('556012-3456', OrganizationNumber::parse('5560123456')->canonical());
 
         $this->expectException(InvalidArgumentException::class);
@@ -298,7 +298,7 @@ final class MembershipRemediationTest extends TestCase
     {
         $people = new MemoryPersonRepository();
         $memberships = new MemoryMembershipRepository();
-        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->plainTransaction(), new RecordingOpenAssignments(), new UnheldRegisterLock());
+        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->plainTransaction(), new RecordingOpenAssignments(), new UnheldRegisterLock(), new MemoryAuditLog());
 
         return [$service, $memberships, $people];
     }

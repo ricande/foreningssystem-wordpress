@@ -11,6 +11,7 @@ final class ExportedPerson
      * @param list<ExportedAssignment> $assignments
      * @param list<ExportedAttendance> $attendance
      * @param list<string> $guardianNotes
+     * @param list<array{on: string, part: string}> $contactChanges
      */
     public function __construct(
         private readonly int $id,
@@ -24,6 +25,7 @@ final class ExportedPerson
         private readonly ?string $birthDate = null,
         private readonly ?string $personalIdentityNumber = null,
         private readonly array $guardianNotes = [],
+        private readonly array $contactChanges = [],
     ) {
     }
 
@@ -92,5 +94,15 @@ final class ExportedPerson
     public function guardianNotes(): array
     {
         return $this->guardianNotes;
+    }
+
+    /**
+     * When a part of the contact details changed, without the values. See ADR-0032.
+     *
+     * @return list<array{on: string, part: string}>
+     */
+    public function contactChanges(): array
+    {
+        return $this->contactChanges;
     }
 }

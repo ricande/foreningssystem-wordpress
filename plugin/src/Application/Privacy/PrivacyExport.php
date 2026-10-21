@@ -52,7 +52,8 @@ final class PrivacyExport
             $this->attendanceFor($id),
             $person->birthDate()?->iso(),
             $this->identityFor($id, $actorUserId),
-            $this->guardianNotes($id)
+            $this->guardianNotes($id),
+            $this->contactChanges($id)
         );
 
         if ($actorUserId >= 1) {
@@ -107,6 +108,29 @@ final class PrivacyExport
         }
 
         return array_values($rows);
+    }
+
+    /**
+     * Lists the day and the part that changed. The officer who made the change is left out.
+     *
+     * @return list<array{on: string, part: string}>
+     */
+    private function contactChanges(int $personId): array
+    {
+        $parts = [
+            'contact_name_changed' => 'name',
+            'contact_email_changed' => 'email',
+            'contact_birth_date_changed' => 'birth_date',
+        ];
+        $changes = [];
+
+        foreach ($this->audit->forObject('person', $personId) as $event) {
+            if (isset($parts[$event->action()])) {
+                $changes[] = ['on' => substr($event->createdAt(), 0, 10), 'part' => $parts[$event->action()]];
+            }
+        }
+
+        return $changes;
     }
 
     private function identityFor(int $personId, int $actorUserId): ?string

@@ -1066,6 +1066,14 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
+#: src/Infrastructure/WordPress/WordpressPrivacy.php
+msgid "Contact detail changes"
+msgstr ""
+
+#: src/Infrastructure/WordPress/WordpressPrivacy.php
+msgid "Changed"
+msgstr ""
+
 #: src/Infrastructure/WordPress/MeetingsPage.php:170
 #: src/Infrastructure/WordPress/MeetingsPage.php:180
 msgid "Time"

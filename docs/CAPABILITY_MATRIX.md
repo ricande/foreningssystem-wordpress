@@ -46,7 +46,7 @@ Visibility values: public, member, board, administrator. "State" is the meeting 
 | Operation | Capability | State guard | Visibility guard |
 |---|---|---|---|
 | View association overview counts | `view_members` or `view_internal_meetings` | — | Dashboard is an admin screen |
-| Create or edit a person | `edit_members` | — | Admin only |
+| Create or edit a person | `edit_members` | — | Admin only. A contact edit records which part changed, by whom and when, without the values (ADR-0032) |
 | End a membership | `edit_members` | Period is not already ended | Admin only |
 | Anonymize a person | `erase_member_data` | Explicit confirmation | Admin only |
 | Export members | `export_members` | — | Admin only. One semicolon-separated row per membership period. No WordPress user id. The structured member file is the backup: it keeps periods, participants, organizations and person status (ADR-0030) |

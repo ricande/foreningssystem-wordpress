@@ -771,6 +771,12 @@ msgstr "Kom igång"
 msgid "Guardian"
 msgstr "Vårdnadshavare"
 
+msgid "Contact detail changes"
+msgstr "Ändrade kontaktuppgifter"
+
+msgid "Changed"
+msgstr "Ändrat"
+
 msgid "Guardian approvals"
 msgstr "Vårdnadshavargodkännanden"
 

@@ -181,6 +181,13 @@ final class WordpressPrivacy
                 ]);
             }
 
+            foreach ($person->contactChanges() as $index => $change) {
+                $groups[] = self::item('foreningsplugin-contact-changes', __('Contact detail changes', 'foreningsplugin'), 'contact-change-' . $person->id() . '-' . $index, [
+                    [__('Date', 'foreningsplugin'), $change['on']],
+                    [__('Changed', 'foreningsplugin'), self::contactPart($change['part'])],
+                ]);
+            }
+
             foreach ($person->memberships() as $membership) {
                 $fields = [
                     [__('Membership number', 'foreningsplugin'), $membership->number()],
@@ -324,6 +331,15 @@ final class WordpressPrivacy
             'messages' => $messages,
             'done' => true,
         ];
+    }
+
+    private static function contactPart(string $part): string
+    {
+        return match ($part) {
+            'email' => __('Email', 'foreningsplugin'),
+            'birth_date' => __('Birth date', 'foreningsplugin'),
+            default => __('Name', 'foreningsplugin'),
+        };
     }
 
     private static function personStatus(string $status): string

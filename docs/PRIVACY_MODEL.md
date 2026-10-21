@@ -52,6 +52,7 @@ Export:
 - membership periods
 - board assignments and public role contact
 - the user's own meeting-participation summary
+- the days their name, email, or birth date changed, and which part. Not the officer who changed it (ADR-0032)
 
 Do not export the whole member list, other people's contact details, or full minutes.
 
@@ -78,6 +79,7 @@ The eraser response must say which parts were anonymized and which were kept.
 - replace the current signed copy
 - export members
 - anonymize or run the privacy eraser
+- change a person's name, email, or birth date: one event per changed part, without the old or new value (ADR-0032)
 - change who holds `manage_association` or `finalize_minutes`
 
 Do not log email bodies, notes, or full decision text in the audit row.

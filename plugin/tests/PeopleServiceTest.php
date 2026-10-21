@@ -89,7 +89,8 @@ final class PeopleServiceTest extends TestCase
                 }
             },
             new RecordingOpenAssignments(),
-            new UnheldRegisterLock()
+            new UnheldRegisterLock(),
+            new MemoryAuditLog()
         );
         $memberships->grant(1, 'M-1', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
         $memberships->grant(1, 'M-2', 'ordinarie', MembershipStatus::Active, AssociationDate::fromIso('2020-01-01'), null);
@@ -133,7 +134,8 @@ final class PeopleServiceTest extends TestCase
                 }
             },
             new RecordingOpenAssignments(),
-            new UnheldRegisterLock()
+            new UnheldRegisterLock(),
+            new MemoryAuditLog()
         );
         $today = AssociationDate::fromIso('2024-09-24');
         $personId = $service->register('Ada', 'Lovelace', 'ada@example.test', 'M-1', 'ordinarie', AssociationDate::fromIso('2020-01-01'));
@@ -189,7 +191,8 @@ final class PeopleServiceTest extends TestCase
                 }
             },
             new RecordingOpenAssignments(),
-            new UnheldRegisterLock()
+            new UnheldRegisterLock(),
+            new MemoryAuditLog()
         );
         $service->register('Ada', 'Lovelace', 'ada@example.test', 'M-1', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
         $service->register('Grace', 'Hopper', 'grace@example.test', 'M-2', 'ordinarie', AssociationDate::fromIso('2024-01-01'));
@@ -238,7 +241,8 @@ final class PeopleServiceTest extends TestCase
                 }
             },
             $closer ?? new RecordingOpenAssignments(),
-            new UnheldRegisterLock()
+            new UnheldRegisterLock(),
+            new MemoryAuditLog()
         );
     }
 }
