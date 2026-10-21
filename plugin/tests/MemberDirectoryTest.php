@@ -241,7 +241,8 @@ final class MemberDirectoryTest extends TestCase
                     return $callback();
                 }
             },
-            new EndOpenBoardAssignments(new MemoryBoardAssignmentRepository(), new BoardAssignmentLedger())
+            new EndOpenBoardAssignments(new MemoryBoardAssignmentRepository(), new BoardAssignmentLedger()),
+            new UnheldRegisterLock()
         );
 
         return [$service, $people, $memberships, $organizations, new MemberDirectory($people, $memberships, $organizations)];

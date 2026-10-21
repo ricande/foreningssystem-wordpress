@@ -27,6 +27,7 @@ final class CompanyMemberships
         private readonly PersonRepository $people,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
+        private readonly MemberRegisterLock $lock,
     ) {
     }
 
@@ -41,7 +42,7 @@ final class CompanyMemberships
     ): int {
         $this->require(Capabilities::EDIT_MEMBERS);
 
-        return $this->transaction->run(function () use ($name, $organizationNumber, $email, $postalAddress, $membershipNumber, $startedOn, $contactPersonId): int {
+        return $this->lock->hold(fn (): int => $this->transaction->run(function () use ($name, $organizationNumber, $email, $postalAddress, $membershipNumber, $startedOn, $contactPersonId): int {
             $number = trim($membershipNumber);
 
             if ($this->memberships->findMembershipByNumber($number) instanceof Membership) {
@@ -94,7 +95,7 @@ final class CompanyMemberships
             ));
 
             return $membershipId;
-        });
+        }));
     }
 
     private function require(string $capability): void

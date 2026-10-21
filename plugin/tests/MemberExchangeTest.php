@@ -160,7 +160,8 @@ CSV);
                     return $callback();
                 }
             },
-            new MemoryOrganizationRepository()
+            new MemoryOrganizationRepository(),
+            new UnheldRegisterLock()
         );
     }
 }

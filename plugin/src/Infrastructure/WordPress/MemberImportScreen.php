@@ -330,6 +330,7 @@ final class MemberImportScreen
             'number_exists' => __('Row %d: The membership number is already in the register.', 'foreningsplugin'),
             'number_repeated' => __('Row %d: The membership number is repeated in this file.', 'foreningsplugin'),
             'email_exists' => __('Row %d: This email already belongs to a person, so the row was not imported.', 'foreningsplugin'),
+            'register_busy' => __('Row %d: Another change to the member register was being saved, so the row was not imported. Import the file again to add it.', 'foreningsplugin'),
             'email_repeated' => __('Row %d: This email is repeated in this file, so the row was not imported.', 'foreningsplugin'),
             default => __('Row %d: The row could not be saved.', 'foreningsplugin'),
         };

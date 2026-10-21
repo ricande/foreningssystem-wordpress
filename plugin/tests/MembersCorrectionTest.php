@@ -176,7 +176,8 @@ final class MembersCorrectionTest extends TestCase
                     return $callback();
                 }
             },
-            new MemoryOrganizationRepository()
+            new MemoryOrganizationRepository(),
+            new UnheldRegisterLock()
         );
         $result = $exchange->import(<<<'CSV'
 # foreningsplugin-members 2
@@ -227,7 +228,8 @@ CSV);
                     return $callback();
                 }
             },
-            new EndOpenBoardAssignments(new MemoryBoardAssignmentRepository(), new BoardAssignmentLedger())
+            new EndOpenBoardAssignments(new MemoryBoardAssignmentRepository(), new BoardAssignmentLedger()),
+            new UnheldRegisterLock()
         );
 
         return [$service, $memberships];

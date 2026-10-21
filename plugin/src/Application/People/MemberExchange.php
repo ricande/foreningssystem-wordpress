@@ -51,6 +51,7 @@ final class MemberExchange
     private const FORMULA = "/^'*[=+\\-@\t\r]/";
 
     private const ROW_NOT_SAVED = 'The row could not be saved. No part of it was kept.';
+    private const BUSY = 'Another change to the member register was being saved, so the row was not imported. Import the file again to add it.';
 
     /** @var list<int> */
     private array $provisionPeople = [];
@@ -65,6 +66,7 @@ final class MemberExchange
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
         private readonly OrganizationRepository $organizations,
+        private readonly MemberRegisterLock $lock,
         private readonly ?MemberAccountProvisioner $accounts = null,
         private readonly ?AssociationDate $provisionOn = null,
     ) {
@@ -172,7 +174,7 @@ final class MemberExchange
             }
 
             try {
-                $outcome = $this->transaction->run(fn (): string => $this->importRow($row));
+                $outcome = $this->writeRow(fn (): string => $this->importRow($row));
 
                 if ($outcome === 'skipped') {
                     $skipped++;
@@ -182,6 +184,8 @@ final class MemberExchange
                 }
             } catch (MembershipRuleException | InvalidArgumentException $error) {
                 $errors[] = 'Line ' . $line . ': ' . $error->getMessage();
+            } catch (MemberRegisterBusy) {
+                $errors[] = 'Line ' . $line . ': ' . self::BUSY;
             } catch (\RuntimeException) {
                 $errors[] = 'Line ' . $line . ': ' . self::ROW_NOT_SAVED;
             }
@@ -446,10 +450,12 @@ final class MemberExchange
         foreach (['organization', 'membership', 'period', 'participant'] as $type) {
             foreach ($records[$type] as $record) {
                 try {
-                    $outcome = $this->transaction->run(fn (): string => $this->importStructureRow($type, $record['cells'], $record['line']));
+                    $outcome = $this->writeRow(fn (): string => $this->importStructureRow($type, $record['cells'], $record['line']));
                     $outcome === 'skipped' ? $skipped++ : $created++;
                 } catch (MembershipRuleException | InvalidArgumentException $error) {
                     $errors[] = 'Line ' . $record['line'] . ': ' . $error->getMessage();
+                } catch (MemberRegisterBusy) {
+                    $errors[] = 'Line ' . $record['line'] . ': ' . self::BUSY;
                 } catch (\RuntimeException) {
                     $errors[] = 'Line ' . $record['line'] . ': ' . self::ROW_NOT_SAVED;
                 }
@@ -458,9 +464,15 @@ final class MemberExchange
 
         foreach ($this->deceasedPeople as $personId => $line) {
             try {
-                $this->transaction->run(fn () => $this->markImportedDeceased($personId));
+                $this->writeRow(function () use ($personId): string {
+                    $this->markImportedDeceased($personId);
+
+                    return 'updated';
+                });
             } catch (MembershipRuleException | InvalidArgumentException $error) {
                 $errors[] = 'Line ' . $line . ': ' . $error->getMessage();
+            } catch (MemberRegisterBusy) {
+                $errors[] = 'Line ' . $line . ': ' . self::BUSY;
             } catch (\RuntimeException) {
                 $errors[] = 'Line ' . $line . ': ' . self::ROW_NOT_SAVED;
             }
@@ -654,6 +666,17 @@ final class MemberExchange
             $this->provisionPeople,
             static fn (int $remembered): bool => $remembered !== $personId
         ));
+    }
+
+    /**
+     * Each row holds the register on its own, so officers can still save between the
+     * rows of a long file. The row's checks run inside the claim. See ADR-0031.
+     *
+     * @param callable(): string $row
+     */
+    private function writeRow(callable $row): string
+    {
+        return $this->lock->hold(fn (): string => $this->transaction->run($row));
     }
 
     private function rememberAccountPerson(int $personId): void

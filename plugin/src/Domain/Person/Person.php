@@ -75,6 +75,20 @@ final class Person
         return new self($this->id, trim($firstName), trim($lastName), trim($email), $this->status, $this->wordpressUserId, $birthDate);
     }
 
+    /**
+     * Identifies the contact details an edit form was opened with, so a save can tell
+     * whether someone else changed them in the meantime.
+     */
+    public function contactVersion(): string
+    {
+        return hash('sha256', (string) json_encode([
+            $this->firstName,
+            $this->lastName,
+            $this->email,
+            $this->birthDate?->iso(),
+        ]));
+    }
+
     public function markedDeceased(): self
     {
         return new self($this->id, $this->firstName, $this->lastName, $this->email, PersonStatus::Deceased, $this->wordpressUserId, $this->birthDate);

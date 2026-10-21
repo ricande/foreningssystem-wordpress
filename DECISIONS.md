@@ -45,6 +45,7 @@ Status terminology:
 | WordPress owns member passwords, password reset and authentication. The plugin does not create or reveal a temporary password | PROVISIONAL |
 | Ending a membership keeps the Person and any linked WordPress user. Member-only access still requires current active individual membership coverage | PROVISIONAL |
 | A matching email does not link a Person to a WordPress user. Company contacts and guardian-only people do not receive member accounts automatically | PROVISIONAL |
+| One MySQL advisory lock serializes member register writes. A contact edit is refused when the details changed after the form was opened (ADR-0031) | PROVISIONAL |
 | Guardian approval of an account for a minor is future member-portal design and is not locked | OPEN |
 
 "Where appropriate" for the Media Library means public or non-sensitive media, such as the association logo. Protected documents, minutes PDFs, and signed copies use plugin-managed private storage because a Media Library URL is not an authorization check. See ADR-0005 and `docs/PRIVATE_FILES.md`.

@@ -467,6 +467,7 @@ final class MemberAccountProvisioningTest extends TestCase
                 }
             },
             new MemoryOrganizationRepository(),
+            new UnheldRegisterLock(),
             $service,
             $this->on
         );

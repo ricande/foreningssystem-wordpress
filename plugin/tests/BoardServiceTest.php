@@ -139,7 +139,7 @@ final class BoardServiceTest extends TestCase
         $period = $this->membership($memberships, $personId, 'M-1', MembershipStatus::Active, '2024-01-01', null);
         $assignments->add(new BoardAssignment(null, $personId, 1, AssociationDate::fromIso('2024-01-01'), null, 'ordf@example.test', ''));
         $assignments->add(new BoardAssignment(null, $personId, 2, AssociationDate::fromIso('2023-01-01'), AssociationDate::fromIso('2023-12-31'), '', ''));
-        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(true), $this->transaction(), new EndOpenBoardAssignments($assignments, new BoardAssignmentLedger()));
+        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(true), $this->transaction(), new EndOpenBoardAssignments($assignments, new BoardAssignmentLedger()), new UnheldRegisterLock());
 
         $service->endMembership((int) $period->id(), AssociationDate::fromIso('2024-06-01'));
 

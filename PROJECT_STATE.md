@@ -120,6 +120,16 @@ The structured member file is the backup for the member register (ADR-0030). It 
 
 The plain member file still brings in one period and one member per membership. A later row for a membership created from an earlier line is now reported as not imported, with a pointer to the structured file, instead of being counted as unchanged. A row that fails to save is reported on its line and rolled back. Plugin version stays 0.1.0. Schema stays 17. No migration.
 
+## Update — member register concurrency — 2026-10-21
+
+Member register writes are serialized by one MySQL advisory lock (ADR-0031, proposed and waiting for owner review). Before this, 8 parallel `addPeriod` calls on one ended membership all succeeded and left 8 overlapping active periods. Every `PeopleService` write, company registration, and each row of both member imports now runs its checks and its transaction while it holds the register. A write that waits more than 10 seconds saves nothing and answers with `MemberRegisterBusy`. The members screen shows that as a temporary state, and an import reports the row as not imported.
+
+The person form carries a `contact_version` hash of the details it showed. A save from a form whose details another officer has changed in the meantime is refused with `ContactChanged` instead of overwriting them.
+
+`scripts/test-lab-race.sh` runs from `scripts/test-lab.sh`. It starts 8 PHP workers in the WordPress container on one start time and asserts that exactly one saves, for a new period, a membership number, and a contact edit. Plugin version stays 0.1.0. Schema stays 17. No migration.
+
+Not covered yet: board assignment writes in `BoardService` read membership coverage without this lock. The spreadsheet import checks emails once before it writes the rows, not again inside each row's hold.
+
 ## Planned product area — sections and departments
 
 **FUTURE / NOT IMPLEMENTED / PROPOSAL.** Not part of the implemented list above. No tables, screens, capabilities, or document types exist for this.

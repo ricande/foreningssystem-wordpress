@@ -149,6 +149,7 @@ final class MembersScreen
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_update_person">';
             echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
+            echo '<input type="hidden" name="contact_version" value="' . esc_attr((string) $detail['contact_version']) . '">';
             wp_nonce_field('assoc_update_person');
             self::input('first_name', __('First name', 'foreningsplugin'), 'text', true, (string) $detail['first_name']);
             self::input('last_name', __('Last name', 'foreningsplugin'), 'text', true, (string) $detail['last_name']);

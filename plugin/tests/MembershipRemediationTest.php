@@ -106,7 +106,7 @@ final class MembershipRemediationTest extends TestCase
         $memberships = new MemoryMembershipRepository();
         $organizations = new MemoryOrganizationRepository();
         $contact = $people->add(new Person(null, 'Kim', 'Kontakt', 'kim-rem@example.test', PersonStatus::Known, null));
-        $companies = new CompanyMemberships($organizations, $memberships, $people, $this->authorizer(), $this->restoringTransaction($organizations, $memberships));
+        $companies = new CompanyMemberships($organizations, $memberships, $people, $this->authorizer(), $this->restoringTransaction($organizations, $memberships), new UnheldRegisterLock());
         $memberships->failNext = 'membership';
 
         try {
@@ -138,7 +138,7 @@ final class MembershipRemediationTest extends TestCase
             self::assertCount(1, $memberships->accounts);
         }
 
-        self::assertSame(0, (new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->plainTransaction(), new RecordingOpenAssignments()))->activeMemberCount(AssociationDate::fromIso('2024-06-01')));
+        self::assertSame(0, (new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->plainTransaction(), new RecordingOpenAssignments(), new UnheldRegisterLock()))->activeMemberCount(AssociationDate::fromIso('2024-06-01')));
         self::assertSame('556012-3456', OrganizationNumber::parse('5560123456')->canonical());
 
         $this->expectException(InvalidArgumentException::class);
@@ -169,7 +169,7 @@ final class MembershipRemediationTest extends TestCase
         self::assertNull($people->find((int) $withoutBirth->id())?->birthDate());
         self::assertStringNotContainsString('20120417-0011', $audit->forObject('personal_identity', 1)[0]->action());
 
-        $exchange = new MemberExchange($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->plainTransaction(), new MemoryOrganizationRepository());
+        $exchange = new MemberExchange($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->plainTransaction(), new MemoryOrganizationRepository(), new UnheldRegisterLock());
 
         self::assertStringNotContainsString('20120417-0011', $exchange->export());
         self::assertNull((new PersonalIdentityService($identities, $people, $this->authorizer([Capabilities::EDIT_MEMBERS]), $audit))->masked($personId));
@@ -298,7 +298,7 @@ final class MembershipRemediationTest extends TestCase
     {
         $people = new MemoryPersonRepository();
         $memberships = new MemoryMembershipRepository();
-        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->plainTransaction(), new RecordingOpenAssignments());
+        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(), $this->plainTransaction(), new RecordingOpenAssignments(), new UnheldRegisterLock());
 
         return [$service, $memberships, $people];
     }

@@ -32,6 +32,7 @@ final class PeopleService
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
         private readonly OpenBoardAssignments $openAssignments,
+        private readonly MemberRegisterLock $lock,
     ) {
     }
 
@@ -52,7 +53,7 @@ final class PeopleService
             throw new MembershipRuleException('Add a birth date before starting a youth membership.');
         }
 
-        return $this->transaction->run(function () use ($firstName, $lastName, $email, $membershipNumber, $membershipType, $startedOn, $birthDate, $today): int {
+        return $this->write(function () use ($firstName, $lastName, $email, $membershipNumber, $membershipType, $startedOn, $birthDate, $today): int {
             $person = $this->people->add(new Person(
                 null,
                 trim($firstName),
@@ -108,7 +109,7 @@ final class PeopleService
     ): int {
         $this->require(Capabilities::EDIT_MEMBERS);
 
-        return $this->transaction->run(function () use ($membershipId, $firstName, $lastName, $email, $birthDate, $startedOn, $role, $primary, $today): int {
+        return $this->write(function () use ($membershipId, $firstName, $lastName, $email, $birthDate, $startedOn, $role, $primary, $today): int {
             $membership = $this->requireAccount($membershipId);
 
             ParticipantAdmission::assertRole(
@@ -144,18 +145,19 @@ final class PeopleService
         AssociationDate $on,
     ): void {
         $this->require(Capabilities::EDIT_MEMBERS);
-        $person = $this->requirePerson($personId);
-        $membership = $this->requireAccount($membershipId);
 
-        ParticipantAdmission::assertRole(
-            $membership->kind(),
-            $role,
-            $person->status() === PersonStatus::Deceased,
-            $this->memberships->participantsForMembership($membershipId),
-            $personId
-        );
+        $this->write(function () use ($membershipId, $personId, $role, $primary, $on): void {
+            $person = $this->requirePerson($personId);
+            $membership = $this->requireAccount($membershipId);
 
-        $this->transaction->run(function () use ($membership, $personId, $role, $primary, $on): void {
+            ParticipantAdmission::assertRole(
+                $membership->kind(),
+                $role,
+                $person->status() === PersonStatus::Deceased,
+                $this->memberships->participantsForMembership($membershipId),
+                $personId
+            );
+
             $participant = new MembershipParticipant(null, (int) $membership->id(), $personId, $role, $primary, $on, null);
             $this->assertNewParticipant($participant, $this->memberships->periodsForMembership((int) $membership->id()));
             $this->memberships->addParticipant($participant);
@@ -168,10 +170,10 @@ final class PeopleService
     public function endParticipation(int $membershipId, int $personId, AssociationDate $on): array
     {
         $this->require(Capabilities::EDIT_MEMBERS);
-        $this->requireAccount($membershipId);
-        $this->requirePerson($personId);
 
-        return $this->transaction->run(function () use ($membershipId, $personId, $on): array {
+        return $this->write(function () use ($membershipId, $personId, $on): array {
+            $this->requireAccount($membershipId);
+            $this->requirePerson($personId);
             $open = null;
 
             foreach ($this->memberships->participantsForMembership($membershipId) as $participant) {
@@ -200,25 +202,26 @@ final class PeopleService
     public function addPeriod(int $membershipId, AssociationDate $startedOn): int
     {
         $this->require(Capabilities::EDIT_MEMBERS);
-        $membership = $this->requireAccount($membershipId);
 
-        if ($membership->kind() === MembershipKind::Company) {
-            return $this->addCompanyPeriod($membership, $startedOn);
-        }
+        return $this->write(function () use ($membershipId, $startedOn): int {
+            $membership = $this->requireAccount($membershipId);
 
-        $members = $this->memberParticipants($membershipId);
-
-        if ($members === []) {
-            throw new MembershipRuleException('The membership has no member to continue.');
-        }
-
-        foreach ($members as $participant) {
-            if ($this->requirePerson($participant->personId())->status() === PersonStatus::Deceased) {
-                throw new MembershipRuleException('A deceased person cannot start a membership.');
+            if ($membership->kind() === MembershipKind::Company) {
+                return $this->addCompanyPeriod($membership, $startedOn);
             }
-        }
 
-        return $this->transaction->run(function () use ($membership, $startedOn, $members): int {
+            $members = $this->memberParticipants($membershipId);
+
+            if ($members === []) {
+                throw new MembershipRuleException('The membership has no member to continue.');
+            }
+
+            foreach ($members as $participant) {
+                if ($this->requirePerson($participant->personId())->status() === PersonStatus::Deceased) {
+                    throw new MembershipRuleException('A deceased person cannot start a membership.');
+                }
+            }
+
             $period = new MembershipPeriod(null, (int) $membership->id(), MembershipStatus::Active, $startedOn, null, $membership->kind()->value);
             $this->ledger->add($this->memberships->periodsForMembership((int) $membership->id()), $period);
 
@@ -243,9 +246,9 @@ final class PeopleService
     public function endMembership(int $periodId, AssociationDate $on): array
     {
         $this->require(Capabilities::EDIT_MEMBERS);
-        $period = $this->requirePeriod($periodId);
 
-        return $this->transaction->run(function () use ($period, $on): array {
+        return $this->write(function () use ($periodId, $on): array {
+            $period = $this->requirePeriod($periodId);
             $ended = $this->ledger->end($period, $on);
             $periods = $this->periodsReplacing($period, $ended);
             $notices = [];
@@ -270,18 +273,28 @@ final class PeopleService
         string $email,
         ?AssociationDate $birthDate,
         AssociationDate $today,
+        ?string $expectedVersion = null,
     ): void {
         $this->require(Capabilities::EDIT_MEMBERS);
-        $person = $this->requirePerson($personId);
-        $this->people->save($person->withContact($firstName, $lastName, $email, $this->birthDate($birthDate, $today)));
+        $birthDate = $this->birthDate($birthDate, $today);
+
+        $this->write(function () use ($personId, $firstName, $lastName, $email, $birthDate, $expectedVersion): void {
+            $person = $this->requirePerson($personId);
+
+            if ($expectedVersion !== null && ! hash_equals($person->contactVersion(), $expectedVersion)) {
+                throw new ContactChanged('The contact details changed after the form was opened.');
+            }
+
+            $this->people->save($person->withContact($firstName, $lastName, $email, $birthDate));
+        });
     }
 
     public function markDeceased(int $personId, AssociationDate $on): void
     {
         $this->require(Capabilities::EDIT_MEMBERS);
-        $person = $this->requirePerson($personId);
 
-        $this->transaction->run(function () use ($person, $personId, $on): void {
+        $this->write(function () use ($personId, $on): void {
+            $person = $this->requirePerson($personId);
             $this->openAssignments->endOpen($personId, $on);
 
             foreach ($this->memberships->allParticipants() as $participant) {
@@ -437,19 +450,20 @@ final class PeopleService
     public function openForExistingPerson(int $personId, string $membershipNumber, string $membershipType, AssociationDate $startedOn): int
     {
         $this->require(Capabilities::EDIT_MEMBERS);
-        $person = $this->requirePerson($personId);
 
-        if ($person->status() === PersonStatus::Deceased) {
-            throw new MembershipRuleException('A deceased person cannot start a membership.');
-        }
+        return $this->write(function () use ($personId, $membershipNumber, $membershipType, $startedOn): int {
+            $person = $this->requirePerson($personId);
 
-        $kind = MembershipKind::knownSlug($membershipType) ? MembershipKind::fromSlug($membershipType) : MembershipKind::Ordinary;
+            if ($person->status() === PersonStatus::Deceased) {
+                throw new MembershipRuleException('A deceased person cannot start a membership.');
+            }
 
-        if ($kind === MembershipKind::Youth && ! $person->birthDate() instanceof AssociationDate) {
-            throw new MembershipRuleException('Add a birth date before starting a youth membership.');
-        }
+            $kind = MembershipKind::knownSlug($membershipType) ? MembershipKind::fromSlug($membershipType) : MembershipKind::Ordinary;
 
-        return $this->transaction->run(function () use ($personId, $membershipNumber, $membershipType, $startedOn): int {
+            if ($kind === MembershipKind::Youth && ! $person->birthDate() instanceof AssociationDate) {
+                throw new MembershipRuleException('Add a birth date before starting a youth membership.');
+            }
+
             $membership = $this->openMembership($personId, trim($membershipNumber), trim($membershipType), $startedOn, ParticipantRole::Member, true);
 
             return (int) $membership->id();
@@ -610,18 +624,16 @@ final class PeopleService
             throw new MembershipRuleException('A company membership belongs to an organization.');
         }
 
-        return $this->transaction->run(function () use ($membership, $startedOn): int {
-            $period = new MembershipPeriod(null, (int) $membership->id(), MembershipStatus::Active, $startedOn, null, $membership->kind()->value);
-            $this->ledger->add($this->memberships->periodsForMembership((int) $membership->id()), $period);
-            $saved = $this->memberships->add($period);
-            $periodId = $saved->id();
+        $period = new MembershipPeriod(null, (int) $membership->id(), MembershipStatus::Active, $startedOn, null, $membership->kind()->value);
+        $this->ledger->add($this->memberships->periodsForMembership((int) $membership->id()), $period);
+        $saved = $this->memberships->add($period);
+        $periodId = $saved->id();
 
-            if ($periodId === null) {
-                throw new \RuntimeException('The membership was not saved.');
-            }
+        if ($periodId === null) {
+            throw new \RuntimeException('The membership was not saved.');
+        }
 
-            return $periodId;
-        });
+        return $periodId;
     }
 
     /**
@@ -653,6 +665,20 @@ final class PeopleService
         }
 
         return count($people);
+    }
+
+    /**
+     * Reads, checks and writes the register as one unit: the claim on the register is
+     * taken before the transaction starts and released after it ends, so the checks see
+     * every write that finished before this one.
+     *
+     * @template T
+     * @param callable(): T $work
+     * @return T
+     */
+    private function write(callable $work): mixed
+    {
+        return $this->lock->hold(fn (): mixed => $this->transaction->run($work));
     }
 
     private function birthDate(?AssociationDate $birthDate, AssociationDate $today): ?AssociationDate

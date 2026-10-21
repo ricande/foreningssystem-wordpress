@@ -27,7 +27,8 @@ final class WordpressPeople
                 }
             },
             self::transaction(),
-            WordpressBoard::endOpenAssignments()
+            WordpressBoard::endOpenAssignments(),
+            new WordpressMemberRegisterLock()
         );
     }
 
@@ -45,6 +46,7 @@ final class WordpressPeople
             },
             self::transaction(),
             new WpdbOrganizationRepository(),
+            new WordpressMemberRegisterLock(),
             WordpressMemberAccounts::service(),
             AssociationDate::fromIso(wp_date('Y-m-d'))
         );
@@ -57,7 +59,8 @@ final class WordpressPeople
             new WpdbMembershipRepository(),
             new MembershipLedger(),
             self::authorizer(),
-            self::transaction()
+            self::transaction(),
+            new WordpressMemberRegisterLock()
         );
     }
 
@@ -77,7 +80,8 @@ final class WordpressPeople
             new WpdbMembershipRepository(),
             new WpdbPersonRepository(),
             self::authorizer(),
-            self::transaction()
+            self::transaction(),
+            new WordpressMemberRegisterLock()
         );
     }
 

@@ -85,10 +85,10 @@ final class MembershipModelTest extends TestCase
     public function test_company_contact_is_not_an_individual_member(): void
     {
         [$people, $memberships, $organizations] = $this->stores();
-        $companies = new CompanyMemberships($organizations, $memberships, $people, $this->authorizer(true), $this->transaction());
+        $companies = new CompanyMemberships($organizations, $memberships, $people, $this->authorizer(true), $this->transaction(), new UnheldRegisterLock());
         $contact = $people->add(new \Foreningssystem\Domain\Person\Person(null, 'Kim', 'Kontakt', 'kim@example.test', \Foreningssystem\Domain\Person\PersonStatus::Known, null));
         $membershipId = $companies->register('Exempel AB', $this->organizationNumber(), '', '', 'C-1', AssociationDate::fromIso('2024-01-01'), (int) $contact->id());
-        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(true), $this->transaction(), new RecordingOpenAssignments());
+        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer(true), $this->transaction(), new RecordingOpenAssignments(), new UnheldRegisterLock());
 
         self::assertSame(1, $service->activeMembershipCount(AssociationDate::fromIso('2026-09-24')));
         self::assertSame(0, $service->activeMemberCount(AssociationDate::fromIso('2026-09-24')));
@@ -226,7 +226,7 @@ final class MembershipModelTest extends TestCase
     {
         [$people, $memberships] = $this->stores();
 
-        return new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer($allowed), $this->transaction(), new RecordingOpenAssignments());
+        return new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer($allowed), $this->transaction(), new RecordingOpenAssignments(), new UnheldRegisterLock());
     }
 
     /**
@@ -235,7 +235,7 @@ final class MembershipModelTest extends TestCase
     private function world(bool $allowed): array
     {
         [$people, $memberships] = $this->stores();
-        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer($allowed), $this->transaction(), new RecordingOpenAssignments());
+        $service = new PeopleService($people, $memberships, new MembershipLedger(), $this->authorizer($allowed), $this->transaction(), new RecordingOpenAssignments(), new UnheldRegisterLock());
 
         return [$service, $memberships, $people];
     }

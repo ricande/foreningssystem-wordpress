@@ -297,7 +297,8 @@ final class MemberFileRegister
                 }
             },
             $this->transaction(),
-            $this->organizations
+            $this->organizations,
+            new UnheldRegisterLock()
         );
     }
 

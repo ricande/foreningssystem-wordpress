@@ -96,6 +96,7 @@ final class MemberDirectory
             'last_name' => $person->lastName(),
             'email' => $person->email(),
             'birth_date' => $person->birthDate()?->iso(),
+            'contact_version' => $person->contactVersion(),
             'deceased' => $person->status() === PersonStatus::Deceased,
             'active_member' => MemberCoverage::isActiveMember($personId, $today, $snapshot['participants'], $snapshot['periods']),
             'memberships' => array_values($memberships),

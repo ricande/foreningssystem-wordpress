@@ -260,7 +260,8 @@ final class MemberRegisterImportTest extends TestCase
             $memberships,
             new MembershipLedger(),
             $this->authorizer([Capabilities::EDIT_MEMBERS]),
-            new RestoringMemberTransaction($people, $memberships)
+            new RestoringMemberTransaction($people, $memberships),
+            new UnheldRegisterLock()
         );
         $csv = "first_name,last_name,email,membership_number,membership_type,started_on\n"
             . "Anna,Berg,anna@example.test,M-1,ordinary,2020-01-01\n"
@@ -380,7 +381,8 @@ final class MemberRegisterImportTest extends TestCase
                 {
                     return $callback();
                 }
-            }
+            },
+            new UnheldRegisterLock()
         );
     }
 

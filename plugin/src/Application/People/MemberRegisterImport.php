@@ -41,6 +41,7 @@ final class MemberRegisterImport
         private readonly MembershipLedger $ledger,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
+        private readonly MemberRegisterLock $lock,
     ) {
     }
 
@@ -73,10 +74,15 @@ final class MemberRegisterImport
 
         foreach ($plan->readyRows as $row) {
             try {
-                $this->transaction->run(function () use ($row): void {
+                // Each row holds the register on its own and checks the number again
+                // inside the claim. See ADR-0031.
+                $this->lock->hold(fn (): mixed => $this->transaction->run(function () use ($row): void {
                     $this->write($row);
-                });
+                }));
                 $imported++;
+            } catch (MemberRegisterBusy) {
+                $failed++;
+                $issues[] = new MemberRegisterIssue($row['line'], 'error', 'register_busy');
             } catch (MemberRegisterDuplicate) {
                 $duplicates++;
                 $issues[] = new MemberRegisterIssue($row['line'], 'duplicate', 'number_exists');

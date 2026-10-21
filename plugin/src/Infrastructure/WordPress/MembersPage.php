@@ -6,6 +6,8 @@ namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Application\Account\AccountOutcome;
 use Foreningssystem\Application\People\BoardCoverageNotice;
+use Foreningssystem\Application\People\ContactChanged;
+use Foreningssystem\Application\People\MemberRegisterBusy;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Board\BoardRuleException;
@@ -317,7 +319,8 @@ final class MembersPage
                 self::text('last_name'),
                 self::text('email'),
                 $birthDate,
-                AssociationDate::fromIso(wp_date('Y-m-d'))
+                AssociationDate::fromIso(wp_date('Y-m-d')),
+                self::text('contact_version')
             );
             WordpressMemberAccounts::provisionPerson($personId);
             self::redirect('person_saved', ['assoc_person' => (string) $personId]);
@@ -590,6 +593,14 @@ final class MembersPage
 
     private static function noticeCode(\Throwable $error): string
     {
+        if ($error instanceof MemberRegisterBusy) {
+            return 'register_busy';
+        }
+
+        if ($error instanceof ContactChanged) {
+            return 'contact_changed';
+        }
+
         return match ($error->getMessage()) {
             'Membership number is already used.' => 'duplicate_number',
             'The organization number is already used.' => 'duplicate_organization',
@@ -761,6 +772,8 @@ final class MembersPage
             'youth_birth' => __('Add a birth date before starting a youth membership.', 'foreningsplugin'),
             'confirm' => __('Confirm the action before it is saved.', 'foreningsplugin'),
             'invalid' => __('Check the details and try again.', 'foreningsplugin'),
+            'register_busy' => __('Another change to the member register is being saved right now. Nothing was saved. Try again in a moment.', 'foreningsplugin'),
+            'contact_changed' => __('Someone else saved this person after you opened the form. Your changes were not saved. Check the current details and try again.', 'foreningsplugin'),
             'deceased_period' => __('A deceased person cannot receive a new membership period.', 'foreningsplugin'),
             'import_invalid' => __('The file must be UTF-8 with the expected columns, separated by semicolons.', 'foreningsplugin'),
             'import_too_large' => __('The file is larger than 2 MB.', 'foreningsplugin'),

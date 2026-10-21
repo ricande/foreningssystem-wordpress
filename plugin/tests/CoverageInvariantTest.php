@@ -551,7 +551,8 @@ CSV);
             new MembershipLedger(),
             $this->authorizer(),
             $this->passthrough(),
-            new EndOpenBoardAssignments($assignments, new BoardAssignmentLedger())
+            new EndOpenBoardAssignments($assignments, new BoardAssignmentLedger()),
+            new UnheldRegisterLock()
         );
 
         return [$service, $memberships, $assignments];
@@ -572,7 +573,8 @@ CSV);
             new MembershipLedger(),
             $this->authorizer(),
             $transaction,
-            $organizations
+            $organizations,
+            new UnheldRegisterLock()
         );
 
         return [$exchange, $people, $memberships];
@@ -586,7 +588,8 @@ CSV);
             new MembershipLedger(),
             $this->authorizer(),
             $this->passthrough(),
-            new EndOpenBoardAssignments(new MemoryBoardAssignmentRepository(), new BoardAssignmentLedger())
+            new EndOpenBoardAssignments(new MemoryBoardAssignmentRepository(), new BoardAssignmentLedger()),
+            new UnheldRegisterLock()
         );
     }
 
