@@ -198,6 +198,34 @@ CSV);
         self::assertSame(0, $transaction->outsideLock);
     }
 
+    public function test_a_spreadsheet_row_whose_email_was_saved_after_the_preview_is_a_duplicate(): void
+    {
+        $people = new MemoryPersonRepository();
+        $memberships = new MemoryMembershipRepository();
+        $lock = new ScriptedRegisterLock();
+        $transaction = new LockCheckingTransaction($lock);
+        $import = new MemberRegisterImport($people, $memberships, new MembershipLedger(), $this->authorizer(), $transaction, $lock);
+        $table = (new MemberCsvParser())->parse("first_name,last_name,email,membership_number,membership_type,started_on\n"
+            . "Anna,Berg,anna@example.test,M-1,ordinary,2020-01-01\n"
+            . "Bo,Lind,bo@example.test,M-2,ordinary,2020-01-01\n");
+        $mapping = [0 => 'first_name', 1 => 'last_name', 2 => 'email', 3 => 'membership_number', 4 => 'membership_type', 5 => 'started_on'];
+        // Another officer saves a person with Anna's address after the preview, before the row's hold.
+        $lock->before = static function () use ($people): void {
+            $people->add(new Person(null, 'Anna', 'Berg', 'ANNA@Example.test', PersonStatus::Known, null));
+        };
+
+        $result = $import->commit($table, $mapping, AssociationDate::fromIso('2026-09-29'));
+
+        self::assertSame(1, $result->imported);
+        self::assertSame(1, $result->duplicates);
+        self::assertSame('email_exists', $result->issues[0]->code);
+        self::assertSame(2, $result->issues[0]->line);
+        self::assertNull($memberships->findMembershipByNumber('M-1'));
+        self::assertNotNull($memberships->findMembershipByNumber('M-2'));
+        self::assertCount(2, $people->all());
+        self::assertSame(0, $transaction->outsideLock);
+    }
+
     public function test_a_contact_edit_from_a_stale_form_is_refused(): void
     {
         [$service, $people] = $this->fixture();

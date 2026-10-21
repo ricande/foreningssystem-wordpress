@@ -74,8 +74,8 @@ final class MemberRegisterImport
 
         foreach ($plan->readyRows as $row) {
             try {
-                // Each row holds the register on its own and checks the number again
-                // inside the claim. See ADR-0031.
+                // Each row holds the register on its own and checks the number and the
+                // email again inside the claim. See ADR-0031.
                 $this->lock->hold(fn (): mixed => $this->transaction->run(function () use ($row): void {
                     $this->write($row);
                 }));
@@ -83,9 +83,13 @@ final class MemberRegisterImport
             } catch (MemberRegisterBusy) {
                 $failed++;
                 $issues[] = new MemberRegisterIssue($row['line'], 'error', 'register_busy');
-            } catch (MemberRegisterDuplicate) {
+            } catch (MemberRegisterDuplicate $duplicate) {
                 $duplicates++;
-                $issues[] = new MemberRegisterIssue($row['line'], 'duplicate', 'number_exists');
+                $issues[] = new MemberRegisterIssue(
+                    $row['line'],
+                    'duplicate',
+                    $duplicate->getMessage() === MemberRegisterDuplicate::EMAIL ? 'email_exists' : 'number_exists'
+                );
             } catch (MembershipRuleException $error) {
                 if ($error->getMessage() === 'Membership number is already used.') {
                     $duplicates++;
@@ -458,7 +462,16 @@ final class MemberRegisterImport
     private function write(array $row): void
     {
         if ($this->memberships->findMembershipByNumber($row['membership_number']) instanceof Membership) {
-            throw new MemberRegisterDuplicate('number');
+            throw new MemberRegisterDuplicate(MemberRegisterDuplicate::NUMBER);
+        }
+
+        // The preview read the emails before the claim. A person saved since then is found here.
+        if ($row['email'] !== '') {
+            foreach ($this->people->all() as $stored) {
+                if (strtolower($stored->email()) === strtolower($row['email'])) {
+                    throw new MemberRegisterDuplicate(MemberRegisterDuplicate::EMAIL);
+                }
+            }
         }
 
         $startedOn = AssociationDate::fromIso($row['started_on']);
