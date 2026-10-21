@@ -1,0 +1,31 @@
+Medlemsnummer;Förnamn;Efternamn;E-post;Födelsedatum;Telefon;Adress;Postnummer;Ort;Medlemstyp;Medlemsstatus;Startdatum;Slutdatum;Personstatus
+1001;Åsa;Lindqvist;asa.lindqvist@example.test;1968-03-14;070-123 45 01;Storgatan 1;111 22;Stockholm;Ordinarie;Aktiv;2015-01-01;;
+1002;Erik;Öberg;erik.oberg@example.test;1975-07-02;070-123 45 02;Kyrkvägen 4;753 10;Uppsala;Ordinarie;Aktiv;2016-02-15;;
+1003;Märta;Johansson;marta.johansson@example.test;1952-11-23;070-123 45 03;Ängsvägen 12;582 22;Linköping;Ordinarie;Aktiv;2010-01-01;;
+1004;Karl-Johan;Nilsson;karljohan.nilsson@example.test;1981-05-30;;Bergsgatan 7;411 05;Göteborg;Familj;Aktiv;2018-03-01;;
+1005;Lena;Andersson;lena.andersson@example.test;1979-09-09;070-123 45 05;Sjövägen 3;217 45;Malmö;Familj;Aktiv;2019-01-01;;
+1006;Olle;Ekström;;2011-04-18;;Skolgatan 2;903 26;Umeå;Ungdom;Aktiv;2023-08-20;;
+1007;Saga;Holm;saga.holm@example.test;2012-12-01;;Parkvägen 9;702 11;Örebro;Ungdom;Aktiv;2024-01-10;;
+1008;Nils;Åkesson;nils.akesson@example.test;1990-02-28;070-123 45 08;Hamngatan 5;371 33;Karlskrona;Ordinarie;Vilande;2017-06-01;;
+1009;Ingrid;Bergström;ingrid.bergstrom@example.test;1945-08-17;;Ekbacken 11;791 31;Falun;Ordinarie;Avslutad;2005-01-01;2022-12-31;
+1010;Gunnar;Persson;;1938-01-05;;Lärkvägen 6;352 30;Växjö;Ordinarie;Avslutad;1998-01-01;2024-03-12;Avliden
+1011;Fatima;Hassan;fatima.hassan@example.test;1987-10-12;070-123 45 11;Vasagatan 20;722 15;Västerås;Ordinarie;Aktiv;2021-09-01;;
+1012;Mohammed;Ali;mohammed.ali@example.test;1984-06-21;070-123 45 12;Norrgatan 8;602 32;Norrköping;Familj;Aktiv;2020-05-01;;
+1013;Elin;Sjöberg;elin.sjoberg@example.test;1995-03-03;;Strandvägen 15;451 30;Uddevalla;Ordinarie;Väntande;2026-11-01;;
+1014;Björn;Lundgren;bjorn.lundgren@example.test;1970-12-24;070-123 45 14;Torggatan 1;831 30;Östersund;Ordinarie;Aktiv;2012-01-01;;
+1015;Annika;Nordin;annika.nordin@example.test;1966-04-04;;Granvägen 3;941 33;Piteå;Ordinarie;Avslutad;2011-01-01;2020-06-30;
+1016;Viktor;Ström;viktor.strom@example.test;2009-07-15;;Björkvägen 22;554 47;Jönköping;Ungdom;Aktiv;2022-09-01;;
+1017;Ebba;Wallin;ebba.wallin@example.test;2013-02-11;;Tallvägen 4;802 50;Gävle;Ungdom;Aktiv;2025-01-15;;
+1018;Per;O'Connor;per.oconnor@example.test;1983-11-08;070-123 45 18;Slottsgatan 30;252 21;Helsingborg;Ordinarie;Aktiv;2019-04-01;;
+1019;Maja;von Essen;maja.vonessen@example.test;1992-01-19;;Kungsgatan 44;111 35;Stockholm;Ordinarie;Aktiv;2022-02-01;;
+1020;Lars;Gustafsson;;1958-05-05;070-123 45 20;Mossvägen 7;661 30;Säffle;Ordinarie;Vilande;2014-01-01;;
+1021;Sofia;Karlsson-Ek;sofia.karlssonek@example.test;1989-08-30;;Rosengatan 2;222 21;Lund;Familj;Aktiv;2021-01-01;;
+1022;Anders;Mäkinen;anders.makinen@example.test;1976-03-27;070-123 45 22;Älvgatan 9;953 31;Haparanda;Ordinarie;Aktiv;2016-08-15;;
+1023;Hanna;Ölund;hanna.olund@example.test;1999-06-06;;Studentvägen 1;752 34;Uppsala;Ordinarie;Aktiv;2023-01-01;;
+1024;Johan;Pettersson;johan.pettersson@example.test;1963-09-14;070-123 45 24;Bruksgatan 3;691 31;Karlskoga;Ordinarie;Avslutad;2008-01-01;2025-12-31;
+1025;Leo;Abrahamsson;;2014-10-02;;Lekvägen 5;531 30;Lidköping;Ungdom;Aktiv;2026-02-01;;
+1026;Agnes;Eriksson;agnes.eriksson@example.test;1949-12-12;;Solvägen 18;621 41;Visby;Ordinarie;Aktiv;2001-01-01;;
+1027;Ali;Yilmaz;ali.yilmaz@example.test;1993-04-25;070-123 45 27;Industrigatan 6;212 14;Malmö;Ordinarie;Aktiv;2024-06-01;;
+1028;Klara;Fransson;klara.fransson@example.test;1986-02-02;;Hagagatan 10;413 10;Göteborg;Familj;Vilande;2017-01-01;;
+1029;Oskar;Lindström;oskar.lindstrom@example.test;2001-11-11;070-123 45 29;Bangatan 2;972 32;Luleå;Ordinarie;Aktiv;2020-10-01;;
+1030;Åke;Strand;ake.strand@example.test;1955-07-07;;Fiskarvägen 1;451 50;Uddevalla;Ordinarie;Aktiv;1995-01-01;;
