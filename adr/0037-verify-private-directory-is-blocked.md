@@ -1,6 +1,6 @@
 # ADR-0037: Check that the web server refuses the private directory
 
-**Status:** Proposed (implemented, waiting for owner review)  
+**Status:** Accepted. The project owner approved it on 2026-10-21.  
 **Date:** 2026-10-21
 
 ## Context

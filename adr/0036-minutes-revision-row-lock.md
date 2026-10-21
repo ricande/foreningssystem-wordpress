@@ -1,6 +1,6 @@
 # ADR-0036: A minutes revision is checked and written under one row lock
 
-**Status:** Proposed (implemented, waiting for owner review)  
+**Status:** Accepted. The project owner approved it on 2026-10-21.  
 **Date:** 2026-10-21
 
 ## Context

@@ -48,8 +48,8 @@ Status terminology:
 | One MySQL advisory lock serializes member register writes. A contact edit is refused when the details changed after the form was opened (ADR-0031) | PROVISIONAL |
 | A contact edit leaves one audit event per changed part (name, email, birth date) with the officer and the time, never the values. Retention removes it with the other audit events, and the privacy export lists day and part (ADR-0032) | PROVISIONAL |
 | A person has a street address, postal code, city, and phone. They are ordinary contact data: no separate capability or encryption, but in the privacy export, emptied on anonymization, and traced like email (ADR-0035) | LOCKED |
-| A minutes revision is checked and written under one row lock, and is locked only with the text that is stored (ADR-0036) | PROVISIONAL |
-| The plugin checks with a test file that the web server refuses the private directory. A served file gives an error that an acknowledgement cannot hide. Storing is not refused (ADR-0037) | PROVISIONAL |
+| A minutes revision is checked and written under one row lock, and is locked only with the text that is stored (ADR-0036) | LOCKED |
+| The plugin checks with a test file that the web server refuses the private directory. A served file gives an error that an acknowledgement cannot hide. Storing is not refused (ADR-0037) | LOCKED |
 | A new member account gets the login `assoc-member-` plus 16 random hex characters. Existing logins are not renamed (ADR-0033) | PROVISIONAL |
 | The plugin ships no login limiting and no XML-RPC switch. Administrators are told to use a login-limiting plugin or server rate limiting, and two-factor authentication for officers (ADR-0034) | PROVISIONAL |
 | Guardian approval of an account for a minor is future member-portal design and is not locked | OPEN |
