@@ -46,6 +46,32 @@ final class PrivateStorageExposure
         return self::UNKNOWN;
     }
 
+    /**
+     * One answer for the test files of every stored file type. The directory is exposed when
+     * the web server serves any of them, and blocked only when it refuses all of them, so a
+     * rule that blocks some file endings and not others is not taken for protection.
+     *
+     * @param list<string> $outcomes
+     */
+    public static function combine(array $outcomes): string
+    {
+        if ($outcomes === []) {
+            return self::UNKNOWN;
+        }
+
+        if (in_array(self::EXPOSED, $outcomes, true)) {
+            return self::EXPOSED;
+        }
+
+        foreach ($outcomes as $outcome) {
+            if ($outcome !== self::BLOCKED) {
+                return self::UNKNOWN;
+            }
+        }
+
+        return self::BLOCKED;
+    }
+
     public static function needsAttention(bool $insideWebRoot, string $probe, bool $acknowledged): bool
     {
         if (! $insideWebRoot) {

@@ -3217,3 +3217,28 @@ msgstr "Filen sparades inte. Webbservern lämnar ut katalogen för skyddade file
 
 msgid "Until then, new documents and signed copies are not saved, and minutes PDFs are delivered without being stored."
 msgstr "Till dess sparas inga nya dokument eller signerade kopior, och protokoll-PDF:er lämnas ut utan att sparas."
+
+msgid "Protected files"
+msgstr "Skyddade filer"
+
+#. translators: 1: date and time of the check, 2: the address that was asked
+msgid "Checked %1$s through %2$s."
+msgstr "Kontrollerat %1$s via %2$s."
+
+msgid "no address that answered"
+msgstr "ingen adress som svarade"
+
+msgid "Protected files are stored outside the web root. The web server cannot serve them directly."
+msgstr "Skyddade filer ligger utanför webbroten. Webbservern kan inte lämna ut dem direkt."
+
+msgid "Protected files are safe: the web server refused direct requests for test files of every stored type."
+msgstr "Skyddade filer är säkra: webbservern nekade direkta begäranden av testfiler av alla filtyper som sparas."
+
+msgid "Protected files are not safe: the web server served a test file to a request without a login. New documents and signed copies are not saved until the directory is blocked or moved."
+msgstr "Skyddade filer är inte säkra: webbservern lämnade ut en testfil till en begäran utan inloggning. Nya dokument och signerade kopior sparas inte förrän katalogen blockeras eller flyttas."
+
+msgid "The web server could not be asked automatically. An administrator has confirmed that it blocks the directory."
+msgstr "Webbservern kunde inte frågas automatiskt. En administratör har intygat att den blockerar katalogen."
+
+msgid "The web server could not be asked automatically, so it is not known whether protected files can be read directly."
+msgstr "Webbservern kunde inte frågas automatiskt, så det är okänt om skyddade filer kan läsas direkt."

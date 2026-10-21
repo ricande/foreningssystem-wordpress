@@ -53,6 +53,7 @@ final class DocumentsPage
         echo '<h1>' . esc_html__('Documents', 'foreningsplugin') . '</h1>';
         echo '<p>' . esc_html__('Public documents are shown on the site. Member documents are shown to a logged-in person with an active membership. Internal documents are visible to the board. Administrator documents are visible only to someone who may manage documents. The download goes through a check, not through the file address.', 'foreningsplugin') . '</p>';
         self::notice();
+        echo PrivateStorageWarning::statusBox();
 
         if ($canManage) {
             echo '<h2>' . esc_html__('New document', 'foreningsplugin') . '</h2>';

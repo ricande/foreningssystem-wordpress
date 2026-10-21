@@ -30,6 +30,29 @@ final class PrivateStorageExposureTest extends TestCase
         self::assertSame(PrivateStorageExposure::UNKNOWN, PrivateStorageExposure::classify(200, 'anything', ''));
     }
 
+    public function test_one_served_file_type_exposes_the_directory(): void
+    {
+        self::assertSame(PrivateStorageExposure::EXPOSED, PrivateStorageExposure::combine([
+            PrivateStorageExposure::BLOCKED,
+            PrivateStorageExposure::EXPOSED,
+            PrivateStorageExposure::UNKNOWN,
+        ]));
+    }
+
+    public function test_the_directory_is_blocked_only_when_every_file_type_is_refused(): void
+    {
+        self::assertSame(PrivateStorageExposure::BLOCKED, PrivateStorageExposure::combine([
+            PrivateStorageExposure::BLOCKED,
+            PrivateStorageExposure::BLOCKED,
+            PrivateStorageExposure::BLOCKED,
+        ]));
+        self::assertSame(PrivateStorageExposure::UNKNOWN, PrivateStorageExposure::combine([
+            PrivateStorageExposure::BLOCKED,
+            PrivateStorageExposure::UNKNOWN,
+        ]));
+        self::assertSame(PrivateStorageExposure::UNKNOWN, PrivateStorageExposure::combine([]));
+    }
+
     public function test_an_acknowledgement_cannot_hide_an_exposed_directory(): void
     {
         self::assertTrue(PrivateStorageExposure::needsAttention(true, PrivateStorageExposure::EXPOSED, true));
