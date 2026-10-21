@@ -56,6 +56,22 @@ final class MinutesPdfTest extends TestCase
         self::assertSame(array_fill(0, $pageCount, (string) $pageCount), $pages[2]);
     }
 
+    public function test_the_cross_reference_table_points_at_every_object(): void
+    {
+        $pdf = (new MinutesPdfDocument(new MinutesPdfLayout(10)))->render("Rad (ett)\\n" . str_repeat("Rad\n", 25), 'Revision 1', 'Sida %1$d / %2$d');
+
+        self::assertSame(1, preg_match('/startxref\n(\d+)\n%%EOF$/', $pdf, $start));
+        $offset = (int) $start[1];
+        self::assertSame("xref\n0 ", substr($pdf, $offset, 7));
+        self::assertSame(1, preg_match('/^xref\n0 (\d+)\n/', substr($pdf, $offset), $header));
+        self::assertStringContainsString("trailer\n<< /Size " . $header[1] . ' ', $pdf);
+        self::assertSame((int) $header[1] - 1, preg_match_all('/^(\d{10}) 00000 n $/m', substr($pdf, $offset), $entries));
+
+        foreach ($entries[1] as $index => $position) {
+            self::assertSame(($index + 1) . " 0 obj\n", substr($pdf, (int) $position, strlen(($index + 1) . " 0 obj\n")));
+        }
+    }
+
     public function test_text_outside_windows_1252_stops_the_pdf_instead_of_disappearing(): void
     {
         $this->expectException(MinutesPdfException::class);
