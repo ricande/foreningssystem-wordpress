@@ -136,16 +136,19 @@ final class MembersScreen
     {
         ob_start();
         $personId = (int) $detail['person_id'];
+        $deceased = $detail['deceased'] === true;
+        $memberships = is_array($detail['memberships']) ? $detail['memberships'] : [];
         echo '<p><a href="' . esc_url(self::url()) . '">' . esc_html__('Back to members', 'foreningsplugin') . '</a></p>';
-        echo '<h2>' . esc_html__('Person', 'foreningsplugin') . '</h2>';
-        echo '<p><strong>' . esc_html($detail['first_name'] . ' ' . $detail['last_name']) . '</strong><br>';
-        echo esc_html($detail['active_member'] ? __('Currently an individual member.', 'foreningsplugin') : __('Not currently an individual member.', 'foreningsplugin'));
-        if ($detail['deceased'] === true) {
-            echo '<br>' . esc_html__('Deceased', 'foreningsplugin');
-        }
-        echo '</p>';
+        echo '<div class="assoc-person">';
+        self::personHeader($detail, $memberships);
 
-        if ($canEdit && $detail['deceased'] !== true) {
+        echo '<div class="assoc-person-grid">';
+        echo '<section class="assoc-panel" aria-labelledby="assoc-person-details">';
+        echo '<h2 id="assoc-person-details">' . esc_html__('Details', 'foreningsplugin') . '</h2>';
+        self::contactFacts($detail);
+
+        if ($canEdit && ! $deceased) {
+            echo '<details class="assoc-panel-edit"><summary>' . esc_html__('Edit details', 'foreningsplugin') . '</summary>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_update_person">';
             echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
@@ -157,20 +160,16 @@ final class MembersScreen
             self::input('birth_date', __('Birth date', 'foreningsplugin'), 'date', false, (string) ($detail['birth_date'] ?? ''));
             self::contactInputs($detail);
             submit_button(__('Save person', 'foreningsplugin'));
-            echo '</form>';
-        } else {
-            echo '<p>' . esc_html((string) $detail['email']) . '</p>';
-            if (is_string($detail['birth_date']) && $detail['birth_date'] !== '') {
-                echo '<p>' . esc_html(__('Birth date', 'foreningsplugin') . ': ' . $detail['birth_date']) . '</p>';
-            }
-
-            self::contactText($detail);
+            echo '</form></details>';
         }
 
+        echo '</section>';
+        echo '<section class="assoc-panel">';
         MemberAccountSection::render($personId, $canEdit);
+        echo '</section>';
+        echo '</div>';
 
         echo '<h2>' . esc_html__('Membership', 'foreningsplugin') . '</h2>';
-        $memberships = is_array($detail['memberships']) ? $detail['memberships'] : [];
 
         if ($memberships === []) {
             echo '<p>' . esc_html__('No membership is recorded for this person.', 'foreningsplugin') . '</p>';
@@ -181,14 +180,20 @@ final class MembersScreen
                 continue;
             }
 
-            self::membershipBlock($membership, $canEdit, $personId, $detail['deceased'] === true);
+            echo '<section class="assoc-panel">';
+            self::membershipBlock($membership, $canEdit, $personId, $deceased);
+            echo '</section>';
         }
 
+        echo '<section class="assoc-panel">';
         self::guardians($personId, $canEdit, $directory);
+        echo '</section>';
+        echo '<section class="assoc-panel">';
         self::identity($personId, $canEdit);
+        echo '</section>';
 
-        if ($canEdit && $detail['deceased'] !== true) {
-            echo '<h2>' . esc_html__('Actions', 'foreningsplugin') . '</h2>';
+        if ($canEdit && ! $deceased) {
+            echo '<details class="assoc-danger-zone"><summary>' . esc_html__('Mark person deceased', 'foreningsplugin') . '</summary>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_mark_deceased">';
             echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
@@ -197,10 +202,109 @@ final class MembersScreen
             self::input('deceased_on', __('Date', 'foreningsplugin'), 'date', true, '');
             self::confirm(__('Mark this person as deceased? Open memberships end on that date and the history is retained.', 'foreningsplugin'));
             submit_button(__('Mark person deceased', 'foreningsplugin'), 'delete');
-            echo '</form>';
+            echo '</form></details>';
         }
 
+        echo '</div>';
+
         return (string) ob_get_clean();
+    }
+
+    /**
+     * Name, current state and the memberships that are open now, before any form.
+     *
+     * @param array<string, mixed> $detail
+     * @param array<int|string, mixed> $memberships
+     */
+    private static function personHeader(array $detail, array $memberships): void
+    {
+        if ($detail['deceased'] === true) {
+            [$badge, $class] = [__('Deceased', 'foreningsplugin'), 'is-muted'];
+        } elseif ($detail['active_member'] === true) {
+            [$badge, $class] = [__('Active member', 'foreningsplugin'), 'is-active'];
+        } else {
+            [$badge, $class] = [__('Not a member right now', 'foreningsplugin'), 'is-muted'];
+        }
+
+        echo '<div class="assoc-person-header">';
+        echo '<h2>' . esc_html($detail['first_name'] . ' ' . $detail['last_name']) . '</h2>';
+        echo '<span class="assoc-badge ' . esc_attr($class) . '">' . esc_html($badge) . '</span>';
+        echo '</div>';
+        $current = [];
+
+        foreach ($memberships as $membership) {
+            if (! is_array($membership)) {
+                continue;
+            }
+
+            foreach (is_array($membership['periods'] ?? null) ? $membership['periods'] : [] as $period) {
+                if (is_array($period) && ($period['open'] ?? false) === true) {
+                    $current[] = sprintf(
+                        /* translators: 1: membership type and number, 2: start date */
+                        __('%1$s since %2$s', 'foreningsplugin'),
+                        self::kindLabel((string) $membership['kind']) . ' ' . (string) $membership['number'],
+                        (string) $period['started_on']
+                    );
+                }
+            }
+        }
+
+        if ($current !== []) {
+            echo '<p class="assoc-person-meta">' . esc_html(implode(' · ', $current)) . '</p>';
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $detail
+     */
+    private static function contactFacts(array $detail): void
+    {
+        $email = (string) ($detail['email'] ?? '');
+        $phone = (string) ($detail['phone'] ?? '');
+        $street = (string) ($detail['street_address'] ?? '');
+        $place = trim((string) ($detail['postal_code'] ?? '') . ' ' . (string) ($detail['city'] ?? ''));
+        $birth = is_string($detail['birth_date'] ?? null) ? (string) $detail['birth_date'] : '';
+        $missing = '<span class="assoc-missing">' . esc_html__('Not recorded', 'foreningsplugin') . '</span>';
+
+        echo '<dl class="assoc-facts">';
+        echo '<dt>' . esc_html__('Email', 'foreningsplugin') . '</dt><dd>';
+        echo $email === '' ? $missing : '<a href="' . esc_url('mailto:' . $email) . '">' . esc_html($email) . '</a>';
+        echo '</dd>';
+        echo '<dt>' . esc_html__('Phone', 'foreningsplugin') . '</dt><dd>';
+        echo $phone === '' ? $missing : '<a href="' . esc_url('tel:' . preg_replace('/[^0-9+]/', '', $phone), ['tel']) . '">' . esc_html($phone) . '</a>';
+        echo '</dd>';
+        echo '<dt>' . esc_html__('Address', 'foreningsplugin') . '</dt><dd>';
+        if ($street === '' && $place === '') {
+            echo $missing;
+        } else {
+            echo esc_html($street) . ($street !== '' && $place !== '' ? '<br>' : '') . esc_html($place);
+        }
+        echo '</dd>';
+        echo '<dt>' . esc_html__('Birth date', 'foreningsplugin') . '</dt><dd>';
+        if ($birth === '') {
+            echo $missing;
+        } else {
+            echo esc_html($birth);
+            $age = self::age($birth);
+            if ($age !== null && $detail['deceased'] !== true) {
+                /* translators: %d: age in years */
+                echo ' <span class="assoc-muted">(' . esc_html(sprintf(__('%d years', 'foreningsplugin'), $age)) . ')</span>';
+            }
+        }
+        echo '</dd>';
+        echo '</dl>';
+    }
+
+    private static function age(string $birthDate): ?int
+    {
+        $born = \DateTimeImmutable::createFromFormat('!Y-m-d', $birthDate);
+        $today = \DateTimeImmutable::createFromFormat('!Y-m-d', wp_date('Y-m-d'));
+
+        if (! $born instanceof \DateTimeImmutable || ! $today instanceof \DateTimeImmutable || $born > $today) {
+            return null;
+        }
+
+        return $born->diff($today)->y;
     }
 
     /**
@@ -210,6 +314,7 @@ final class MembersScreen
     {
         ob_start();
         echo '<p><a href="' . esc_url(self::url()) . '">' . esc_html__('Back to members', 'foreningsplugin') . '</a></p>';
+        echo '<div class="assoc-person"><section class="assoc-panel">';
         self::membershipBlock($membership, $canEdit, 0, false);
         if ($canEdit && ($membership['kind'] ?? '') === MembershipKind::Company->value) {
             self::contactForm((int) $membership['membership_id'], (string) $membership['number'], $directory);
@@ -217,6 +322,7 @@ final class MembersScreen
         if ($canEdit && ($membership['kind'] ?? '') === MembershipKind::Family->value) {
             self::participantForm((int) $membership['membership_id'], (string) $membership['number'], $directory);
         }
+        echo '</section></div>';
 
         return (string) ob_get_clean();
     }
@@ -227,7 +333,19 @@ final class MembersScreen
     private static function membershipBlock(array $membership, bool $canEdit, int $personId, bool $deceased): void
     {
         $kind = (string) ($membership['kind'] ?? '');
-        echo '<h3>' . esc_html(self::kindLabel($kind) . ' ' . (string) $membership['number']) . '</h3>';
+        $periods = is_array($membership['periods'] ?? null) ? $membership['periods'] : [];
+        $participants = is_array($membership['participants'] ?? null) ? $membership['participants'] : [];
+        $openPeriods = array_values(array_filter($periods, static fn (mixed $period): bool => is_array($period) && ($period['open'] ?? false) === true));
+        $title = self::kindLabel($kind) . ' ' . (string) $membership['number'];
+
+        echo '<div class="assoc-person-header">';
+        echo '<h3>';
+        echo $personId > 0
+            ? '<a href="' . esc_url(self::url(['assoc_number' => (string) $membership['number']])) . '">' . esc_html($title) . '</a>'
+            : esc_html($title);
+        echo '</h3>';
+        echo '<span class="assoc-badge ' . ($openPeriods !== [] ? 'is-active">' . esc_html__('Open', 'foreningsplugin') : 'is-muted">' . esc_html__('Ended', 'foreningsplugin')) . '</span>';
+        echo '</div>';
 
         if (($membership['organization'] ?? '') !== '') {
             echo '<p>' . esc_html((string) $membership['organization']);
@@ -239,56 +357,71 @@ final class MembersScreen
         }
 
         echo '<h4>' . esc_html__('History', 'foreningsplugin') . '</h4>';
-        $periods = is_array($membership['periods'] ?? null) ? $membership['periods'] : [];
 
         if ($periods === []) {
             echo '<p>' . esc_html__('No previous membership periods.', 'foreningsplugin') . '</p>';
         } else {
-            echo '<ul>';
-            foreach ($periods as $period) {
+            echo '<table class="widefat striped assoc-compact-table"><thead><tr>';
+            echo '<th scope="col">' . esc_html__('Dates', 'foreningsplugin') . '</th><th scope="col">' . esc_html__('Status', 'foreningsplugin') . '</th>';
+            echo '</tr></thead><tbody>';
+            foreach (array_reverse($periods) as $period) {
                 if (! is_array($period)) {
                     continue;
                 }
-                echo '<li>' . esc_html(self::span((string) $period['started_on'], $period['ended_on'] ?? null) . ' ' . self::periodStatus((string) $period['status'])) . '</li>';
+                echo '<tr><td>' . esc_html(self::span((string) $period['started_on'], $period['ended_on'] ?? null)) . '</td>';
+                echo '<td>' . esc_html(self::periodStatus((string) $period['status'])) . '</td></tr>';
             }
-            echo '</ul>';
+            echo '</tbody></table>';
         }
 
         echo '<h4>' . esc_html($kind === MembershipKind::Company->value ? __('Contacts', 'foreningsplugin') : __('Participants', 'foreningsplugin')) . '</h4>';
-        $participants = is_array($membership['participants'] ?? null) ? $membership['participants'] : [];
 
         if ($participants === []) {
             echo '<p>' . esc_html__('No participants are recorded.', 'foreningsplugin') . '</p>';
         } else {
-            echo '<ul>';
+            echo '<table class="widefat striped assoc-compact-table"><thead><tr>';
+            echo '<th scope="col">' . esc_html__('Name', 'foreningsplugin') . '</th>';
+            echo '<th scope="col">' . esc_html__('Role', 'foreningsplugin') . '</th>';
+            echo '<th scope="col">' . esc_html__('Dates', 'foreningsplugin') . '</th>';
+            if ($canEdit) {
+                echo '<th scope="col"><span class="screen-reader-text">' . esc_html__('Actions', 'foreningsplugin') . '</span></th>';
+            }
+            echo '</tr></thead><tbody>';
             foreach ($participants as $participant) {
                 if (! is_array($participant)) {
                     continue;
                 }
-                $name = (string) $participant['name'];
-                $text = $name . ', ' . self::roleLabel((string) $participant['role']);
+                $participantId = (int) $participant['person_id'];
+                $role = self::roleLabel((string) $participant['role']);
                 if (($participant['primary'] ?? false) === true) {
-                    $text .= ', ' . __('Primary contact', 'foreningsplugin');
+                    $role .= ', ' . __('Primary contact', 'foreningsplugin');
                 }
-                $text .= ', ' . self::span((string) $participant['started_on'], $participant['ended_on'] ?? null);
-                echo '<li>' . esc_html($text);
-                if ($canEdit && ($participant['open'] ?? false) === true) {
-                    self::endParticipationForm((int) $membership['membership_id'], (int) $participant['person_id'], (string) $membership['number']);
+                echo '<tr><td>';
+                echo $participantId > 0 && $participantId !== $personId
+                    ? '<a href="' . esc_url(self::url(['assoc_person' => (string) $participantId])) . '">' . esc_html((string) $participant['name']) . '</a>'
+                    : '<strong>' . esc_html((string) $participant['name']) . '</strong>';
+                echo '</td><td>' . esc_html($role) . '</td>';
+                echo '<td>' . esc_html(self::span((string) $participant['started_on'], $participant['ended_on'] ?? null)) . '</td>';
+                if ($canEdit) {
+                    echo '<td>';
+                    if (($participant['open'] ?? false) === true) {
+                        self::endParticipationForm((int) $membership['membership_id'], $participantId, (string) $membership['number']);
+                    }
+                    echo '</td>';
                 }
-                echo '</li>';
+                echo '</tr>';
             }
-            echo '</ul>';
+            echo '</tbody></table>';
         }
 
         if (! $canEdit || $deceased) {
             return;
         }
 
-        foreach ($periods as $period) {
-            if (! is_array($period) || ($period['open'] ?? false) !== true) {
-                continue;
-            }
+        echo '<div class="assoc-panel-actions">';
 
+        foreach ($openPeriods as $period) {
+            echo '<details><summary>' . esc_html__('End membership', 'foreningsplugin') . '</summary>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_end_membership">';
             echo '<input type="hidden" name="membership_id" value="' . esc_attr((string) $period['period_id']) . '">';
@@ -298,17 +431,11 @@ final class MembersScreen
             self::input('ended_on', __('End date', 'foreningsplugin'), 'date', true, '');
             self::confirm(__('End membership on this date? Membership history is retained. Current board assignments may be shortened if no other membership coverage remains.', 'foreningsplugin'));
             submit_button(__('End membership', 'foreningsplugin'), 'delete');
-            echo '</form>';
+            echo '</form></details>';
         }
 
-        $hasOpen = false;
-        foreach ($periods as $period) {
-            if (is_array($period) && ($period['open'] ?? false) === true) {
-                $hasOpen = true;
-            }
-        }
-
-        if (! $hasOpen) {
+        if ($openPeriods === []) {
+            echo '<details><summary>' . esc_html__('Start new membership period', 'foreningsplugin') . '</summary>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_add_membership">';
             echo '<input type="hidden" name="membership_id" value="' . esc_attr((string) $membership['membership_id']) . '">';
@@ -316,17 +443,19 @@ final class MembersScreen
             wp_nonce_field('assoc_add_membership');
             self::input('started_on', __('Start date', 'foreningsplugin'), 'date', true, '');
             submit_button(__('Start new membership period', 'foreningsplugin'));
-            echo '</form>';
+            echo '</form></details>';
         }
 
         if ($personId > 0 && $kind === MembershipKind::Family->value) {
             self::participantForm((int) $membership['membership_id'], (string) $membership['number'], WordpressPeople::directory());
         }
+
+        echo '</div>';
     }
 
     private static function participantForm(int $membershipId, string $number, MemberDirectory $directory): void
     {
-        echo '<h3>' . esc_html__('Add family participant', 'foreningsplugin') . '</h3>';
+        echo '<details><summary>' . esc_html__('Add family participant', 'foreningsplugin') . '</summary>';
         echo '<p>' . esc_html__('Choose an existing person, or leave that choice empty and enter a new person. The plugin does not merge people automatically.', 'foreningsplugin') . '</p>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_add_family_participant">';
@@ -345,12 +474,12 @@ final class MembersScreen
         self::input('birth_date', __('Birth date', 'foreningsplugin'), 'date', false, '');
         self::contactInputs([]);
         submit_button(__('Add family participant', 'foreningsplugin'));
-        echo '</form>';
+        echo '</form></details>';
     }
 
     private static function contactForm(int $membershipId, string $number, MemberDirectory $directory): void
     {
-        echo '<h3>' . esc_html__('Add company contact', 'foreningsplugin') . '</h3>';
+        echo '<details class="assoc-panel-actions"><summary>' . esc_html__('Add company contact', 'foreningsplugin') . '</summary>';
         echo '<p>' . esc_html__('A company contact is not an individual member.', 'foreningsplugin') . '</p>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_add_company_contact">';
@@ -363,11 +492,12 @@ final class MembersScreen
         self::input('last_name', __('Last name', 'foreningsplugin'), 'text', false, '');
         self::input('email', __('Email', 'foreningsplugin'), 'email', false, '');
         submit_button(__('Add company contact', 'foreningsplugin'));
-        echo '</form>';
+        echo '</form></details>';
     }
 
     private static function endParticipationForm(int $membershipId, int $personId, string $number): void
     {
+        echo '<details class="assoc-row-action"><summary>' . esc_html__('End participation', 'foreningsplugin') . '</summary>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_end_participation">';
         echo '<input type="hidden" name="membership_id" value="' . esc_attr((string) $membershipId) . '">';
@@ -378,7 +508,7 @@ final class MembersScreen
         echo '<label>' . esc_html__('End date', 'foreningsplugin') . ' <input type="date" name="ended_on" required></label> ';
         self::confirm(__('End this participation? Earlier participation history is retained. A board assignment may be shortened if no other membership coverage remains.', 'foreningsplugin'));
         submit_button(__('End participation', 'foreningsplugin'), 'delete', 'submit', false);
-        echo '</form>';
+        echo '</form></details>';
     }
 
     private static function guardians(int $personId, bool $canEdit, MemberDirectory $directory): void
@@ -450,6 +580,8 @@ final class MembersScreen
             return;
         }
 
+        echo '<div class="assoc-panel-actions">';
+        echo '<details><summary>' . esc_html__('Add guardian', 'foreningsplugin') . '</summary>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_add_guardian">';
         echo '<input type="hidden" name="child_person_id" value="' . esc_attr((string) $personId) . '">';
@@ -462,8 +594,9 @@ final class MembersScreen
         self::input('relationship', __('Relationship', 'foreningsplugin'), 'text', false, '');
         self::input('started_on', __('Start date', 'foreningsplugin'), 'date', false, '');
         submit_button(__('Add guardian', 'foreningsplugin'));
-        echo '</form>';
+        echo '</form></details>';
 
+        echo '<details><summary>' . esc_html__('Record guardian approval', 'foreningsplugin') . '</summary>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_record_guardian_approval">';
         echo '<input type="hidden" name="child_person_id" value="' . esc_attr((string) $personId) . '">';
@@ -477,7 +610,7 @@ final class MembersScreen
         self::input('notice_version', __('Notice version', 'foreningsplugin'), 'text', false, '');
         self::input('note', __('Note', 'foreningsplugin'), 'text', false, '');
         submit_button(__('Record guardian approval', 'foreningsplugin'));
-        echo '</form>';
+        echo '</form></details></div>';
     }
 
     private static function identity(int $personId, bool $canEdit): void
@@ -506,6 +639,8 @@ final class MembersScreen
             return;
         }
 
+        echo '<div class="assoc-panel-actions">';
+        echo '<details><summary>' . esc_html($recorded ? __('Change personal identity number', 'foreningsplugin') : __('Add personal identity number', 'foreningsplugin')) . '</summary>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="assoc_store_identity">';
         echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
@@ -517,9 +652,10 @@ final class MembersScreen
         self::input('basis_note', __('Basis note', 'foreningsplugin'), 'text', false, '');
         self::input('collected_on', __('Collected', 'foreningsplugin'), 'date', true, '');
         submit_button(__('Save identity record', 'foreningsplugin'));
-        echo '</form>';
+        echo '</form></details>';
 
         if ($recorded) {
+            echo '<details><summary>' . esc_html__('Remove personal identity number', 'foreningsplugin') . '</summary>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="assoc_remove_identity">';
             echo '<input type="hidden" name="person_id" value="' . esc_attr((string) $personId) . '">';
@@ -527,8 +663,10 @@ final class MembersScreen
             wp_nonce_field('assoc_remove_identity');
             self::confirm(__('Remove the personal identity number? Membership history is retained.', 'foreningsplugin'));
             submit_button(__('Remove personal identity number', 'foreningsplugin'), 'delete');
-            echo '</form>';
+            echo '</form></details>';
         }
+
+        echo '</div>';
     }
 
     private static function createForm(string $kind, MemberDirectory $directory): void
@@ -656,26 +794,6 @@ final class MembersScreen
         self::input('postal_code', __('Postal code', 'foreningsplugin'), 'text', false, (string) ($values['postal_code'] ?? ''));
         self::input('city', __('City', 'foreningsplugin'), 'text', false, (string) ($values['city'] ?? ''));
         self::input('phone', __('Phone', 'foreningsplugin'), 'tel', false, (string) ($values['phone'] ?? ''));
-    }
-
-    /**
-     * @param array<string, mixed> $detail
-     */
-    private static function contactText(array $detail): void
-    {
-        $street = (string) ($detail['street_address'] ?? '');
-        $place = trim((string) ($detail['postal_code'] ?? '') . ' ' . (string) ($detail['city'] ?? ''));
-        $phone = (string) ($detail['phone'] ?? '');
-
-        if ($street !== '' || $place !== '') {
-            echo '<p>' . esc_html($street);
-            echo $street !== '' && $place !== '' ? '<br>' : '';
-            echo esc_html($place) . '</p>';
-        }
-
-        if ($phone !== '') {
-            echo '<p>' . esc_html(__('Phone', 'foreningsplugin') . ': ' . $phone) . '</p>';
-        }
     }
 
     private static function input(string $name, string $label, string $type, bool $required, string $value): void

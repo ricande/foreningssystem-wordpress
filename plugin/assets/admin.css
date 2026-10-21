@@ -141,3 +141,135 @@
 	margin: 0;
 	color: #50575e;
 }
+
+.assoc-person {
+	max-width: 64rem;
+}
+
+.assoc-person-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+}
+
+.assoc-person-header h2,
+.assoc-person-header h3 {
+	margin: 0;
+}
+
+.assoc-person > .assoc-person-header h2 {
+	font-size: 1.6rem;
+	line-height: 1.3;
+}
+
+.assoc-person-meta {
+	margin: 0.35rem 0 1rem;
+	color: #50575e;
+}
+
+.assoc-badge {
+	display: inline-block;
+	padding: 0.15rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.6;
+	background: #f0f0f1;
+	color: #50575e;
+}
+
+.assoc-badge.is-active {
+	background: #edfaef;
+	color: #00611f;
+}
+
+.assoc-person-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+	gap: 1rem;
+	align-items: start;
+}
+
+.assoc-panel {
+	margin: 0 0 1rem;
+	padding: 0.25rem 1.25rem 1rem;
+	border: 1px solid #c3c4c7;
+	background: #fff;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.assoc-panel h2 {
+	font-size: 1.15rem;
+}
+
+.assoc-facts {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 0.5rem 1.25rem;
+	margin: 0 0 1rem;
+}
+
+.assoc-facts dt {
+	color: #50575e;
+	font-weight: 600;
+}
+
+.assoc-facts dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.assoc-missing,
+.assoc-muted {
+	color: #8c8f94;
+}
+
+.assoc-missing {
+	font-style: italic;
+}
+
+.assoc-compact-table {
+	margin-bottom: 1rem;
+}
+
+.assoc-compact-table td,
+.assoc-compact-table th {
+	vertical-align: top;
+}
+
+.assoc-person details > summary,
+.assoc-panel-actions details > summary {
+	cursor: pointer;
+	color: #2271b1;
+	font-weight: 600;
+	padding: 0.35rem 0;
+}
+
+.assoc-person details[open] > summary {
+	margin-bottom: 0.5rem;
+}
+
+.assoc-panel-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid #f0f0f1;
+}
+
+.assoc-row-action > summary {
+	font-weight: 400;
+	padding: 0;
+}
+
+.assoc-danger-zone {
+	margin: 0 0 1rem;
+	padding: 0.25rem 1.25rem;
+	border: 1px solid #f0c4c4;
+	background: #fff;
+}
+
+.assoc-danger-zone > summary {
+	color: #b32d2e !important;
+}

@@ -3170,3 +3170,32 @@ msgstr "Gatuadressen, postnumret, orten eller telefonnumret är för långt. Ing
 #, php-format
 msgid "Row %d: The phone number may contain digits, spaces, dashes, parentheses and a leading plus sign."
 msgstr "Rad %d: Telefonnumret får innehålla siffror, mellanslag, bindestreck, parenteser och ett inledande plustecken."
+
+msgid "Details"
+msgstr "Uppgifter"
+
+msgid "Edit details"
+msgstr "Ändra uppgifter"
+
+msgid "Active member"
+msgstr "Aktiv medlem"
+
+msgid "Not a member right now"
+msgstr "Inte medlem just nu"
+
+#, php-format
+msgid "%1$s since %2$s"
+msgstr "%1$s sedan %2$s"
+
+msgid "Not recorded"
+msgstr "Inte angivet"
+
+#, php-format
+msgid "%d years"
+msgstr "%d år"
+
+msgid "Change personal identity number"
+msgstr "Ändra personnummer"
+
+msgid "Add personal identity number"
+msgstr "Lägg till personnummer"

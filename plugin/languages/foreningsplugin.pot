@@ -2002,3 +2002,41 @@ msgstr ""
 #, php-format
 msgid "Row %d: The phone number may contain digits, spaces, dashes, parentheses and a leading plus sign."
 msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+msgid "Details"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+msgid "Edit details"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+msgid "Active member"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+msgid "Not a member right now"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+#, php-format
+msgid "%1$s since %2$s"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+msgid "Not recorded"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+#, php-format
+msgid "%d years"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+msgid "Change personal identity number"
+msgstr ""
+
+#: src/Infrastructure/WordPress/MembersScreen.php
+msgid "Add personal identity number"
+msgstr ""
