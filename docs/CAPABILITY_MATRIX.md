@@ -49,8 +49,8 @@ Visibility values: public, member, board, administrator. "State" is the meeting 
 | Create or edit a person | `edit_members` | — | Admin only |
 | End a membership | `edit_members` | Period is not already ended | Admin only |
 | Anonymize a person | `erase_member_data` | Explicit confirmation | Admin only |
-| Export members | `export_members` | — | Admin only. One semicolon-separated row per membership period. No WordPress user id |
-| Import members | `edit_members` | An existing membership number is left unchanged. A new period may attach to the single person with that email | Admin only. Does not link a WordPress account |
+| Export members | `export_members` | — | Admin only. One semicolon-separated row per membership period. No WordPress user id. The structured member file is the backup: it keeps periods, participants, organizations and person status (ADR-0030) |
+| Import members | `edit_members` | An existing membership number is left unchanged. A new period may attach to the single person with that email. In the plain file, a row for a membership created from an earlier line is reported as not imported, not skipped (ADR-0030) | Admin only. Does not link a WordPress account |
 | Replace a board role holder | `manage_board` | The person has an active membership covering the new dates. The previous open assignment for that role is ended, not deleted | Admin only |
 | View current board block | none for public fields | Assignment covers today | Public block shows name, role, and public role contact only |
 | Create a meeting | `manage_meetings` | Starts in `planned` | Admin only |

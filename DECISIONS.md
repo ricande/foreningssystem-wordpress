@@ -20,6 +20,7 @@ Status terminology:
 | Historical membership and board data matter | LOCKED |
 | Meetings are an active work surface, not merely an archive | LOCKED |
 | A system starting point is copied into an association-owned meeting template, and a meeting then gets its own copy. The three stay independent (ADR-0029) | LOCKED |
+| The structured member file is the member-register backup and carries person status. The plain member file reports, rather than skips, rows it cannot bring in (ADR-0030) | PROVISIONAL |
 | Decisions should be structured data | LOCKED |
 | Finalized/adjusted minutes may not be silently overwritten | LOCKED |
 | Print and PDF export are core meeting features | LOCKED |

@@ -114,6 +114,12 @@ The minutes step, and the matching Settings screens, list custom board roles bes
 
 Future hardening, recorded in ADR-0027 and not built here: `used()` and `remove()` share one transaction, but board assignments, meetings, and meeting templates reference the structure row by an index, not a foreign key. A concurrent insert can point at a row that has just been removed. The minutes policy in `wp_options` has the same theoretical gap.
 
+## Update — member file round trip — 2026-10-21
+
+The structured member file is the backup for the member register (ADR-0030). It is read and written as quoted CSV, so `Å`, `;`, `"` and line breaks survive. Participant rows carry `person_status` as an eleventh column, and a row without it imports as a known person. Export then import into an empty register gives back the same people, periods, participants, organizations, and statuses.
+
+The plain member file still brings in one period and one member per membership. A later row for a membership created from an earlier line is now reported as not imported, with a pointer to the structured file, instead of being counted as unchanged. A row that fails to save is reported on its line and rolled back. Plugin version stays 0.1.0. Schema stays 17. No migration.
+
 ## Planned product area — sections and departments
 
 **FUTURE / NOT IMPLEMENTED / PROPOSAL.** Not part of the implemented list above. No tables, screens, capabilities, or document types exist for this.
