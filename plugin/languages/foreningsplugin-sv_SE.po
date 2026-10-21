@@ -3199,3 +3199,15 @@ msgstr "Ändra personnummer"
 
 msgid "Add personal identity number"
 msgstr "Lägg till personnummer"
+
+msgid "Protected association files can be read directly from the web."
+msgstr "Skyddade föreningsfiler kan läsas direkt från webben."
+
+msgid "The web server returned a test file from the private directory to a request without a login. Anyone who knows a file address can read that file without any authorization check. Put the directory outside the web root with FORENINGSPLUGIN_PRIVATE_DIR, or block wp-content/uploads/assoc-private in the web server. This warning goes away when a new check shows the directory is blocked."
+msgstr "Webbservern lämnade ut en testfil från den skyddade katalogen till en begäran utan inloggning. Den som känner till en fils adress kan läsa filen utan någon behörighetskontroll. Lägg katalogen utanför webbroten med FORENINGSPLUGIN_PRIVATE_DIR, eller blockera wp-content/uploads/assoc-private i webbservern. Varningen försvinner när en ny kontroll visar att katalogen är blockerad."
+
+msgid "Check again"
+msgstr "Kontrollera igen"
+
+msgid "The web server returned a test file from wp-content/uploads/assoc-private to a request without a login. Block the directory in the web server or move it outside the web root with FORENINGSPLUGIN_PRIVATE_DIR."
+msgstr "Webbservern lämnade ut en testfil från wp-content/uploads/assoc-private till en begäran utan inloggning. Blockera katalogen i webbservern eller flytta den utanför webbroten med FORENINGSPLUGIN_PRIVATE_DIR."
