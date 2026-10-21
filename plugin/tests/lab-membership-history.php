@@ -56,12 +56,20 @@ foreach ($service->listPeople() as $record) {
     }
 }
 
-$before = $service->publicMemberCount(AssociationDate::fromIso('2025-06-01'));
+// Other lab members can start or end between these dates, so each date is
+// compared with its own count from before Lisa joins.
+$countOn = static fn (string $date): int => $service->publicMemberCount(AssociationDate::fromIso($date));
+$dates = ['2025-06-01', '2026-09-23', '2026-09-24'];
+$before = array_combine($dates, array_map($countOn, $dates));
 $lisa = $service->addPersonToMembership($accountId, 'Lisa', 'Hist', 'lisa-hist@example.test', AssociationDate::fromIso('2012-04-17'), AssociationDate::fromIso('2026-09-24'), \Foreningssystem\Domain\Membership\ParticipantRole::Member, false, AssociationDate::fromIso('2026-09-24'));
-$during = $service->publicMemberCount(AssociationDate::fromIso('2025-06-01'));
-$joined = $service->publicMemberCount(AssociationDate::fromIso('2026-09-24'));
+$after = array_combine($dates, array_map($countOn, $dates));
 
-if ($accountId < 1 || $during !== $before || $joined !== $before + 1) {
+if (
+    $accountId < 1
+    || $after['2025-06-01'] !== $before['2025-06-01']
+    || $after['2026-09-23'] !== $before['2026-09-23']
+    || $after['2026-09-24'] !== $before['2026-09-24'] + 1
+) {
     $fail('A participant who joins later was counted before the start date.');
 }
 
