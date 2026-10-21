@@ -20,12 +20,22 @@ use InvalidArgumentException;
 
 final class MemberAccountProvisioning implements MemberAccountProvisioner
 {
+    /**
+     * A random login that is already taken is drawn again. With 64 random bits a repeat
+     * is not expected, so running out of attempts means the login source is broken.
+     */
+    private const LOGIN_ATTEMPTS = 3;
+
+    private readonly MemberLogins $logins;
+
     public function __construct(
         private readonly PersonRepository $people,
         private readonly MembershipRepository $memberships,
         private readonly WordPressAccountGateway $accounts,
         private readonly Authorizer $authorizer,
+        ?MemberLogins $logins = null,
     ) {
+        $this->logins = $logins ?? new RandomMemberLogins();
     }
 
     public function provision(int $personId, AssociationDate $on): ProvisioningResult
@@ -211,9 +221,9 @@ final class MemberAccountProvisioning implements MemberAccountProvisioner
             return new ProvisioningResult($outcome, $personId, $reportedUserId);
         }
 
-        $login = $this->loginFor($personId);
+        $login = $this->freeLogin();
 
-        if ($this->accounts->findUserIdByLogin($login) !== null) {
+        if ($login === null) {
             return new ProvisioningResult(AccountOutcome::Failed, $personId);
         }
 
@@ -340,9 +350,17 @@ final class MemberAccountProvisioning implements MemberAccountProvisioner
         return strtolower(trim($email));
     }
 
-    private function loginFor(int $personId): string
+    private function freeLogin(): ?string
     {
-        return 'assoc-member-' . $personId;
+        for ($attempt = 0; $attempt < self::LOGIN_ATTEMPTS; $attempt++) {
+            $login = $this->logins->next();
+
+            if ($login !== '' && $this->accounts->findUserIdByLogin($login) === null) {
+                return $login;
+            }
+        }
+
+        return null;
     }
 
     private function requireEdit(): void

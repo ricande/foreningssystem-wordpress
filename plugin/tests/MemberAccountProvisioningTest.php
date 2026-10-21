@@ -6,6 +6,7 @@ namespace Foreningssystem\Tests;
 
 use Foreningssystem\Application\Account\AccountOutcome;
 use Foreningssystem\Application\Account\MemberAccountProvisioning;
+use Foreningssystem\Application\Account\MemberLogins;
 use Foreningssystem\Application\Account\ProvisioningResult;
 use Foreningssystem\Application\Account\WordPressAccountGateway;
 use Foreningssystem\Application\Document\MemberDocumentAccess;
@@ -46,7 +47,41 @@ final class MemberAccountProvisioningTest extends TestCase
 
         self::assertSame(AccountOutcome::Created, $result->outcome);
         self::assertSame($result->wordpressUserId, $people->find((int) $person->id())?->wordpressUserId());
-        self::assertSame(['assoc-member-' . $person->id(), 'anna@example.test', 'Anna Andersson'], $accounts->created[0]);
+        self::assertMatchesRegularExpression('/^assoc-member-[0-9a-f]{16}$/', $accounts->created[0][0]);
+        self::assertSame(['anna@example.test', 'Anna Andersson'], [$accounts->created[0][1], $accounts->created[0][2]]);
+    }
+
+    public function test_a_new_member_login_cannot_be_derived_from_the_person_id(): void
+    {
+        [$service, $people, $memberships, $accounts] = $this->stack();
+        $first = $this->member($people, $memberships, 'Anna', 'A', 'anna-login@example.test', '1990-01-01', 'M-L1');
+        $second = $this->member($people, $memberships, 'Erik', 'E', 'erik-login@example.test', '1991-01-01', 'M-L2');
+
+        $service->provision((int) $first->id(), $this->on);
+        $service->provision((int) $second->id(), $this->on);
+
+        self::assertCount(2, $accounts->created);
+        self::assertNotSame('assoc-member-' . $first->id(), $accounts->created[0][0]);
+        self::assertNotSame('assoc-member-' . $second->id(), $accounts->created[1][0]);
+        self::assertNotSame($accounts->created[0][0], $accounts->created[1][0]);
+    }
+
+    public function test_a_taken_random_login_is_drawn_again(): void
+    {
+        $people = new MemoryPersonRepository();
+        $memberships = new MemoryMembershipRepository();
+        $accounts = new FakeWordPressAccounts();
+        $accounts->people = $people;
+        $accounts->seed(50, 'assoc-member-taken', 'other@example.test', 'Other', ['editor']);
+        $logins = new ScriptedMemberLogins(['assoc-member-taken', 'assoc-member-free']);
+        $service = new MemberAccountProvisioning($people, $memberships, $accounts, new AllowMemberEdits(), $logins);
+        $person = $this->member($people, $memberships, 'Anna', 'Andersson', 'anna@example.test', '1990-05-01');
+
+        $result = $service->provision((int) $person->id(), $this->on);
+
+        self::assertSame(AccountOutcome::Created, $result->outcome);
+        self::assertSame('assoc-member-free', $accounts->created[0][0]);
+        self::assertSame(['editor'], $accounts->roles(50));
     }
 
     public function test_a_person_who_turns_18_on_the_date_is_eligible(): void
@@ -402,13 +437,19 @@ final class MemberAccountProvisioningTest extends TestCase
 
     public function test_a_login_collision_does_not_hijack_the_existing_user(): void
     {
-        [$service, $people, $memberships, $accounts] = $this->stack();
+        $people = new MemoryPersonRepository();
+        $memberships = new MemoryMembershipRepository();
+        $accounts = new FakeWordPressAccounts();
+        $accounts->people = $people;
+        $accounts->seed(50, 'assoc-member-taken', 'other@example.test', 'Other', ['editor']);
+        $logins = new ScriptedMemberLogins(['assoc-member-taken', 'assoc-member-taken', 'assoc-member-taken', 'assoc-member-free']);
+        $service = new MemberAccountProvisioning($people, $memberships, $accounts, new AllowMemberEdits(), $logins);
         $person = $this->member($people, $memberships, 'Anna', 'Andersson', 'anna@example.test', '1990-05-01');
-        $accounts->seed(50, 'assoc-member-' . $person->id(), 'other@example.test', 'Other', ['editor']);
 
         $result = $service->provision((int) $person->id(), $this->on);
 
         self::assertSame(AccountOutcome::Failed, $result->outcome);
+        self::assertSame([], $accounts->created);
         self::assertNull($people->find((int) $person->id())?->wordpressUserId());
         self::assertSame([], $accounts->deleted);
         self::assertSame(['editor'], $accounts->roles(50));
@@ -746,6 +787,21 @@ final class RejectingLinkPersonRepository implements PersonRepository
     public function all(): array
     {
         return $this->inner->all();
+    }
+}
+
+final class ScriptedMemberLogins implements MemberLogins
+{
+    /**
+     * @param list<string> $logins
+     */
+    public function __construct(private array $logins)
+    {
+    }
+
+    public function next(): string
+    {
+        return (string) array_shift($this->logins);
     }
 }
 

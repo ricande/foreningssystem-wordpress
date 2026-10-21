@@ -27,3 +27,11 @@ Two unlinked People who share an email are both left unlinked. A WordPress user 
 Public WordPress registration is left unchanged. These accounts are created from membership data.
 
 A linked WordPress account is the login identity described above. It does not open a finished Mina sidor. Code that reads the link is recorded in `docs/MEMBER_AREA.md` and is not that feature. The link does not change provisioning, and it does not turn the account into an officer or into an editable profile.
+
+## Login names
+
+A new member account gets the login `assoc-member-` followed by 16 random hex characters, for example `assoc-member-3f9a0c1e7b24d658` (ADR-0033). The prefix shows that the plugin created the account. The suffix is not the Person id, so one login does not reveal the others. If a random login is already taken, the plugin draws a new one, up to three times, and never takes over an existing user.
+
+Accounts created by earlier versions kept `assoc-member-{personId}`. They are not renamed, because WordPress has no supported way to rename a login and the Person ↔ `wp_user` link is the user id, not the login. Those logins stay predictable. An administrator may rename them by hand, after telling the member.
+
+Members can also sign in with their email address, which WordPress accepts as a login. A random login name is therefore not brute-force protection on its own.
