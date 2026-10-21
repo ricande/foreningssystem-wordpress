@@ -12,6 +12,7 @@ final class WpSignedFileStore implements SignedFileStore
     public function put(string $name, string $bytes): void
     {
         $this->assertName($name);
+        PrivateStorageGuard::assertWritable(true);
 
         if (! PrivateUploadDirectory::roots()->write($name, $bytes)) {
             throw new \RuntimeException('The signed copy could not be saved.');

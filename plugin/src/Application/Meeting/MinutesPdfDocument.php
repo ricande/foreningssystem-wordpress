@@ -98,13 +98,13 @@ final class MinutesPdfDocument
 
         $startxref = strlen($pdf);
         $size = $fontId + 1;
-        $pdf .= 'xref\n0 ' . $size . "\n";
+        $pdf .= "xref\n0 " . $size . "\n";
         $pdf .= "0000000000 65535 f \n";
 
         for ($id = 1; $id < $size; $id++) {
             $pdf .= sprintf("%010d 00000 n \n", $offsets[$id]);
         }
 
-        return $pdf . 'trailer\n<< /Size ' . $size . " /Root 1 0 R >>\nstartxref\n" . $startxref . "\n%%EOF";
+        return $pdf . "trailer\n<< /Size " . $size . " /Root 1 0 R >>\nstartxref\n" . $startxref . "\n%%EOF";
     }
 }

@@ -12,6 +12,7 @@ final class WpDocumentFileStore implements DocumentFileStore
     public function put(string $name, string $bytes): void
     {
         $this->assertName($name);
+        PrivateStorageGuard::assertWritable(true);
 
         if (! PrivateUploadDirectory::roots()->write($name, $bytes)) {
             throw new \RuntimeException('The document could not be saved.');

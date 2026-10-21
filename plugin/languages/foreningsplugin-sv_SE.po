@@ -3199,3 +3199,46 @@ msgstr "Ändra personnummer"
 
 msgid "Add personal identity number"
 msgstr "Lägg till personnummer"
+
+msgid "Protected association files can be read directly from the web."
+msgstr "Skyddade föreningsfiler kan läsas direkt från webben."
+
+msgid "The web server returned a test file from the private directory to a request without a login. Anyone who knows a file address can read that file without any authorization check. Put the directory outside the web root with FORENINGSPLUGIN_PRIVATE_DIR, or block wp-content/uploads/assoc-private in the web server. This warning goes away when a new check shows the directory is blocked."
+msgstr "Webbservern lämnade ut en testfil från den skyddade katalogen till en begäran utan inloggning. Den som känner till en fils adress kan läsa filen utan någon behörighetskontroll. Lägg katalogen utanför webbroten med FORENINGSPLUGIN_PRIVATE_DIR, eller blockera wp-content/uploads/assoc-private i webbservern. Varningen försvinner när en ny kontroll visar att katalogen är blockerad."
+
+msgid "Check again"
+msgstr "Kontrollera igen"
+
+msgid "The web server returned a test file from wp-content/uploads/assoc-private to a request without a login. Block the directory in the web server or move it outside the web root with FORENINGSPLUGIN_PRIVATE_DIR."
+msgstr "Webbservern lämnade ut en testfil från wp-content/uploads/assoc-private till en begäran utan inloggning. Blockera katalogen i webbservern eller flytta den utanför webbroten med FORENINGSPLUGIN_PRIVATE_DIR."
+
+msgid "The file was not saved. The web server serves the directory for protected files to anyone, so nothing new is stored there until the directory is blocked or moved outside the web root."
+msgstr "Filen sparades inte. Webbservern lämnar ut katalogen för skyddade filer till vem som helst, så inget nytt sparas där förrän katalogen blockeras eller flyttas utanför webbroten."
+
+msgid "Until then, new documents and signed copies are not saved, and minutes PDFs are delivered without being stored."
+msgstr "Till dess sparas inga nya dokument eller signerade kopior, och protokoll-PDF:er lämnas ut utan att sparas."
+
+msgid "Protected files"
+msgstr "Skyddade filer"
+
+#. translators: 1: date and time of the check, 2: the address that was asked
+msgid "Checked %1$s through %2$s."
+msgstr "Kontrollerat %1$s via %2$s."
+
+msgid "no address that answered"
+msgstr "ingen adress som svarade"
+
+msgid "Protected files are stored outside the web root. The web server cannot serve them directly."
+msgstr "Skyddade filer ligger utanför webbroten. Webbservern kan inte lämna ut dem direkt."
+
+msgid "Protected files are safe: the web server refused direct requests for test files of every stored type."
+msgstr "Skyddade filer är säkra: webbservern nekade direkta begäranden av testfiler av alla filtyper som sparas."
+
+msgid "Protected files are not safe: the web server served a test file to a request without a login. New documents and signed copies are not saved until the directory is blocked or moved."
+msgstr "Skyddade filer är inte säkra: webbservern lämnade ut en testfil till en begäran utan inloggning. Nya dokument och signerade kopior sparas inte förrän katalogen blockeras eller flyttas."
+
+msgid "The web server could not be asked automatically. An administrator has confirmed that it blocks the directory."
+msgstr "Webbservern kunde inte frågas automatiskt. En administratör har intygat att den blockerar katalogen."
+
+msgid "The web server could not be asked automatically, so it is not known whether protected files can be read directly."
+msgstr "Webbservern kunde inte frågas automatiskt, så det är okänt om skyddade filer kan läsas direkt."

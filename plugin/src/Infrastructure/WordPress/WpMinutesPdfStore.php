@@ -33,6 +33,8 @@ final class WpMinutesPdfStore implements MinutesPdfStore
         global $wpdb;
 
         $this->assertHash($hash);
+        // A PDF is written on download, so the answer kept for the day is enough here.
+        PrivateStorageGuard::assertWritable(false);
         $name = 'revision-' . $revisionId . '-' . $hash . '.pdf';
         // The file the row points at before this write. It stays untouched until the row
         // points at the new file, so a regeneration that fails leaves a working PDF.
