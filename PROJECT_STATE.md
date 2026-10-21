@@ -128,11 +128,15 @@ The person form carries a `contact_version` hash of the details it showed. A sav
 
 `scripts/test-lab-race.sh` runs from `scripts/test-lab.sh`. It starts 8 PHP workers in the WordPress container on one start time and asserts that exactly one saves, for a new period, a membership number, and a contact edit. A fourth scenario ends a membership while seven workers give the member a board role, and asserts that no assignment outlasts the membership. Plugin version stays 0.1.0. Schema stays 17. No migration.
 
-Not covered yet: the spreadsheet import checks emails once before it writes the rows, not again inside each row's hold.
+The spreadsheet import also checks the row's email again inside each row's hold. An address saved by someone else after the preview makes the row a duplicate (`email_exists`), not a second person with that address.
 
 ## Update — contact change trail — 2026-10-21
 
 A contact edit now leaves a trace (ADR-0032, proposed and waiting for owner review). `PeopleService::updateContact` takes the acting user and writes one `assoc_audit_event` row per changed part: `contact_name_changed`, `contact_email_changed`, `contact_birth_date_changed`. The row names the part, the officer and the time, never the old or new value. It is written in the edit's transaction, so a refused or failed edit leaves no event and an event that cannot be written stops the edit. Retention removes the events with the other audit events. Erase keeps them, since they hold no contact data. The privacy export lists the day and the part, not the officer. Plugin version stays 0.1.0. Schema stays 17. No migration.
+
+## Update — member file identity — 2026-10-21
+
+Email alone no longer decides who a member file row is about (ADR-0030 amendment, proposed and waiting for owner review). A row attaches to a stored person only when email and name agree, and the birth dates too when both are known. The name chooses between people who share an address. Another name on a known address is reported as not imported, so a mistyped email no longer puts a membership on someone else. In the structured file, a row whose address already belongs to someone on the same membership is a new person, so a family that shares one address survives export and restore. Plugin version stays 0.1.0. Schema stays 17. No migration.
 
 ## Planned product area — sections and departments
 

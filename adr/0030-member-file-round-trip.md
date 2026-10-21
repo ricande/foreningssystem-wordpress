@@ -46,3 +46,38 @@ Negative:
 - Personal identity numbers stay out of both files (ADR-0020).
 - Email is still not an identity key outside one membership. A person without email on two memberships becomes two people on import, as in ADR-0011.
 - A new structured file with a quoted cell that spans lines does not read in a plugin version older than this change.
+
+## Amendment — 2026-10-21: email alone does not pick the person
+
+**Status:** Proposed (implemented, waiting for owner review)
+
+### Context
+
+Both member files attached a row to the stored person with the row's email, whatever name the row had. A mistyped address put a membership on someone else, and the officer was not told. A family that shares one address had the second member attached to the first. The foreign spreadsheet import (ADR-0020) never attaches to a stored person: it skips any row whose email is already used.
+
+### Options considered
+
+- Keep email-only matching. Rejected: it is the defect.
+- Skip every row whose email is in use, like the spreadsheet import. Rejected: a returning member's later period, and a re-import of the backup, must still find the stored person.
+- Report every name mismatch as a conflict. Safe, but an export of a family that shares one address could not be restored.
+- Require the name to match, and treat a shared address on the same membership as a family (chosen).
+
+### Decision
+
+In both own member files, a row with an email is attached to a stored person only when:
+
+- the email matches (letter case ignored), and
+- first and last name match (letter case and surrounding spaces ignored), and
+- the birth dates agree when both the row and the stored person have one.
+
+When several people share the address, the name chooses between them. Two people with the same email and the same name still reject the row.
+
+When the address is in use but no person with it has that name, the row is not imported. It is reported on its line: `Not imported. This email belongs to a person with another name or birth date in the register. Correct the email or the name in the file, or change the person in the register first.` One exception in the structured file: if a person with that address is already a participant of the same membership, the row is a new person, because that is a family sharing one address. The plain file has one member per membership, so the exception never applies there.
+
+A row never changes a stored person's name, email, or birth date.
+
+### Consequences
+
+- A mistyped address no longer moves a membership to another person. The officer sees the row and corrects the file or the register.
+- A family that shares one address survives export and restore as separate people.
+- A member who changed name in another system must be renamed in the register before the file brings in their row. The rename then shows in the contact change trail (ADR-0032).

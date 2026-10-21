@@ -26,7 +26,7 @@ $fail = static function (string $message) use ($cleanup): void {
 $csv = <<<'CSV'
 first_name;last_name;email;person_status;membership_number;membership_type;membership_status;started_on;ended_on
 Åsa;Lund;ada-csv@example.test;known;LAB-CSV-1;ordinarie;ended;2020-01-01;2021-12-31
-Annat;Namn;ada-csv@example.test;known;LAB-CSV-2;ordinarie;active;2024-01-01;
+åsa;LUND;ada-csv@example.test;known;LAB-CSV-2;ordinarie;active;2024-01-01;
 CSV;
 
 $cleanup();

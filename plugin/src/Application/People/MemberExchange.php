@@ -51,6 +51,8 @@ final class MemberExchange
     private const FORMULA = "/^'*[=+\\-@\t\r]/";
 
     private const ROW_NOT_SAVED = 'The row could not be saved. No part of it was kept.';
+    private const EMAIL_NAME_CONFLICT = 'Not imported. This email belongs to a person with another name or birth date in the register.'
+        . ' Correct the email or the name in the file, or change the person in the register first.';
     private const BUSY = 'Another change to the member register was being saved, so the row was not imported. Import the file again to add it.';
 
     /** @var list<int> */
@@ -242,7 +244,7 @@ final class MemberExchange
             throw new InvalidArgumentException('A deceased person cannot have an open membership.');
         }
 
-        $person = $this->personFor($row['email']);
+        $person = $this->personFor($row['email'], $row['first_name'], $row['last_name'], '', null);
 
         if ($person instanceof Person && $person->status() === PersonStatus::Deceased && $membershipStatus !== MembershipStatus::Ended) {
             throw new InvalidArgumentException('A deceased person cannot have an open membership.');
@@ -552,7 +554,7 @@ final class MemberExchange
 
             $person = $email === ''
                 ? $this->participantWithoutEmail($membership->id(), $value(2), $value(3), $value(5))
-                : $this->personFor($email);
+                : $this->personFor($email, $value(2), $value(3), $value(5), $membership->id());
             $newPerson = ! $person instanceof Person;
 
             if ($newPerson && $personStatus === PersonStatus::Deceased && $role->countsAsMember() && ! $endedOn instanceof AssociationDate) {
@@ -764,7 +766,16 @@ final class MemberExchange
         return null;
     }
 
-    private function personFor(string $email): ?Person
+    /**
+     * Email alone does not decide who a row is about: a mistyped address would put the
+     * membership on someone else. A stored person with the email is used only when the
+     * name matches, and the birth date too when both sides have one.
+     *
+     * A different name on the address is a conflict, unless a person with that address is
+     * already on the same membership: a family that shares one address. Then the row is a
+     * new person. See ADR-0030.
+     */
+    private function personFor(string $email, string $firstName, string $lastName, string $birthDate, ?int $membershipId): ?Person
     {
         if ($email === '') {
             return null;
@@ -778,11 +789,47 @@ final class MemberExchange
             }
         }
 
-        if (count($matches) > 1) {
-            throw new InvalidArgumentException('More than one person has this email.');
+        if ($matches === []) {
+            return null;
         }
 
-        return $matches[0] ?? null;
+        $named = array_values(array_filter(
+            $matches,
+            fn (Person $person): bool => $this->samePerson($person, $firstName, $lastName, $birthDate)
+        ));
+
+        if (count($named) > 1) {
+            throw new InvalidArgumentException('More than one person has this email and name.');
+        }
+
+        if ($named !== []) {
+            return $named[0];
+        }
+
+        if ($membershipId !== null) {
+            foreach ($this->memberships->participantsForMembership($membershipId) as $participant) {
+                foreach ($matches as $person) {
+                    if ($participant->personId() === $person->id()) {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        throw new InvalidArgumentException(self::EMAIL_NAME_CONFLICT);
+    }
+
+    private function samePerson(Person $person, string $firstName, string $lastName, string $birthDate): bool
+    {
+        $fold = static fn (string $name): string => mb_strtolower(trim($name), 'UTF-8');
+
+        if ($fold($person->firstName()) !== $fold($firstName) || $fold($person->lastName()) !== $fold($lastName)) {
+            return false;
+        }
+
+        $stored = $person->birthDate()?->iso();
+
+        return $stored === null || $birthDate === '' || $stored === $birthDate;
     }
 
     /**

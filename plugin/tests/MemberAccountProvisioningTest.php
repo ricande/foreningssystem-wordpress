@@ -489,7 +489,7 @@ CSV;
         $minor = $this->personByEmail($people, 'lisa-import@example.test');
 
         self::assertNotSame([], $result->errors());
-        self::assertStringContainsString('More than one person has this email.', implode("\n", $result->errors()));
+        self::assertStringContainsString('This email belongs to a person with another name', implode("\n", $result->errors()));
         self::assertNotNull($adult?->wordpressUserId());
         self::assertNull($minor?->wordpressUserId());
         self::assertNull($people->find((int) $sharedA->id())?->wordpressUserId());
