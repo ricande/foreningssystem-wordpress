@@ -443,6 +443,9 @@ final class MembersPage
             wp_die(esc_html__('You do not have permission to import members.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (\InvalidArgumentException) {
             self::redirect('import_invalid');
+        } catch (\RuntimeException) {
+            // A failing row is already reported per line. This is a failure around the file, such as a temporary stream.
+            self::redirect('import_failed');
         }
 
         set_transient('assoc_member_import_' . get_current_user_id(), $result->errors(), MINUTE_IN_SECONDS);
@@ -761,6 +764,7 @@ final class MembersPage
             'deceased_period' => __('A deceased person cannot receive a new membership period.', 'foreningsplugin'),
             'import_invalid' => __('The file must be UTF-8 with the expected columns, separated by semicolons.', 'foreningsplugin'),
             'import_too_large' => __('The file is larger than 2 MB.', 'foreningsplugin'),
+            'import_failed' => __('The member file could not be fully processed. Check the member list before importing again.', 'foreningsplugin'),
             'account_created' => __('The WordPress account is created. WordPress sends the password setup message.', 'foreningsplugin'),
             'account_linked' => __('The WordPress account is linked to this member.', 'foreningsplugin'),
             'account_unlinked' => __('The WordPress account is unlinked. The WordPress user was not deleted.', 'foreningsplugin'),

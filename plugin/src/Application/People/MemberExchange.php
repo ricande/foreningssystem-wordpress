@@ -35,8 +35,28 @@ final class MemberExchange
         'ended_on',
     ];
 
+    /**
+     * Participant rows in the structured file.
+     * person_status is the eleventh column, added later. A row without it is a known person.
+     */
+    private const PARTICIPANT_STATUS = 10;
+
+    /**
+     * RFC 4180 quoting: a quote is doubled and a backslash is plain text.
+     * With PHP's backslash escape a value ending in a backslash swallows the closing quote.
+     */
+    private const ESCAPE = '';
+
+    /** Spreadsheet formula starts (OWASP CSV injection), optionally behind apostrophes. */
+    private const FORMULA = "/^'*[=+\\-@\t\r]/";
+
+    private const ROW_NOT_SAVED = 'The row could not be saved. No part of it was kept.';
+
     /** @var list<int> */
     private array $provisionPeople = [];
+
+    /** @var array<int, int> person id => line */
+    private array $deceasedPeople = [];
 
     public function __construct(
         private readonly PersonRepository $people,
@@ -59,7 +79,7 @@ final class MemberExchange
             throw new \RuntimeException('The member export could not be opened.');
         }
 
-        fputcsv($handle, self::COLUMNS, ';', '"', '\\');
+        fputcsv($handle, self::COLUMNS, ';', '"', self::ESCAPE);
         $accounts = [];
 
         foreach ($this->memberships->allMemberships() as $membership) {
@@ -112,7 +132,7 @@ final class MemberExchange
                 $period->status()->value,
                 $period->startedOn()->iso(),
                 $period->endedOn()?->iso() ?? '',
-            ], ';', '"', '\\');
+            ], ';', '"', self::ESCAPE);
         }
 
         rewind($handle);
@@ -140,8 +160,17 @@ final class MemberExchange
         $skipped = 0;
         $errors = [];
         $this->provisionPeople = [];
+        $createdNumbers = [];
 
         foreach ($rows as $line => $row) {
+            if (isset($createdNumbers[$row['membership_number']])) {
+                $errors[] = 'Line ' . $line . ': Not imported. Membership ' . $row['membership_number']
+                    . ' was created from an earlier line. This file brings in one period and one member per membership.'
+                    . ' Use the structured member file for later periods and family members.';
+
+                continue;
+            }
+
             try {
                 $outcome = $this->transaction->run(fn (): string => $this->importRow($row));
 
@@ -149,9 +178,12 @@ final class MemberExchange
                     $skipped++;
                 } else {
                     $created++;
+                    $createdNumbers[$row['membership_number']] = true;
                 }
             } catch (MembershipRuleException | InvalidArgumentException $error) {
                 $errors[] = 'Line ' . $line . ': ' . $error->getMessage();
+            } catch (\RuntimeException) {
+                $errors[] = 'Line ' . $line . ': ' . self::ROW_NOT_SAVED;
             }
         }
 
@@ -274,17 +306,23 @@ final class MemberExchange
     public function exportStructure(): string
     {
         $this->require(Capabilities::EXPORT_MEMBERS);
-        $lines = ['# foreningsplugin-members 2'];
+        $handle = fopen('php://temp', 'r+');
+
+        if ($handle === false) {
+            throw new \RuntimeException('The member export could not be opened.');
+        }
+
+        fwrite($handle, "# foreningsplugin-members 2\n");
         $organizations = [];
 
         foreach ($this->organizations->all() as $organization) {
             $number = $organization->number()?->canonical() ?? '';
-            $lines[] = implode(';', [
+            $this->writeRecord($handle, [
                 'organization',
                 $this->cell($number),
                 $this->cell($organization->name()),
                 $this->cell($organization->email()),
-                $this->cell(str_replace(["\n", "\r", ';'], ' ', $organization->postalAddress())),
+                $this->cell($organization->postalAddress()),
             ]);
 
             if ($organization->id() !== null) {
@@ -294,7 +332,7 @@ final class MemberExchange
 
         foreach ($this->memberships->allMemberships() as $membership) {
             $organization = $membership->organizationId() === null ? null : ($organizations[$membership->organizationId()] ?? null);
-            $lines[] = implode(';', [
+            $this->writeRecord($handle, [
                 'membership',
                 $this->cell($membership->number()),
                 $membership->kind()->value,
@@ -302,7 +340,7 @@ final class MemberExchange
             ]);
 
             foreach ($this->memberships->periodsForMembership((int) $membership->id()) as $period) {
-                $lines[] = implode(';', [
+                $this->writeRecord($handle, [
                     'period',
                     $this->cell($membership->number()),
                     $period->status()->value,
@@ -319,7 +357,7 @@ final class MemberExchange
                     continue;
                 }
 
-                $lines[] = implode(';', [
+                $this->writeRecord($handle, [
                     'participant',
                     $this->cell($membership->number()),
                     $this->cell($person->firstName()),
@@ -330,11 +368,31 @@ final class MemberExchange
                     $participant->isPrimary() ? '1' : '0',
                     $participant->startedOn()->iso(),
                     $participant->endedOn()?->iso() ?? '',
+                    $person->status()->value,
                 ]);
             }
         }
 
-        return "\xEF\xBB\xBF" . implode("\n", $lines) . "\n";
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        if ($csv === false) {
+            throw new \RuntimeException('The member export could not be read.');
+        }
+
+        return "\xEF\xBB\xBF" . $csv;
+    }
+
+    /**
+     * @param resource     $handle
+     * @param list<string> $cells
+     */
+    private function writeRecord($handle, array $cells): void
+    {
+        if (fputcsv($handle, $cells, ';', '"', self::ESCAPE, "\n") === false) {
+            throw new \RuntimeException('The member export could not be written.');
+        }
     }
 
     private function importStructure(string $csv): MemberImportResult
@@ -347,19 +405,28 @@ final class MemberExchange
         $skipped = 0;
         $errors = [];
         $this->provisionPeople = [];
+        $this->deceasedPeople = [];
         $records = ['organization' => [], 'membership' => [], 'participant' => [], 'period' => []];
-        $line = 0;
+        $handle = fopen('php://temp', 'r+');
 
-        foreach (preg_split('/\R/', $csv) ?: [] as $raw) {
-            $line++;
-            $raw = trim($raw);
+        if ($handle === false) {
+            throw new \RuntimeException('The member import could not be opened.');
+        }
 
-            if ($raw === '' || str_starts_with($raw, '#')) {
+        fwrite($handle, $csv);
+        rewind($handle);
+        $next = 1;
+
+        // fgetcsv reads bytes, so a UTF-8 letter is never a line break. A quoted cell may span lines.
+        while (($cells = fgetcsv($handle, 0, ';', '"', self::ESCAPE)) !== false) {
+            $line = $next;
+            $position = ftell($handle);
+            $next = 1 + substr_count($csv, "\n", 0, $position === false ? strlen($csv) : $position);
+            $type = $this->cellIn((string) ($cells[0] ?? ''));
+
+            if (($type === '' && count($cells) === 1) || str_starts_with($type, '#')) {
                 continue;
             }
-
-            $cells = str_getcsv($raw, ';', '"', '\\');
-            $type = $this->cellIn((string) ($cells[0] ?? ''));
 
             if ($type === 'identity' || $type === 'personal_identity') {
                 throw new InvalidArgumentException('Personal identity numbers are not imported from the member file.');
@@ -374,16 +441,32 @@ final class MemberExchange
             $records[$type][] = ['line' => $line, 'cells' => $cells];
         }
 
+        fclose($handle);
+
         foreach (['organization', 'membership', 'period', 'participant'] as $type) {
             foreach ($records[$type] as $record) {
                 try {
-                    $outcome = $this->transaction->run(fn (): string => $this->importStructureRow($type, $record['cells']));
+                    $outcome = $this->transaction->run(fn (): string => $this->importStructureRow($type, $record['cells'], $record['line']));
                     $outcome === 'skipped' ? $skipped++ : $created++;
                 } catch (MembershipRuleException | InvalidArgumentException $error) {
                     $errors[] = 'Line ' . $record['line'] . ': ' . $error->getMessage();
+                } catch (\RuntimeException) {
+                    $errors[] = 'Line ' . $record['line'] . ': ' . self::ROW_NOT_SAVED;
                 }
             }
         }
+
+        foreach ($this->deceasedPeople as $personId => $line) {
+            try {
+                $this->transaction->run(fn () => $this->markImportedDeceased($personId));
+            } catch (MembershipRuleException | InvalidArgumentException $error) {
+                $errors[] = 'Line ' . $line . ': ' . $error->getMessage();
+            } catch (\RuntimeException) {
+                $errors[] = 'Line ' . $line . ': ' . self::ROW_NOT_SAVED;
+            }
+        }
+
+        $this->deceasedPeople = [];
 
         $this->provisionRemembered();
 
@@ -393,7 +476,7 @@ final class MemberExchange
     /**
      * @param list<string|null> $cells
      */
-    private function importStructureRow(string $type, array $cells): string
+    private function importStructureRow(string $type, array $cells, int $line): string
     {
         $value = fn (int $index): string => $this->cellIn((string) ($cells[$index] ?? ''));
 
@@ -440,14 +523,13 @@ final class MemberExchange
 
         if ($type === 'participant') {
             $email = $value(4);
-            $person = $this->personFor($email);
+            $statusCell = $value(self::PARTICIPANT_STATUS);
+            $personStatus = $statusCell === '' ? PersonStatus::Known : PersonStatus::tryFrom($statusCell);
 
-            if (! $person instanceof Person) {
-                $birth = $value(5) === '' ? null : AssociationDate::fromIso($value(5));
-                $person = $this->people->add(new Person(null, $value(2), $value(3), $email, PersonStatus::Known, null, $birth));
+            if (! $personStatus instanceof PersonStatus) {
+                throw new InvalidArgumentException('Unknown person status.');
             }
 
-            $personId = (int) $person->id();
             $startedOn = $this->participantStart($cells, $membership->id());
             $endedOn = $value(9) === '' ? null : AssociationDate::fromIso($value(9));
             $role = \Foreningssystem\Domain\Membership\ParticipantRole::tryFrom($value(6));
@@ -455,6 +537,23 @@ final class MemberExchange
             if (! $role instanceof \Foreningssystem\Domain\Membership\ParticipantRole) {
                 throw new InvalidArgumentException('Unknown participant role.');
             }
+
+            $person = $email === ''
+                ? $this->participantWithoutEmail($membership->id(), $value(2), $value(3), $value(5))
+                : $this->personFor($email);
+            $newPerson = ! $person instanceof Person;
+
+            if ($newPerson && $personStatus === PersonStatus::Deceased && $role->countsAsMember() && ! $endedOn instanceof AssociationDate) {
+                throw new InvalidArgumentException('A deceased person cannot have an open membership.');
+            }
+
+            if (! $person instanceof Person) {
+                $birth = $value(5) === '' ? null : AssociationDate::fromIso($value(5));
+                // A deceased person is stored as known until every row is in, so the ended history passes admission.
+                $person = $this->people->add(new Person(null, $value(2), $value(3), $email, PersonStatus::Known, null, $birth));
+            }
+
+            $personId = (int) $person->id();
 
             $participant = new \Foreningssystem\Domain\Membership\MembershipParticipant(
                 null,
@@ -493,7 +592,9 @@ final class MemberExchange
 
             $this->memberships->addParticipant($participant);
 
-            if ($role->countsAsMember()) {
+            if ($personStatus === PersonStatus::Deceased && ($newPerson || isset($this->deceasedPeople[$personId]))) {
+                $this->deceasedPeople[$personId] ??= $line;
+            } elseif ($role->countsAsMember()) {
                 $this->rememberAccountPerson($personId);
             }
 
@@ -529,6 +630,30 @@ final class MemberExchange
         }
 
         return 'created';
+    }
+
+    /**
+     * Only a person created by this import is marked. A stored person is not changed by a file.
+     */
+    private function markImportedDeceased(int $personId): void
+    {
+        $person = $this->people->find($personId);
+
+        if (! $person instanceof Person || $person->status() === PersonStatus::Deceased) {
+            return;
+        }
+
+        foreach ($this->memberships->allParticipants() as $participant) {
+            if ($participant->personId() === $personId && $participant->role()->countsAsMember() && ! $participant->endedOn() instanceof AssociationDate) {
+                throw new InvalidArgumentException('A deceased person cannot have an open membership.');
+            }
+        }
+
+        $this->people->save($person->markedDeceased());
+        $this->provisionPeople = array_values(array_filter(
+            $this->provisionPeople,
+            static fn (int $remembered): bool => $remembered !== $personId
+        ));
     }
 
     private function rememberAccountPerson(int $personId): void
@@ -593,6 +718,29 @@ final class MemberExchange
         return $earliest;
     }
 
+    /**
+     * A participant without email is found again only on the same membership, by name and birth date.
+     * The same name elsewhere in the register is still a different person.
+     */
+    private function participantWithoutEmail(int $membershipId, string $firstName, string $lastName, string $birthDate): ?Person
+    {
+        foreach ($this->memberships->participantsForMembership($membershipId) as $participant) {
+            $person = $this->people->find($participant->personId());
+
+            if (
+                $person instanceof Person
+                && $person->email() === ''
+                && $person->firstName() === $firstName
+                && $person->lastName() === $lastName
+                && ($person->birthDate()?->iso() ?? '') === $birthDate
+            ) {
+                return $person;
+            }
+        }
+
+        return null;
+    }
+
     private function personFor(string $email): ?Person
     {
         if ($email === '') {
@@ -635,7 +783,7 @@ final class MemberExchange
 
         fwrite($handle, $csv);
         rewind($handle);
-        $header = fgetcsv($handle, 0, ';', '"', '\\');
+        $header = fgetcsv($handle, 0, ';', '"', self::ESCAPE);
 
         if ($header === false || array_map($this->cellIn(...), $header) !== self::COLUMNS) {
             fclose($handle);
@@ -646,7 +794,7 @@ final class MemberExchange
         $rows = [];
         $line = 1;
 
-        while (($data = fgetcsv($handle, 0, ';', '"', '\\')) !== false) {
+        while (($data = fgetcsv($handle, 0, ';', '"', self::ESCAPE)) !== false) {
             $line++;
 
             if ($data === [null] || $data === ['']) {
@@ -679,7 +827,8 @@ final class MemberExchange
 
     private function cell(string $value): string
     {
-        if ($value !== '' && preg_match('/^[=+\-@]/', $value) === 1) {
+        // A leading apostrophe is doubled too, so a value that really starts with one survives cellIn.
+        if (preg_match(self::FORMULA, $value) === 1) {
             return "'" . $value;
         }
 
@@ -690,7 +839,7 @@ final class MemberExchange
     {
         $value = trim($value);
 
-        if ($value !== '' && str_starts_with($value, "'") && preg_match('/^[=+\-@]/', substr($value, 1)) === 1) {
+        if (str_starts_with($value, "'") && preg_match(self::FORMULA, substr($value, 1)) === 1) {
             return substr($value, 1);
         }
 

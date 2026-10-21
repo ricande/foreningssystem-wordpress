@@ -367,7 +367,7 @@ CSV);
         self::assertSame([], $result->errors());
         self::assertSame(1, count($people->all()));
         self::assertSame('2024-06-01', $participant->startedOn()->iso());
-        self::assertStringContainsString('participant;M-1;Ada;Lovelace;ada-struct@example.test;;member;1;2024-06-01;', $exported);
+        self::assertStringContainsString("participant;M-1;Ada;Lovelace;ada-struct@example.test;;member;1;2024-06-01;;known\n", $exported);
         self::assertSame(0, $again->created());
         self::assertSame('2024-06-01', $memberships->allParticipants()[0]->startedOn()->iso());
     }
@@ -496,23 +496,20 @@ CSV);
         [$exchange, $people, $memberships] = $this->exchange(true);
         $exchange->import(<<<'CSV'
 # foreningsplugin-members 2
-membership;M-1;ordinary;
-period;M-1;active;2024-01-01;;ordinary
+membership;M-1;family;
+period;M-1;active;2024-01-01;;family
 participant;M-1;Ada;Lovelace;ada-struct@example.test;;member;1;2024-01-01;
 CSV);
         $memberships->failNext = 'participant';
-
-        try {
-            $exchange->import(<<<'CSV'
+        $result = $exchange->import(<<<'CSV'
 # foreningsplugin-members 2
 participant;M-1;Bea;Sen;bea-struct@example.test;;member;0;2024-06-01;
 CSV);
-            self::fail('A failed participant insert should leave the row transaction.');
-        } catch (\RuntimeException) {
-            self::assertCount(1, $people->all());
-            self::assertSame('ada-struct@example.test', $people->all()[0]->email());
-            self::assertCount(1, $memberships->allParticipants());
-        }
+
+        self::assertSame(['Line 2: The row could not be saved. No part of it was kept.'], $result->errors());
+        self::assertCount(1, $people->all());
+        self::assertSame('ada-struct@example.test', $people->all()[0]->email());
+        self::assertCount(1, $memberships->allParticipants());
     }
 
     public function test_a_blank_start_in_the_current_format_is_rejected_and_a_missing_column_uses_the_period(): void

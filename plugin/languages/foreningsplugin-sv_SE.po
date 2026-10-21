@@ -1986,6 +1986,9 @@ msgstr "Slutdatumet kan inte ligga före startdatumet."
 msgid "The file is larger than 2 MB."
 msgstr "Filen är större än 2 MB."
 
+msgid "The member file could not be fully processed. Check the member list before importing again."
+msgstr "Medlemsfilen kunde inte behandlas helt. Kontrollera medlemslistan innan du importerar igen."
+
 msgid "The file is UTF-8 and semicolon-separated, with one row per membership period. A membership number that already exists is left unchanged. The import does not link a WordPress account and does not rename a person who already exists."
 msgstr "Filen är UTF-8 och semikolonseparerad, med en rad per medlemsperiod. Ett medlemsnummer som redan finns lämnas orört. Importen kopplar inget WordPress-konto och byter inte namn på en person som redan finns."
 

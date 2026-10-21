@@ -1361,6 +1361,10 @@ msgstr ""
 msgid "The file is larger than 2 MB."
 msgstr ""
 
+#: src/Infrastructure/WordPress/MembersPage.php
+msgid "The member file could not be fully processed. Check the member list before importing again."
+msgstr ""
+
 #. translators: 1: created memberships, 2: skipped memberships
 #: src/Infrastructure/WordPress/MembersPage.php:310
 #, php-format
