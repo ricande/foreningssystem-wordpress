@@ -606,7 +606,7 @@ final class BoardServiceTest extends TestCase
         $memberships = new MemoryMembershipRepository();
         $roles = new MemoryBoardRoleRepository();
         $assignments = new MemoryBoardAssignmentRepository();
-        $service = new BoardService($people, $memberships, $roles, $assignments, new BoardAssignmentLedger(), $this->authorizer($allowed), $this->transaction());
+        $service = new BoardService($people, $memberships, $roles, $assignments, new BoardAssignmentLedger(), $this->authorizer($allowed), $this->transaction(), new UnheldRegisterLock());
 
         return [$service, $people, $memberships, $roles, $assignments];
     }

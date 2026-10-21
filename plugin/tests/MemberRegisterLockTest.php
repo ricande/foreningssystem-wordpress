@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Tests;
 
+use Foreningssystem\Application\Board\BoardService;
+use Foreningssystem\Application\Board\EndOpenBoardAssignments;
 use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\CompanyMemberships;
 use Foreningssystem\Application\People\ContactChanged;
@@ -14,6 +16,10 @@ use Foreningssystem\Application\People\MemberRegisterImport;
 use Foreningssystem\Application\People\MemberRegisterLock;
 use Foreningssystem\Application\People\PeopleService;
 use Foreningssystem\Application\People\Transaction;
+use Foreningssystem\Domain\Board\BoardAssignment;
+use Foreningssystem\Domain\Board\BoardAssignmentLedger;
+use Foreningssystem\Domain\Board\BoardRole;
+use Foreningssystem\Domain\Board\BoardRuleException;
 use Foreningssystem\Domain\Membership\AssociationDate;
 use Foreningssystem\Domain\Membership\MembershipKind;
 use Foreningssystem\Domain\Membership\MembershipLedger;
@@ -230,6 +236,102 @@ CSV);
 
         self::assertCount(5, array_unique($versions));
         self::assertSame($person->contactVersion(), $person->linkedToWordpressUser(7)->contactVersion());
+    }
+
+    public function test_a_busy_register_changes_no_board_assignment_and_starts_no_transaction(): void
+    {
+        [$board, $people, $memberships, $assignments, $lock, $transaction] = $this->boardFixture();
+        $personId = (int) $people->add(new Person(null, 'Ada', 'Lovelace', '', PersonStatus::Known, null))->id();
+        $memberships->grant($personId, 'M-1', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $current = $assignments->add(new BoardAssignment(null, $personId, 1, AssociationDate::fromIso('2024-01-01'), null, '', ''));
+        $scheduled = $assignments->add(new BoardAssignment(null, $personId, 2, AssociationDate::fromIso('2026-01-01'), null, '', ''));
+        $lock->busy = true;
+
+        $calls = [
+            'place' => fn () => $board->place($personId, 2, AssociationDate::fromIso('2025-01-01'), AssociationDate::fromIso('2025-06-30'), '', ''),
+            'end' => fn () => $board->end((int) $current->id(), AssociationDate::fromIso('2025-01-01')),
+            'cancelScheduled' => fn () => $board->cancelScheduled((int) $scheduled->id(), AssociationDate::fromIso('2025-01-01')),
+        ];
+
+        foreach ($calls as $name => $call) {
+            try {
+                $call();
+                self::fail($name . ' should report a busy register.');
+            } catch (MemberRegisterBusy) {
+            }
+        }
+
+        self::assertSame(0, $transaction->runs);
+        self::assertCount(2, $assignments->all());
+        self::assertNull($assignments->find((int) $current->id())?->endedOn());
+    }
+
+    public function test_every_board_write_runs_its_transaction_inside_the_lock(): void
+    {
+        [$board, $people, $memberships, $assignments, $lock, $transaction] = $this->boardFixture();
+        $personId = (int) $people->add(new Person(null, 'Ada', 'Lovelace', '', PersonStatus::Known, null))->id();
+        $memberships->grant($personId, 'M-1', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $today = AssociationDate::fromIso('2025-01-01');
+
+        $board->place($personId, 1, AssociationDate::fromIso('2024-01-01'), null, '', '', $today);
+        $board->place($personId, 2, AssociationDate::fromIso('2026-01-01'), null, '', '', $today);
+        $current = $assignments->all()[0];
+        $scheduled = $assignments->all()[1];
+        $board->end((int) $current->id(), AssociationDate::fromIso('2025-06-30'));
+        $board->cancelScheduled((int) $scheduled->id(), $today);
+
+        self::assertSame(4, $lock->holds);
+        self::assertSame(4, $transaction->runs);
+        self::assertSame(0, $transaction->outsideLock);
+        self::assertSame(0, $lock->depth);
+    }
+
+    public function test_an_assignment_is_refused_when_the_membership_ended_while_waiting(): void
+    {
+        [$board, $people, $memberships, $assignments, $lock] = $this->boardFixture();
+        $personId = (int) $people->add(new Person(null, 'Ada', 'Lovelace', '', PersonStatus::Known, null))->id();
+        $period = $memberships->grant($personId, 'M-1', 'ordinary', MembershipStatus::Active, AssociationDate::fromIso('2024-01-01'), null);
+        $other = new PeopleService(
+            $people,
+            $memberships,
+            new MembershipLedger(),
+            $this->authorizer(),
+            new LockCheckingTransaction(new ScriptedRegisterLock()),
+            new EndOpenBoardAssignments($assignments, new BoardAssignmentLedger()),
+            new UnheldRegisterLock()
+        );
+
+        // Another officer held the register and ended the membership first.
+        $lock->before = static function () use ($other, $period): void {
+            $other->endMembership((int) $period->id(), AssociationDate::fromIso('2025-06-30'));
+        };
+
+        try {
+            $board->place($personId, 1, AssociationDate::fromIso('2025-01-01'), null, '', '');
+            self::fail('An open assignment past the end of the membership should be refused.');
+        } catch (BoardRuleException $error) {
+            self::assertSame('The membership does not cover this assignment.', $error->getMessage());
+        }
+
+        self::assertSame([], $assignments->all());
+    }
+
+    /**
+     * @return array{0: BoardService, 1: MemoryPersonRepository, 2: MemoryMembershipRepository, 3: MemoryBoardAssignmentRepository, 4: ScriptedRegisterLock, 5: LockCheckingTransaction}
+     */
+    private function boardFixture(): array
+    {
+        $people = new MemoryPersonRepository();
+        $memberships = new MemoryMembershipRepository();
+        $roles = new MemoryBoardRoleRepository();
+        $roles->add(new BoardRole(null, 'chair', 'Chair', false, 10));
+        $roles->add(new BoardRole(null, 'treasurer', 'Treasurer', false, 20));
+        $assignments = new MemoryBoardAssignmentRepository();
+        $lock = new ScriptedRegisterLock();
+        $transaction = new LockCheckingTransaction($lock);
+        $board = new BoardService($people, $memberships, $roles, $assignments, new BoardAssignmentLedger(), $this->authorizer(), $transaction, $lock);
+
+        return [$board, $people, $memberships, $assignments, $lock, $transaction];
     }
 
     /**

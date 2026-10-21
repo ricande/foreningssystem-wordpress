@@ -22,7 +22,8 @@ final class WordpressBoard
             new WpdbBoardAssignmentRepository(),
             new BoardAssignmentLedger(),
             self::authorizer(),
-            self::transaction()
+            self::transaction(),
+            new WordpressMemberRegisterLock()
         );
     }
 

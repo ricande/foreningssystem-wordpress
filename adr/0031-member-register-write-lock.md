@@ -65,6 +65,9 @@ These writes run inside the lock, with every read their checks depend on:
 - `CompanyMemberships::register`.
 - `MemberExchange::import`, both file versions, one row per hold.
 - `MemberRegisterImport::commit`, one row per hold. The membership number is checked again inside the hold.
+- `BoardService`: `place`, `end`, `cancelScheduled`. `place` checks membership coverage, and `endMembership`, `endParticipation` and `markDeceased` shorten assignments, so a board write and a membership write must not interleave. The board screen reports `MemberRegisterBusy` as a temporary state and keeps the wizard draft.
+
+`EndOpenBoardAssignments` writes assignments only when `PeopleService` calls it, inside that service's hold. `GET_LOCK` is re-entrant for one connection, so a nested hold would not block itself either.
 
 `rememberPerson` adds a person with no membership and checks no register rule, so it does not take the lock.
 
@@ -79,14 +82,13 @@ A version column was considered. It would need a migration and would count chang
 ## Consequences
 
 Positive:
-- The overlap, number and coverage rules hold when requests arrive at the same time. `tests/lab-membership-race.sh` starts parallel PHP workers on one start time and asserts that exactly one period is created.
+- The overlap, number and coverage rules hold when requests arrive at the same time. `scripts/test-lab-race.sh` starts parallel PHP workers on one start time and asserts that exactly one period is created. Its `board_coverage` scenario ends a membership while seven workers give the member a board role, and asserts that no assignment outlasts the membership. Without the lock in `BoardService`, all seven saved an open assignment.
 - One mechanism for concurrent writes in the plugin, with the same busy state.
 - A contact edit cannot silently undo another officer's edit.
 
 Negative/tradeoffs:
 - Every member register write waits for every other one. If writes ever take long or there are many officers, this is the first thing to revisit.
 - The plugin depends on `GET_LOCK`. MySQL and MariaDB have it. A database that only emulates MySQL may not.
-- Writes outside the member register that read membership coverage, such as board assignments in `BoardService`, do not take this lock yet.
 - A contact form opened before this change has no `contact_version` and is refused once. Reloading the page fixes it.
 
 ## Revisit triggers

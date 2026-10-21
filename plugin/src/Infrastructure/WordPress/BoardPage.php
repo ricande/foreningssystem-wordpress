@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Infrastructure\WordPress;
 
 use Foreningssystem\Application\Board\BoardWizardStep;
+use Foreningssystem\Application\People\MemberRegisterBusy;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Board\BoardRuleException;
@@ -223,6 +224,10 @@ final class BoardPage
 
     private static function failure(\Throwable $error): string
     {
+        if ($error instanceof MemberRegisterBusy) {
+            return 'register_busy';
+        }
+
         $known = [
             'Person was not found.',
             'Role was not found.',
@@ -295,6 +300,7 @@ final class BoardPage
             'assignment' => __('That assignment could not be found.', 'foreningsplugin'),
             'confirm' => __('Confirm the end date before ending the assignment.', 'foreningsplugin'),
             'invalid' => __('Check the details and try again.', 'foreningsplugin'),
+            'register_busy' => __('Another change to the member register is being saved right now. Nothing was saved. Try again in a moment.', 'foreningsplugin'),
         ];
 
         if (! isset($messages[$notice])) {

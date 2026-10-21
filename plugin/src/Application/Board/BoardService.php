@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foreningssystem\Application\Board;
 
 use Foreningssystem\Application\People\Authorizer;
+use Foreningssystem\Application\People\MemberRegisterLock;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Application\People\Transaction;
 use Foreningssystem\Domain\Access\Capabilities;
@@ -31,6 +32,7 @@ final class BoardService
         private readonly BoardAssignmentLedger $ledger,
         private readonly Authorizer $authorizer,
         private readonly Transaction $transaction,
+        private readonly MemberRegisterLock $lock,
     ) {
     }
 
@@ -46,7 +48,7 @@ final class BoardService
         $this->require(Capabilities::MANAGE_BOARD);
         $asOf = $today ?? $startedOn;
 
-        return $this->transaction->run(function () use ($personId, $roleId, $startedOn, $endedOn, $publicContact, $termLabel, $asOf): string {
+        return $this->write(function () use ($personId, $roleId, $startedOn, $endedOn, $publicContact, $termLabel, $asOf): string {
             $person = $this->requirePerson($personId);
             $role = $this->requireRole($roleId);
 
@@ -131,39 +133,37 @@ final class BoardService
     public function cancelScheduled(int $assignmentId, AssociationDate $today): ScheduledCancellation
     {
         $this->require(Capabilities::MANAGE_BOARD);
-        $assignment = $this->requireAssignment($assignmentId);
 
-        if (! $assignment->startedOn()->isAfter($today)) {
-            throw new BoardRuleException('Only a scheduled assignment that has not started can be cancelled.');
-        }
+        return $this->write(function () use ($assignmentId, $today): ScheduledCancellation {
+            $assignment = $this->requireAssignment($assignmentId);
 
-        $role = $this->requireRole($assignment->roleId());
-        $currentEnd = null;
-
-        foreach ($this->forRole($assignment->roleId()) as $other) {
-            if ($other->id() === $assignment->id() || ! $other->covers($today)) {
-                continue;
+            if (! $assignment->startedOn()->isAfter($today)) {
+                throw new BoardRuleException('Only a scheduled assignment that has not started can be cancelled.');
             }
 
-            $currentEnd = $other->endedOn()?->iso();
-        }
+            $role = $this->requireRole($assignment->roleId());
+            $currentEnd = null;
 
-        $result = new ScheduledCancellation($role->slug(), $role->name(), $currentEnd);
-        $id = (int) $assignment->id();
+            foreach ($this->forRole($assignment->roleId()) as $other) {
+                if ($other->id() === $assignment->id() || ! $other->covers($today)) {
+                    continue;
+                }
 
-        $this->transaction->run(function () use ($id): void {
-            $this->assignments->remove($id);
+                $currentEnd = $other->endedOn()?->iso();
+            }
+
+            $this->assignments->remove((int) $assignment->id());
+
+            return new ScheduledCancellation($role->slug(), $role->name(), $currentEnd);
         });
-
-        return $result;
     }
 
     public function end(int $assignmentId, AssociationDate $on): void
     {
         $this->require(Capabilities::MANAGE_BOARD);
-        $assignment = $this->requireAssignment($assignmentId);
 
-        $this->transaction->run(function () use ($assignment, $on): void {
+        $this->write(function () use ($assignmentId, $on): void {
+            $assignment = $this->requireAssignment($assignmentId);
             $this->assignments->save($this->ledger->end($assignment, $on));
         });
     }
@@ -268,6 +268,20 @@ final class BoardService
         $this->require(Capabilities::VIEW_MEMBERS);
 
         return $this->roles->all();
+    }
+
+    /**
+     * Board assignments are checked against membership coverage, and ending a membership
+     * shortens assignments, so board writes hold the member register too. The claim is
+     * taken before the transaction starts and released after it ends. See ADR-0031.
+     *
+     * @template T
+     * @param callable(): T $work
+     * @return T
+     */
+    private function write(callable $work): mixed
+    {
+        return $this->lock->hold(fn (): mixed => $this->transaction->run($work));
     }
 
     private function canShorten(BoardAssignment $existing, BoardAssignment $candidate, AssociationDate $today): bool

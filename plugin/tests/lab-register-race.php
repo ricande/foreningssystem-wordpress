@@ -16,10 +16,19 @@ global $wpdb;
 
 $tables = lab_membership_tables();
 $people = $wpdb->prefix . 'assoc_person';
+$roles = $wpdb->prefix . 'assoc_board_role';
+$assignments = $wpdb->prefix . 'assoc_board_assignment';
 $action = (string) ($args[0] ?? '');
 $scenario = (string) ($args[1] ?? '');
 
-$cleanup = static function () use ($wpdb, $people): void {
+$cleanup = static function () use ($wpdb, $people, $roles, $assignments): void {
+    $roleId = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$roles} WHERE slug = %s", 'lab_race_board'));
+
+    if ($roleId > 0) {
+        $wpdb->delete($assignments, ['role_id' => $roleId], ['%d']);
+        $wpdb->delete($roles, ['id' => $roleId], ['%d']);
+    }
+
     lab_delete_membership_numbers('LAB-RACE-%');
     $wpdb->query($wpdb->prepare("DELETE FROM {$people} WHERE email LIKE %s", 'lab-race-%@example.test'));
 };
@@ -50,6 +59,17 @@ if ($action === 'setup') {
         $personId = $service->rememberPerson('Race', 'Contact', 'lab-race-contact@example.test', null, AssociationDate::fromIso('2025-01-01'));
         $person = (new \Foreningssystem\Infrastructure\WordPress\WpdbPersonRepository())->find($personId);
         echo $personId . ' ' . (string) $person?->contactVersion() . "\n";
+
+        return;
+    }
+
+    if ($scenario === 'board_coverage') {
+        $wpdb->insert($roles, ['slug' => 'lab_race_board', 'name' => 'Race chair', 'allows_multiple' => 0, 'sort_order' => 990], ['%s', '%s', '%d', '%d']);
+        $roleId = (int) $wpdb->insert_id;
+        $personId = $service->register('Race', 'Board', 'lab-race-board@example.test', 'LAB-RACE-BOARD', 'ordinary', AssociationDate::fromIso('2024-01-01'));
+        $membershipId = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$tables['membership']} WHERE membership_number = %s", 'LAB-RACE-BOARD'));
+        $periodId = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$tables['period']} WHERE membership_id = %d", $membershipId));
+        echo $personId . ' ' . $periodId . ':' . $roleId . "\n";
 
         return;
     }
@@ -89,6 +109,48 @@ $late = array_map(static fn (array $result): float => (float) $result['late'], $
 
 if (min($late) < 0 || max($late) - min($late) > 0.5) {
     $fail('The workers did not start together, so the run proves nothing.');
+}
+
+if ($scenario === 'board_coverage') {
+    $ender = null;
+    $placed = 0;
+
+    foreach ($results as $result) {
+        if ((int) $result['worker'] === 1) {
+            $ender = $result['outcome'];
+            continue;
+        }
+
+        if ($result['outcome'] === 'saved') {
+            $placed++;
+            continue;
+        }
+
+        if (! in_array($result['outcome'], ['busy', 'refused:The membership does not cover this assignment.', 'refused:This role already has a holder for those dates.'], true)) {
+            $fail('A board worker failed for another reason.');
+        }
+    }
+
+    if ($ender !== 'saved') {
+        $fail('The membership must end, or the run proves nothing.');
+    }
+
+    $rows = $wpdb->get_results($wpdb->prepare("SELECT started_on, ended_on FROM {$assignments} WHERE person_id = %d", $target), ARRAY_A);
+
+    foreach ($rows as $row) {
+        if ($row['ended_on'] === null || (string) $row['ended_on'] > '2025-06-30') {
+            $fail('An assignment outlasts the membership that ended on 2025-06-30: ' . json_encode($row));
+        }
+    }
+
+    if ($placed > 1 || count($rows) !== $placed) {
+        $fail(sprintf('Expected at most one assignment, found %d saved and %d rows.', $placed, count($rows)));
+    }
+
+    $cleanup();
+    \WP_CLI::success(sprintf('board_coverage: the membership ended, %d of %d board workers placed the role, and no assignment outlasts the membership (spread %.3fs).', $placed, $workers - 1, max($late) - min($late)));
+
+    return;
 }
 
 $outcomes = array_count_values(array_map(static fn (array $result): string => (string) $result['outcome'], $results));

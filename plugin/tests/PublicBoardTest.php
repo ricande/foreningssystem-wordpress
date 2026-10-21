@@ -111,7 +111,8 @@ final class PublicBoardTest extends TestCase
                 {
                     return $callback();
                 }
-            }
+            },
+            new UnheldRegisterLock()
         );
     }
 }

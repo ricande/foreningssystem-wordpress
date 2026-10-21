@@ -388,7 +388,8 @@ final class AssociationSettingsTest extends TestCase
             $assignments,
             new BoardAssignmentLedger(),
             $this->authorizer([Capabilities::MANAGE_ASSOCIATION, Capabilities::MANAGE_BOARD]),
-            $this->transaction()
+            $this->transaction(),
+            new UnheldRegisterLock()
         );
         $board->place($personId, (int) $role->id(), AssociationDate::fromIso('2024-01-01'), null, 'material@example.test', '', AssociationDate::fromIso('2026-09-25'));
         $directory = new BoardDirectory($people, $memberships, $roles, $assignments);
