@@ -7,6 +7,7 @@ namespace Foreningssystem\Tests;
 use Foreningssystem\Application\Document\ActiveMember;
 use Foreningssystem\Application\Document\DocumentArchive;
 use Foreningssystem\Application\Document\DocumentFileStore;
+use Foreningssystem\Application\Files\PrivateStorageExposed;
 use Foreningssystem\Application\People\Authorizer;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Application\People\Transaction;
@@ -62,6 +63,23 @@ final class DocumentArchiveTest extends TestCase
 
         $this->expectException(NotAllowed::class);
         $archive->add('Stadgar', "%PDF-1.4\n1 0 obj\nendobj\n%%EOF", DocumentVisibility::Public);
+    }
+
+    public function test_nothing_is_saved_while_the_web_server_serves_the_private_directory(): void
+    {
+        $documents = new MemoryDocumentRepository();
+        $files = new MemoryDocumentFileStore();
+        $files->exposed = true;
+        $archive = $this->archive([Capabilities::MANAGE_DOCUMENTS], $documents, $files);
+
+        try {
+            $archive->add('Stadgar', "%PDF-1.4\n1 0 obj\nendobj\n%%EOF", DocumentVisibility::Board);
+            self::fail('The document was saved into an exposed directory.');
+        } catch (PrivateStorageExposed) {
+        }
+
+        self::assertSame([], $documents->all());
+        self::assertSame(0, $files->writes);
     }
 
     public function test_a_text_file_is_not_a_document(): void
@@ -298,8 +316,14 @@ final class MemoryDocumentFileStore implements DocumentFileStore
 
     public int $writes = 0;
 
+    public bool $exposed = false;
+
     public function put(string $name, string $bytes): void
     {
+        if ($this->exposed) {
+            throw new PrivateStorageExposed('The web server serves the private directory.');
+        }
+
         $this->files[$name] = $bytes;
         $this->writes++;
     }

@@ -105,7 +105,11 @@ final class WpdbMinutesRepository implements MinutesRepository
             throw new \RuntimeException('Minutes draft was not saved.');
         }
 
-        $stored = $this->findRevision($id);
+        // The row is read with a lock, so a lock or a save in another request cannot land
+        // between this check and the update below. Callers run inside a transaction, which
+        // keeps the lock until the write is committed.
+        $row = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $this->revisions() . ' WHERE id = %d FOR UPDATE', $id), ARRAY_A);
+        $stored = is_array($row) ? $this->map($row) : null;
 
         if ($stored instanceof MinutesRevision) {
             FinalizedRevisionChange::assertAllowed($stored, $revision);

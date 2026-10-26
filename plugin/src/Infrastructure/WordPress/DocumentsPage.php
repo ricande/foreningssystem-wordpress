@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foreningssystem\Infrastructure\WordPress;
 
+use Foreningssystem\Application\Files\PrivateStorageExposed;
 use Foreningssystem\Application\People\NotAllowed;
 use Foreningssystem\Domain\Access\Capabilities;
 use Foreningssystem\Domain\Document\DocumentVisibility;
@@ -18,6 +19,8 @@ final class DocumentsPage
             $bytes = self::uploadedBytes('document_file');
             WordpressDocuments::archive()->add(self::text('title'), $bytes, self::visibility('visibility'));
             self::redirect('document_added');
+        } catch (PrivateStorageExposed) {
+            self::redirect('storage_exposed');
         } catch (NotAllowed) {
             wp_die(esc_html__('You do not have permission to add documents.', 'foreningsplugin'), '', ['response' => 403]);
         } catch (\InvalidArgumentException | \RuntimeException) {
@@ -50,6 +53,7 @@ final class DocumentsPage
         echo '<h1>' . esc_html__('Documents', 'foreningsplugin') . '</h1>';
         echo '<p>' . esc_html__('Public documents are shown on the site. Member documents are shown to a logged-in person with an active membership. Internal documents are visible to the board. Administrator documents are visible only to someone who may manage documents. The download goes through a check, not through the file address.', 'foreningsplugin') . '</p>';
         self::notice();
+        echo PrivateStorageWarning::statusBox();
 
         if ($canManage) {
             echo '<h2>' . esc_html__('New document', 'foreningsplugin') . '</h2>';
@@ -161,13 +165,14 @@ final class DocumentsPage
             'document_added' => __('The document is saved.', 'foreningsplugin'),
             'document_visibility' => __('The visibility is changed. The file is the same.', 'foreningsplugin'),
             'document_invalid' => __('Check the title, the visibility, and that the file is a PDF, JPEG, or PNG.', 'foreningsplugin'),
+            'storage_exposed' => __('The file was not saved. The web server serves the directory for protected files to anyone, so nothing new is stored there until the directory is blocked or moved outside the web root.', 'foreningsplugin'),
         ];
 
         if (! isset($messages[$notice])) {
             return;
         }
 
-        $class = $notice === 'document_invalid' ? 'notice-error' : 'notice-success';
+        $class = in_array($notice, ['document_invalid', 'storage_exposed'], true) ? 'notice-error' : 'notice-success';
         echo '<div class="notice ' . esc_attr($class) . '"><p>' . esc_html($messages[$notice]) . '</p></div>';
     }
 }

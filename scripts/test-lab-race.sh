@@ -10,6 +10,9 @@ cd "$(dirname "$0")/.."
 workers="${RACE_WORKERS:-8}"
 tests=/var/www/html/wp-content/plugins/foreningsplugin/tests
 scratch="$(mktemp -d)"
+# mktemp makes the directory readable by its owner only. The checking container runs as
+# www-data (uid 33), so on a CI runner it could not read the worker results.
+chmod 755 "$scratch"
 trap 'rm -rf "$scratch"; docker compose run --rm wpcli eval-file "$tests/lab-register-race.php" cleanup >/dev/null 2>&1 || true' EXIT
 
 race() {
