@@ -1,6 +1,6 @@
 # ADR-0039: The private directory check asks 127.0.0.1 when the site address cannot be reached, tests every file type, and always shows its result
 
-**Status:** Proposed (implemented, waiting for owner review)  
+**Status:** Accepted. The project owner approved it on 2026-10-26.  
 **Date:** 2026-10-21
 
 ## Context

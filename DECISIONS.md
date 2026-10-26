@@ -51,7 +51,7 @@ Status terminology:
 | A minutes revision is checked and written under one row lock, and is locked only with the text that is stored (ADR-0036) | LOCKED |
 | The plugin checks with a test file that the web server refuses the private directory. A served file gives an error that an acknowledgement cannot hide. Storing is not refused (ADR-0037) | LOCKED |
 | While the web server serves the private directory, documents and signed copies are refused, and minutes PDFs are delivered without being stored. Existing files stay (ADR-0038) | LOCKED |
-| The private directory check tests .pdf, .jpg and .png, asks 127.0.0.1 with the site's host name only when the site address is unreachable, and the Documents page always shows the result (ADR-0039) | PROVISIONAL |
+| The private directory check tests .pdf, .jpg and .png, asks 127.0.0.1 with the site's host name only when the site address is unreachable, and the Documents page always shows the result (ADR-0039) | LOCKED |
 | A new member account gets the login `assoc-member-` plus 16 random hex characters. Existing logins are not renamed (ADR-0033) | PROVISIONAL |
 | The plugin ships no login limiting and no XML-RPC switch. Administrators are told to use a login-limiting plugin or server rate limiting, and two-factor authentication for officers (ADR-0034) | PROVISIONAL |
 | Guardian approval of an account for a minor is future member-portal design and is not locked | OPEN |
